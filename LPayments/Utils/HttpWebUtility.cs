@@ -11,9 +11,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 
-namespace TinyStore.Utils
+namespace LPayments.Utils
 {
-    public class HttpWebUtility : IDisposable
+    internal class HttpWebUtility : IDisposable
     {
         public HttpWebUtility()
         {
@@ -98,6 +98,22 @@ namespace TinyStore.Utils
                 return "";
             return HttpUtility.UrlEncode(p_input, encoding).Replace("+", "%20").Replace("!", "%21").Replace(".", "%2e")
                 .Replace("*", "%2a").Replace("(", "%28").Replace(")", "%29").Replace("_", "%5f");
+        }
+
+        internal static string UriDataDecode(string p_Input, Encoding encoding = null)
+        {
+            //http://www.w3school.com.cn/tags/html_ref_urlencode.html
+            encoding = encoding ?? Encoding.UTF8;
+            if (string.IsNullOrEmpty(p_Input))
+                return "";
+            var input = p_Input.Replace("+", "%20")
+                .Replace("!", "%21")
+                .Replace("*", "%2a")
+                .Replace("(", "%28")
+                .Replace(")", "%29")
+                .Replace("_", "%5f")
+                .Replace(".", "%2e");
+            return HttpUtility.UrlDecode(input, encoding);
         }
 
         public string Response(Uri p_url, HttpMethod p_httpMethod = HttpMethod.Get,
@@ -816,7 +832,7 @@ namespace TinyStore.Utils
         {
             var cookie = MyCookieContainer.GetCookies(p_url).Cast<Cookie>()
                 .FirstOrDefault(item => item.Name == p_cookie.Name);
-            
+
             if (cookie != null)
             {
                 cookie.Expires = p_cookie.Expires;

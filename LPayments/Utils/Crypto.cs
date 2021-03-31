@@ -12,12 +12,12 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 
-namespace TinyStore.Utils
+namespace LPayments.Utils
 {
     /// <summary>
     /// 不可逆加密辅助类
     /// </summary>
-    public static class HASHCrypto
+    internal static class HASHCrypto
     {
         public enum CryptoEnum
         {
@@ -248,7 +248,7 @@ namespace TinyStore.Utils
     /// <summary>
     /// 对称加密辅助类
     /// </summary>
-    public static class DESCrypto
+    internal static class DESCrypto
     {
         public enum CryptoEnum
         {
@@ -638,7 +638,7 @@ namespace TinyStore.Utils
     /// <summary>
     /// 非对称加密辅助类（公钥私钥）
     /// </summary>
-    public static class RSACrypto
+    internal static class RSACrypto
     {
         private class Extensions
         {
@@ -1846,6 +1846,7 @@ namespace TinyStore.Utils
     //                     //Console.WriteLine("\nXML RSA private key: {0} bits\n{1}\n", rsa.KeySize, xmlprivatekey);
     //                     RSAtoPKCS12(rsa, pswd);
     //                 }
+    //
     //                 //else
     //                 //Console.WriteLine("\nFailed to create an RSACryptoServiceProvider");
     //             }
@@ -1867,6 +1868,7 @@ namespace TinyStore.Utils
     //                     //Console.WriteLine("\nXML RSA private key: {0} bits\n{1}\n", rsa.KeySize, xmlprivatekey);
     //                     RSAtoPKCS12(rsa, pswd);
     //                 }
+    //
     //                 //else
     //                 //Console.WriteLine("\nFailed to create an RSACryptoServiceProvider");
     //             }
@@ -1910,7 +1912,7 @@ namespace TinyStore.Utils
     //             return;
     //         }
     //
-    //         rsa = DecodePrivateKeyInfo(keyblob);    //PKCS #8 unencrypted
+    //         rsa = DecodePrivateKeyInfo(keyblob); //PKCS #8 unencrypted
     //         if (rsa != null)
     //         {
     //             //Console.WriteLine("\nA valid PKCS #8 PrivateKeyInfo\n");
@@ -1921,7 +1923,7 @@ namespace TinyStore.Utils
     //             return;
     //         }
     //
-    //         rsa = DecodeEncryptedPrivateKeyInfo(keyblob, pswd);   //PKCS #8 encrypted
+    //         rsa = DecodeEncryptedPrivateKeyInfo(keyblob, pswd); //PKCS #8 encrypted
     //         if (rsa != null)
     //         {
     //             //Console.WriteLine("\nA valid PKCS #8 EncryptedPrivateKeyInfo\n");
@@ -1931,6 +1933,7 @@ namespace TinyStore.Utils
     //             RSAtoPKCS12(rsa, pswd);
     //             return;
     //         }
+    //
     //         //Console.WriteLine("Not a binary DER public, private or PKCS #8 key");
     //         return;
     //     }
@@ -1954,7 +1957,7 @@ namespace TinyStore.Utils
     //     {
     //         CspKeyContainerInfo keyInfo = rsa.CspKeyContainerInfo;
     //         String keycontainer = keyInfo.KeyContainerName;
-    //         uint keyspec = (uint)keyInfo.KeyNumber;
+    //         uint keyspec = (uint) keyInfo.KeyNumber;
     //         String provider = keyInfo.ProviderName;
     //         uint cspflags = 0; //CryptoAPI Current User store; LM would be CRYPT_MACHINE_KEYSET	= 0x00000020
     //         String fname = keycontainer + ".p12";
@@ -1967,6 +1970,7 @@ namespace TinyStore.Utils
     //             PutFileBytes(fname, pkcs12, pkcs12.Length);
     //             //Console.WriteLine("\nWrote pkc #12 file '{0}'\n", fname);
     //         }
+    //
     //         //else
     //         //Console.WriteLine("\nProblem getting pkcs#12");
     //     }
@@ -1988,16 +1992,18 @@ namespace TinyStore.Utils
     //         sb.Replace(pemp8header, ""); //remove headers/footers, if present
     //         sb.Replace(pemp8footer, "");
     //
-    //         String pubstr = sb.ToString().Trim();   //get string after removing leading/trailing whitespace
+    //         String pubstr = sb.ToString().Trim(); //get string after removing leading/trailing whitespace
     //
     //         try
     //         {
     //             binkey = Convert.FromBase64String(pubstr);
     //         }
     //         catch (System.FormatException)
-    //         {   //if can't b64 decode, data is not valid
+    //         {
+    //             //if can't b64 decode, data is not valid
     //             return null;
     //         }
+    //
     //         return binkey;
     //     }
     //
@@ -2010,11 +2016,11 @@ namespace TinyStore.Utils
     //     {
     //         // encoded OID sequence for PKCS #1 rsaEncryption szOID_RSA_RSA = "1.2.840.113549.1.1.1"
     //         // this byte[] includes the sequence byte and terminal encoded null
-    //         byte[] SeqOID = { 0x30, 0x0D, 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01, 0x05, 0x00 };
+    //         byte[] SeqOID = {0x30, 0x0D, 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01, 0x05, 0x00};
     //         byte[] seq = new byte[15];
     //         // --------- Set up stream to read the asn.1 encoded SubjectPublicKeyInfo blob ------
     //         MemoryStream mem = new MemoryStream(pkcs8);
-    //         int lenstream = (int)mem.Length;
+    //         int lenstream = (int) mem.Length;
     //         BinaryReader binr = new BinaryReader(mem); //wrap Memory Stream with BinaryReader for easy reading
     //         byte bt = 0;
     //         ushort twobytes = 0;
@@ -2023,9 +2029,9 @@ namespace TinyStore.Utils
     //         {
     //             twobytes = binr.ReadUInt16();
     //             if (twobytes == 0x8130) //data read as little endian order (actual data order for Sequence is 30 81)
-    //                 binr.ReadByte();    //advance 1 byte
+    //                 binr.ReadByte(); //advance 1 byte
     //             else if (twobytes == 0x8230)
-    //                 binr.ReadInt16();   //advance 2 bytes
+    //                 binr.ReadInt16(); //advance 2 bytes
     //             else
     //                 return null;
     //
@@ -2038,23 +2044,22 @@ namespace TinyStore.Utils
     //             if (twobytes != 0x0001)
     //                 return null;
     //
-    //             seq = binr.ReadBytes(15);   //read the Sequence OID
-    //             if (!CompareBytearrays(seq, SeqOID))    //make sure Sequence for OID is correct
+    //             seq = binr.ReadBytes(15); //read the Sequence OID
+    //             if (!CompareBytearrays(seq, SeqOID)) //make sure Sequence for OID is correct
     //                 return null;
     //
     //             bt = binr.ReadByte();
     //             if (bt != 0x04) //expect an Octet string
     //                 return null;
     //
-    //             bt = binr.ReadByte();   //read next byte, or next 2 bytes is 0x81 or 0x82; otherwise bt is the byte count
+    //             bt = binr.ReadByte(); //read next byte, or next 2 bytes is 0x81 or 0x82; otherwise bt is the byte count
     //             if (bt == 0x81)
     //                 binr.ReadByte();
-    //             else
-    //             if (bt == 0x82)
+    //             else if (bt == 0x82)
     //                 binr.ReadUInt16();
     //             //------ at this stage, the remaining sequence should be the RSA private key
     //
-    //             byte[] rsaprivkey = binr.ReadBytes((int)(lenstream - mem.Position));
+    //             byte[] rsaprivkey = binr.ReadBytes((int) (lenstream - mem.Position));
     //             RSACryptoServiceProvider rsacsp = DecodeRSAPrivateKey(rsaprivkey);
     //             return rsacsp;
     //         }
@@ -2062,7 +2067,10 @@ namespace TinyStore.Utils
     //         {
     //             return null;
     //         }
-    //         finally { binr.Close(); }
+    //         finally
+    //         {
+    //             binr.Close();
+    //         }
     //     }
     //
     //     /// <summary>
@@ -2082,16 +2090,18 @@ namespace TinyStore.Utils
     //         sb.Replace(pemp8encheader, ""); //remove headers/footers, if present
     //         sb.Replace(pemp8encfooter, "");
     //
-    //         String pubstr = sb.ToString().Trim();   //get string after removing leading/trailing whitespace
+    //         String pubstr = sb.ToString().Trim(); //get string after removing leading/trailing whitespace
     //
     //         try
     //         {
     //             binkey = Convert.FromBase64String(pubstr);
     //         }
     //         catch (System.FormatException)
-    //         {   //if can't b64 decode, data is not valid
+    //         {
+    //             //if can't b64 decode, data is not valid
     //             return null;
     //         }
+    //
     //         return binkey;
     //     }
     //
@@ -2104,9 +2114,9 @@ namespace TinyStore.Utils
     //     {
     //         // encoded OID sequence for PKCS #1 rsaEncryption szOID_RSA_RSA = "1.2.840.113549.1.1.1"
     //         // this byte[] includes the sequence byte and terminal encoded null
-    //         byte[] OIDpkcs5PBES2 = { 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x05, 0x0D };
-    //         byte[] OIDpkcs5PBKDF2 = { 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x05, 0x0C };
-    //         byte[] OIDdesEDE3CBC = { 0x06, 0x08, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x03, 0x07 };
+    //         byte[] OIDpkcs5PBES2 = {0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x05, 0x0D};
+    //         byte[] OIDpkcs5PBKDF2 = {0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x05, 0x0C};
+    //         byte[] OIDdesEDE3CBC = {0x06, 0x08, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x03, 0x07};
     //         byte[] seqdes = new byte[10];
     //         byte[] seq = new byte[11];
     //         byte[] salt;
@@ -2119,7 +2129,7 @@ namespace TinyStore.Utils
     //
     //         // --------- Set up stream to read the asn.1 encoded SubjectPublicKeyInfo blob ------
     //         MemoryStream mem = new MemoryStream(encpkcs8);
-    //         int lenstream = (int)mem.Length;
+    //         int lenstream = (int) mem.Length;
     //         BinaryReader binr = new BinaryReader(mem); //wrap Memory Stream with BinaryReader for easy reading
     //         byte bt = 0;
     //         ushort twobytes = 0;
@@ -2128,36 +2138,36 @@ namespace TinyStore.Utils
     //         {
     //             twobytes = binr.ReadUInt16();
     //             if (twobytes == 0x8130) //data read as little endian order (actual data order for Sequence is 30 81)
-    //                 binr.ReadByte();    //advance 1 byte
+    //                 binr.ReadByte(); //advance 1 byte
     //             else if (twobytes == 0x8230)
-    //                 binr.ReadInt16();   //advance 2 bytes
+    //                 binr.ReadInt16(); //advance 2 bytes
     //             else
     //                 return null;
     //
-    //             twobytes = binr.ReadUInt16();   //inner sequence
+    //             twobytes = binr.ReadUInt16(); //inner sequence
     //             if (twobytes == 0x8130)
     //                 binr.ReadByte();
     //             else if (twobytes == 0x8230)
     //                 binr.ReadInt16();
     //
-    //             seq = binr.ReadBytes(11);   //read the Sequence OID
+    //             seq = binr.ReadBytes(11); //read the Sequence OID
     //             if (!CompareBytearrays(seq, OIDpkcs5PBES2)) //is it a OIDpkcs5PBES2 ?
     //                 return null;
     //
-    //             twobytes = binr.ReadUInt16();   //inner sequence for pswd salt
+    //             twobytes = binr.ReadUInt16(); //inner sequence for pswd salt
     //             if (twobytes == 0x8130)
     //                 binr.ReadByte();
     //             else if (twobytes == 0x8230)
     //                 binr.ReadInt16();
     //
-    //             twobytes = binr.ReadUInt16();   //inner sequence for pswd salt
+    //             twobytes = binr.ReadUInt16(); //inner sequence for pswd salt
     //             if (twobytes == 0x8130)
     //                 binr.ReadByte();
     //             else if (twobytes == 0x8230)
     //                 binr.ReadInt16();
     //
-    //             seq = binr.ReadBytes(11);   //read the Sequence OID
-    //             if (!CompareBytearrays(seq, OIDpkcs5PBKDF2))    //is it a OIDpkcs5PBKDF2 ?
+    //             seq = binr.ReadBytes(11); //read the Sequence OID
+    //             if (!CompareBytearrays(seq, OIDpkcs5PBKDF2)) //is it a OIDpkcs5PBKDF2 ?
     //                 return null;
     //
     //             twobytes = binr.ReadUInt16();
@@ -2178,7 +2188,7 @@ namespace TinyStore.Utils
     //             if (bt != 0x02) //expect an integer for PBKF2 interation count
     //                 return null;
     //
-    //             int itbytes = binr.ReadByte();  //PBKD2 iterations should fit in 2 bytes.
+    //             int itbytes = binr.ReadByte(); //PBKD2 iterations should fit in 2 bytes.
     //             if (itbytes == 1)
     //                 iterations = binr.ReadByte();
     //             else if (itbytes == 2)
@@ -2194,14 +2204,14 @@ namespace TinyStore.Utils
     //             else if (twobytes == 0x8230)
     //                 binr.ReadInt16();
     //
-    //             seqdes = binr.ReadBytes(10);    //read the Sequence OID
-    //             if (!CompareBytearrays(seqdes, OIDdesEDE3CBC))  //is it a OIDdes-EDE3-CBC ?
+    //             seqdes = binr.ReadBytes(10); //read the Sequence OID
+    //             if (!CompareBytearrays(seqdes, OIDdesEDE3CBC)) //is it a OIDdes-EDE3-CBC ?
     //                 return null;
     //
     //             bt = binr.ReadByte();
     //             if (bt != 0x04) //expect octet string for IV
     //                 return null;
-    //             ivsize = binr.ReadByte();   // IV byte size should fit in one byte (24 expected for 3DES)
+    //             ivsize = binr.ReadByte(); // IV byte size should fit in one byte (24 expected for 3DES)
     //             IV = binr.ReadBytes(ivsize);
     //             //if (verbose)
     //             //    showBytes("IV for des-EDE3-CBC", IV);
@@ -2213,23 +2223,24 @@ namespace TinyStore.Utils
     //             bt = binr.ReadByte();
     //
     //             if (bt == 0x81)
-    //                 encblobsize = binr.ReadByte();  // data size in next byte
+    //                 encblobsize = binr.ReadByte(); // data size in next byte
     //             else if (bt == 0x82)
     //                 encblobsize = 256 * binr.ReadByte() + binr.ReadByte();
     //             else
-    //                 encblobsize = bt;   // we already have the data size
+    //                 encblobsize = bt; // we already have the data size
     //
     //             encryptedpkcs8 = binr.ReadBytes(encblobsize);
     //             //if(verbose)
     //             //	showBytes("Encrypted PKCS8 blob", encryptedpkcs8) ;
     //
-    //             SecureString secpswd = new SecureString();// GetSecPswd("Enter password for Encrypted PKCS #8 ==>");
+    //             SecureString secpswd = new SecureString(); // GetSecPswd("Enter password for Encrypted PKCS #8 ==>");
     //             foreach (char c in pswd.ToCharArray())
     //             {
     //                 secpswd.AppendChar(c);
     //             }
+    //
     //             pkcs8 = DecryptPBDK2(encryptedpkcs8, salt, IV, secpswd, iterations);
-    //             if (pkcs8 == null)  // probably a bad pswd entered.
+    //             if (pkcs8 == null) // probably a bad pswd entered.
     //                 return null;
     //
     //             //if(verbose)
@@ -2242,7 +2253,10 @@ namespace TinyStore.Utils
     //         {
     //             return null;
     //         }
-    //         finally { binr.Close(); }
+    //         finally
+    //         {
+    //             binr.Close();
+    //         }
     //     }
     //
     //     /// <summary>
@@ -2274,7 +2288,7 @@ namespace TinyStore.Utils
     //             decrypt = new CryptoStream(memstr, decAlg.CreateDecryptor(), CryptoStreamMode.Write);
     //             decrypt.Write(edata, 0, edata.Length);
     //             decrypt.Flush();
-    //             decrypt.Close();    // this is REQUIRED.
+    //             decrypt.Close(); // this is REQUIRED.
     //             byte[] cleartext = memstr.ToArray();
     //             return cleartext;
     //         }
@@ -2301,16 +2315,18 @@ namespace TinyStore.Utils
     //         sb.Replace(pempubheader, ""); //remove headers/footers, if present
     //         sb.Replace(pempubfooter, "");
     //
-    //         String pubstr = sb.ToString().Trim();   //get string after removing leading/trailing whitespace
+    //         String pubstr = sb.ToString().Trim(); //get string after removing leading/trailing whitespace
     //
     //         try
     //         {
     //             binkey = Convert.FromBase64String(pubstr);
     //         }
     //         catch (System.FormatException)
-    //         {   //if can't b64 decode, data is not valid
+    //         {
+    //             //if can't b64 decode, data is not valid
     //             return null;
     //         }
+    //
     //         return binkey;
     //     }
     //
@@ -2322,7 +2338,7 @@ namespace TinyStore.Utils
     //     public static RSACryptoServiceProvider DecodeX509PublicKey(byte[] x509key)
     //     {
     //         // encoded OID sequence for PKCS #1 rsaEncryption szOID_RSA_RSA = "1.2.840.113549.1.1.1"
-    //         byte[] SeqOID = { 0x30, 0x0D, 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01, 0x05, 0x00 };
+    //         byte[] SeqOID = {0x30, 0x0D, 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x01, 0x05, 0x00};
     //         byte[] seq = new byte[15];
     //         // --------- Set up stream to read the asn.1 encoded SubjectPublicKeyInfo blob ------
     //         MemoryStream mem = new MemoryStream(x509key);
@@ -2334,21 +2350,21 @@ namespace TinyStore.Utils
     //         {
     //             twobytes = binr.ReadUInt16();
     //             if (twobytes == 0x8130) //data read as little endian order (actual data order for Sequence is 30 81)
-    //                 binr.ReadByte();    //advance 1 byte
+    //                 binr.ReadByte(); //advance 1 byte
     //             else if (twobytes == 0x8230)
-    //                 binr.ReadInt16();   //advance 2 bytes
+    //                 binr.ReadInt16(); //advance 2 bytes
     //             else
     //                 return null;
     //
-    //             seq = binr.ReadBytes(15);   //read the Sequence OID
-    //             if (!CompareBytearrays(seq, SeqOID))    //make sure Sequence for OID is correct
+    //             seq = binr.ReadBytes(15); //read the Sequence OID
+    //             if (!CompareBytearrays(seq, SeqOID)) //make sure Sequence for OID is correct
     //                 return null;
     //
     //             twobytes = binr.ReadUInt16();
     //             if (twobytes == 0x8103) //data read as little endian order (actual data order for Bit String is 03 81)
-    //                 binr.ReadByte();    //advance 1 byte
+    //                 binr.ReadByte(); //advance 1 byte
     //             else if (twobytes == 0x8203)
-    //                 binr.ReadInt16();   //advance 2 bytes
+    //                 binr.ReadInt16(); //advance 2 bytes
     //             else
     //                 return null;
     //
@@ -2358,9 +2374,9 @@ namespace TinyStore.Utils
     //
     //             twobytes = binr.ReadUInt16();
     //             if (twobytes == 0x8130) //data read as little endian order (actual data order for Sequence is 30 81)
-    //                 binr.ReadByte();    //advance 1 byte
+    //                 binr.ReadByte(); //advance 1 byte
     //             else if (twobytes == 0x8230)
-    //                 binr.ReadInt16();   //advance 2 bytes
+    //                 binr.ReadInt16(); //advance 2 bytes
     //             else
     //                 return null;
     //
@@ -2369,7 +2385,7 @@ namespace TinyStore.Utils
     //             byte highbyte = 0x00;
     //
     //             if (twobytes == 0x8102) //data read as little endian order (actual data order for Integer is 02 81)
-    //                 lowbyte = binr.ReadByte();  // read next bytes which is bytes in modulus
+    //                 lowbyte = binr.ReadByte(); // read next bytes which is bytes in modulus
     //             else if (twobytes == 0x8202)
     //             {
     //                 highbyte = binr.ReadByte(); //advance 2 bytes
@@ -2377,23 +2393,27 @@ namespace TinyStore.Utils
     //             }
     //             else
     //                 return null;
-    //             byte[] modint = { lowbyte, highbyte, 0x00, 0x00 }; //reverse byte order since asn.1 key uses big endian order
+    //
+    //             byte[] modint =
+    //                 {lowbyte, highbyte, 0x00, 0x00}; //reverse byte order since asn.1 key uses big endian order
     //             int modsize = BitConverter.ToInt32(modint, 0);
     //
     //             byte firstbyte = binr.ReadByte();
     //             binr.BaseStream.Seek(-1, SeekOrigin.Current);
     //
     //             if (firstbyte == 0x00)
-    //             {   //if first byte (highest order) of modulus is zero, don't include it
-    //                 binr.ReadByte();    //skip this null byte
-    //                 modsize -= 1;   //reduce modulus buffer size by 1
+    //             {
+    //                 //if first byte (highest order) of modulus is zero, don't include it
+    //                 binr.ReadByte(); //skip this null byte
+    //                 modsize -= 1; //reduce modulus buffer size by 1
     //             }
     //
-    //             byte[] modulus = binr.ReadBytes(modsize);   //read the modulus bytes
+    //             byte[] modulus = binr.ReadBytes(modsize); //read the modulus bytes
     //
-    //             if (binr.ReadByte() != 0x02)    //expect an Integer for the exponent data
+    //             if (binr.ReadByte() != 0x02) //expect an Integer for the exponent data
     //                 return null;
-    //             int expbytes = (int)binr.ReadByte();    // should only need one byte for actual exponent data (for all useful values)
+    //             int expbytes =
+    //                 (int) binr.ReadByte(); // should only need one byte for actual exponent data (for all useful values)
     //             byte[] exponent = binr.ReadBytes(expbytes);
     //
     //             //showBytes("\nExponent", exponent);
@@ -2411,7 +2431,10 @@ namespace TinyStore.Utils
     //         {
     //             return null;
     //         }
-    //         finally { binr.Close(); }
+    //         finally
+    //         {
+    //             binr.Close();
+    //         }
     //     }
     //
     //     /// <summary>
@@ -2433,9 +2456,9 @@ namespace TinyStore.Utils
     //         {
     //             twobytes = binr.ReadUInt16();
     //             if (twobytes == 0x8130) //data read as little endian order (actual data order for Sequence is 30 81)
-    //                 binr.ReadByte();    //advance 1 byte
+    //                 binr.ReadByte(); //advance 1 byte
     //             else if (twobytes == 0x8230)
-    //                 binr.ReadInt16();   //advance 2 bytes
+    //                 binr.ReadInt16(); //advance 2 bytes
     //             else
     //                 return null;
     //
@@ -2502,7 +2525,10 @@ namespace TinyStore.Utils
     //         {
     //             return null;
     //         }
-    //         finally { binr.Close(); }
+    //         finally
+    //         {
+    //             binr.Close();
+    //         }
     //     }
     //
     //     private static int GetIntegerSize(BinaryReader binr)
@@ -2517,13 +2543,12 @@ namespace TinyStore.Utils
     //         bt = binr.ReadByte();
     //
     //         if (bt == 0x81)
-    //             count = binr.ReadByte();    // data size in next byte
-    //         else
-    //         if (bt == 0x82)
+    //             count = binr.ReadByte(); // data size in next byte
+    //         else if (bt == 0x82)
     //         {
     //             highbyte = binr.ReadByte(); // data size in next 2 bytes
     //             lowbyte = binr.ReadByte();
-    //             byte[] modint = { lowbyte, highbyte, 0x00, 0x00 };
+    //             byte[] modint = {lowbyte, highbyte, 0x00, 0x00};
     //             count = BitConverter.ToInt32(modint, 0);
     //         }
     //         else
@@ -2532,10 +2557,12 @@ namespace TinyStore.Utils
     //         }
     //
     //         while (binr.ReadByte() == 0x00)
-    //         {   //remove high order zeros in data
+    //         {
+    //             //remove high order zeros in data
     //             count -= 1;
     //         }
-    //         binr.BaseStream.Seek(-1, SeekOrigin.Current);   //last ReadByte wasn't a removed zero, so back up a byte
+    //
+    //         binr.BaseStream.Seek(-1, SeekOrigin.Current); //last ReadByte wasn't a removed zero, so back up a byte
     //         return count;
     //     }
     //
@@ -2557,15 +2584,17 @@ namespace TinyStore.Utils
     //         sb.Replace(pemprivheader, ""); //remove headers/footers, if present
     //         sb.Replace(pemprivfooter, "");
     //
-    //         String pvkstr = sb.ToString().Trim();   //get string after removing leading/trailing whitespace
+    //         String pvkstr = sb.ToString().Trim(); //get string after removing leading/trailing whitespace
     //
     //         try
-    //         { // if there are no PEM encryption info lines, this is an UNencrypted PEM private key
+    //         {
+    //             // if there are no PEM encryption info lines, this is an UNencrypted PEM private key
     //             binkey = Convert.FromBase64String(pvkstr);
     //             return binkey;
     //         }
     //         catch (System.FormatException)
-    //         {   //if can't b64 decode, it must be an encrypted private key
+    //         {
+    //             //if can't b64 decode, it must be an encrypted private key
     //             ////Console.WriteLine("Not an unencrypted OpenSSL PEM private key");
     //         }
     //
@@ -2588,11 +2617,13 @@ namespace TinyStore.Utils
     //         String encryptedstr = str.ReadToEnd();
     //
     //         try
-    //         {   //should have b64 encrypted RSA key now
+    //         {
+    //             //should have b64 encrypted RSA key now
     //             binkey = Convert.FromBase64String(encryptedstr);
     //         }
     //         catch (System.FormatException)
-    //         { // bad b64 data.
+    //         {
+    //             // bad b64 data.
     //             return null;
     //         }
     //
@@ -2603,17 +2634,20 @@ namespace TinyStore.Utils
     //         {
     //             despswd.AppendChar(c);
     //         }
+    //
     //         //Console.Write("\nEnter password to derive 3DES key: ");
     //         //String pswd = Console.ReadLine();
-    //         byte[] deskey = GetOpenSSL3deskey(salt, despswd, 1, 2); // count=1 (for OpenSSL implementation); 2 iterations to get at least 24 bytes
+    //         byte[]
+    //             deskey = GetOpenSSL3deskey(salt, despswd, 1,
+    //                 2); // count=1 (for OpenSSL implementation); 2 iterations to get at least 24 bytes
     //         if (deskey == null)
     //             return null;
     //         //showBytes("3DES key", deskey) ;
     //
     //         //------ Decrypt the encrypted 3des-encrypted RSA private key ------
-    //         byte[] rsakey = DecryptKey(binkey, deskey, salt);   //OpenSSL uses salt value in PEM header also as 3DES IV
+    //         byte[] rsakey = DecryptKey(binkey, deskey, salt); //OpenSSL uses salt value in PEM header also as 3DES IV
     //         if (rsakey != null)
-    //             return rsakey;  //we have a decrypted RSA private key
+    //             return rsakey; //we have a decrypted RSA private key
     //         else
     //         {
     //             //Console.WriteLine("Failed to decrypt RSA private key; probably wrong password.");
@@ -2645,6 +2679,7 @@ namespace TinyStore.Utils
     //             Console.WriteLine(exc.Message);
     //             return null;
     //         }
+    //
     //         byte[] decryptedData = memst.ToArray();
     //         return decryptedData;
     //     }
@@ -2660,7 +2695,7 @@ namespace TinyStore.Utils
     //     private static byte[] GetOpenSSL3deskey(byte[] salt, SecureString secpswd, int count, int miter)
     //     {
     //         IntPtr unmanagedPswd = IntPtr.Zero;
-    //         int HASHLENGTH = 16;    //MD5 bytes
+    //         int HASHLENGTH = 16; //MD5 bytes
     //         byte[] keymaterial = new byte[HASHLENGTH * miter]; //to store contatenated Mi hashed results
     //
     //         byte[] psbytes = new byte[secpswd.Length];
@@ -2673,8 +2708,8 @@ namespace TinyStore.Utils
     //
     //         // --- contatenate salt and pswd bytes into fixed data array ---
     //         byte[] data00 = new byte[psbytes.Length + salt.Length];
-    //         Array.Copy(psbytes, data00, psbytes.Length);    //copy the pswd bytes
-    //         Array.Copy(salt, 0, data00, psbytes.Length, salt.Length);   //concatenate the salt bytes
+    //         Array.Copy(psbytes, data00, psbytes.Length); //copy the pswd bytes
+    //         Array.Copy(salt, 0, data00, psbytes.Length, salt.Length); //concatenate the salt bytes
     //
     //         // ---- do multi-hashing and contatenate results D1, D2 ... into keymaterial bytes ----
     //         MD5 md5 = new MD5CryptoServiceProvider();
@@ -2699,6 +2734,7 @@ namespace TinyStore.Utils
     //                 result = md5.ComputeHash(result);
     //             Array.Copy(result, 0, keymaterial, j * HASHLENGTH, result.Length); //contatenate to keymaterial
     //         }
+    //
     //         //showBytes("Final key material", keymaterial);
     //         byte[] deskey = new byte[24];
     //         Array.Copy(keymaterial, deskey, deskey.Length);
@@ -2722,8 +2758,9 @@ namespace TinyStore.Utils
     //     /// <param name="cspflags"></param>
     //     /// <param name="pswd"></param>
     //     /// <returns></returns>
-    //     private static byte[] GetPkcs12(RSA rsa, String keycontainer, String cspprovider, uint KEYSPEC, uint cspflags, string pswd = "")
-    //     //private static byte[] GetPkcs12(RSA rsa, String keycontainer, String cspprovider, uint KEYSPEC, uint cspflags)
+    //     private static byte[] GetPkcs12(RSA rsa, String keycontainer, String cspprovider, uint KEYSPEC, uint cspflags,
+    //             string pswd = "")
+    //         //private static byte[] GetPkcs12(RSA rsa, String keycontainer, String cspprovider, uint KEYSPEC, uint cspflags)
     //     {
     //         byte[] pfxblob = null;
     //         IntPtr hCertCntxt = IntPtr.Zero;
@@ -2736,6 +2773,7 @@ namespace TinyStore.Utils
     //             //Console.WriteLine("Couldn't create an unsigned-cert\n");
     //             return null;
     //         }
+    //
     //         try
     //         {
     //             X509Certificate cert = new X509Certificate(hCertCntxt); //create certificate object from cert context.
@@ -2754,7 +2792,8 @@ namespace TinyStore.Utils
     //         return pfxblob;
     //     }
     //
-    //     private static IntPtr CreateUnsignedCertCntxt(String keycontainer, String provider, uint KEYSPEC, uint cspflags, String DN)
+    //     private static IntPtr CreateUnsignedCertCntxt(String keycontainer, String provider, uint KEYSPEC, uint cspflags,
+    //         String DN)
     //     {
     //         const uint AT_KEYEXCHANGE = 0x00000001;
     //         const uint AT_SIGNATURE = 0x00000002;
@@ -2781,10 +2820,12 @@ namespace TinyStore.Utils
     //         if (DN == "")
     //             return IntPtr.Zero;
     //
-    //         if (Win32.CertStrToName(X509_ASN_ENCODING, DN, CERT_X500_NAME_STR, IntPtr.Zero, null, ref cbName, IntPtr.Zero))
+    //         if (Win32.CertStrToName(X509_ASN_ENCODING, DN, CERT_X500_NAME_STR, IntPtr.Zero, null, ref cbName,
+    //             IntPtr.Zero))
     //         {
     //             encodedName = new byte[cbName];
-    //             Win32.CertStrToName(X509_ASN_ENCODING, DN, CERT_X500_NAME_STR, IntPtr.Zero, encodedName, ref cbName, IntPtr.Zero);
+    //             Win32.CertStrToName(X509_ASN_ENCODING, DN, CERT_X500_NAME_STR, IntPtr.Zero, encodedName, ref cbName,
+    //                 IntPtr.Zero);
     //         }
     //
     //         CERT_NAME_BLOB subjectblob = new CERT_NAME_BLOB();
@@ -2801,7 +2842,8 @@ namespace TinyStore.Utils
     //         pInfo.rgProvParam = IntPtr.Zero;
     //         pInfo.dwKeySpec = KEYSPEC;
     //
-    //         hCertCntxt = Win32.CertCreateSelfSignCertificate(IntPtr.Zero, ref subjectblob, CERT_CREATE_SELFSIGN_NO_SIGN, ref pInfo, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+    //         hCertCntxt = Win32.CertCreateSelfSignCertificate(IntPtr.Zero, ref subjectblob, CERT_CREATE_SELFSIGN_NO_SIGN,
+    //             ref pInfo, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
     //         if (hCertCntxt == IntPtr.Zero)
     //             throw new Win32Exception(Marshal.GetLastWin32Error());
     //         Marshal.FreeHGlobal(subjectblob.pbData);
@@ -2872,6 +2914,7 @@ namespace TinyStore.Utils
     //                 return false;
     //             i++;
     //         }
+    //
     //         return true;
     //     }
     //
@@ -2911,7 +2954,7 @@ namespace TinyStore.Utils
     //             return null;
     //         using (Stream stream = new FileStream(filename, FileMode.Open))
     //         {
-    //             int datalen = (int)stream.Length;
+    //             int datalen = (int) stream.Length;
     //             byte[] filebytes = new byte[datalen];
     //             stream.Seek(0, SeekOrigin.Begin);
     //             stream.Read(filebytes, 0, datalen);
@@ -2927,6 +2970,7 @@ namespace TinyStore.Utils
     //             //Console.WriteLine("Too many bytes");
     //             return;
     //         }
+    //
     //         using (FileStream fs = new FileStream(outfile, FileMode.Create))
     //         {
     //             fs.Write(data, 0, bytes);
@@ -2944,5 +2988,4 @@ namespace TinyStore.Utils
     //     //}
     // }
 
-  
 }

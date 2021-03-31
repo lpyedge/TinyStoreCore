@@ -7,9 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Encodings.Web;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using JsonProperty = Newtonsoft.Json.Serialization.JsonProperty;
@@ -198,18 +195,18 @@ namespace TinyStore
                         PropertyNamingPolicy = null,
                         DictionaryKeyPolicy = null,
                         WriteIndented = false,
-                        ReferenceHandler = ReferenceHandler.Preserve,
-                        NumberHandling = JsonNumberHandling.Strict,
+                        ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve,
+                        NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.Strict,
                         AllowTrailingCommas = true,
-                        Encoder = JavaScriptEncoder.Default,
+                        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.Default,
                         IncludeFields = false,
                         MaxDepth = 0,
                         IgnoreReadOnlyFields = true,
                         IgnoreNullValues = false,
                         IgnoreReadOnlyProperties = true,
                         PropertyNameCaseInsensitive = true,
-                        DefaultIgnoreCondition = JsonIgnoreCondition.Never,
-                        ReadCommentHandling = JsonCommentHandling.Skip,
+                        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.Never,
+                        ReadCommentHandling = System.Text.Json.JsonCommentHandling.Skip,
                         DefaultBufferSize = new System.Text.Json.JsonSerializerOptions().DefaultBufferSize,
                         Converters = { }
                     };
