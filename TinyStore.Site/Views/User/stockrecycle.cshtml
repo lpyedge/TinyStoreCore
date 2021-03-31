@@ -1,0 +1,269 @@
+﻿<div class="stockrecycle">
+    <h4 class="mb-3 bd-text-purple-bright">
+        卡密回收站
+    </h4>
+    <div class="jumbotron" style="padding: 1rem">
+        <i class="fa fa-bullhorn"></i>
+        说明：在本页进行的任何删除操作，卡密将永久删除，不能恢复，请谨慎操作！
+    </div>
+    <div class="form-inline ">
+        @*<div class="col-12 col-md-3">
+                选择分类:
+                <select class="form-control" id="slSearchCategory">
+                    <%foreach (var item in TinyStore.Helper.UserContext.Category.GetList())
+                    {
+                    %>
+                    <option value="<%=item.CategoryId %>"><%=item.Name %></option>
+                    <%
+                    } %>
+                </select>
+            </div>*@
+        <div class="col-12 col-md-3">
+            选择产品:
+            <select class="form-control" id="slSearchProduct">
+                <option data-bind="Name"></option>
+            </select>
+        </div>
+        <div class="col-6 col-md-2">
+            <button class="btn btn-info" id="btnSearch">搜索</button>
+        </div>
+        <div class="col-6 col-md-2">
+            <button class="btn btn-danger" id="btnDeleteAll">清空回收站</button>
+        </div>
+    </div>
+    <table id="grid" class="table table-striped table-bordered" cellspacing="0" width="100%">
+    </table>
+    <div class="col-12 mt-1 mb-1">
+        <button type="button" class="btn-info mr-1" id="btnChkAll">全选</button>
+        <button type="button" class="btn-info mr-1" id="btnChkAllNot">反选</button>
+        <button type="button" class="btn-danger mr-1" id="btDeleteSaveral">
+            <i class="fa fa-trash"></i>删除
+        </button>
+        <button type="button" class="btn-success mr-1" id="btnRepeatSaveral">
+            <i class="fa fa-repeat"></i>恢复
+        </button>
+    </div>
+</div>
+@section Scripts{
+    <script>
+
+        var id = "";
+        var list = null;
+
+
+        var grid = $('#grid').bootstrapTable(
+            $.extend(baseTableoption, {
+                uniqueId: "StockId",
+                columns: [{
+                    title: '', formatter: function (value, row, index) {
+                        return "<input class='sys_stockid' type='checkbox' value='" + row.StockId + "'>";
+                    }
+                }, {
+                    field: 'CardName',
+                    title: '卡号'
+                }, {
+                    field: 'CardPassword',
+                    title: '卡密'
+                }, {
+                    title: '是否已使用', formatter: function (value, row, index) {
+                        return row.IsUsed ? "已使用" : "未使用";
+                    }
+                }, {
+                    //field: 'CreateDate_str',
+                    title: '添加时间', formatter: function (value, row, index) {
+                        return DatetimeFormat(row.CreateDate);
+                    }
+                }, {
+                    title: '操作', formatter: function (value, row, index) {
+                        return "<button onclick=\"Delete('" + row.StockId + "')\" class=\"btn-danger btn-sm m-1\">删除</button>"
+                            + "<button onclick=\"Repeat('" + row.StockId + "')\" class=\"btn-success btn-sm m-1\">恢复</button>";
+
+                    }
+                }]
+            })
+        );
+        QueryPageList = function () {
+            var gridopt = grid.bootstrapTable("getOptions");
+            CY.Ajax("StockPageListRecycle", {
+                Token: Store.Token()
+            }, {
+                storeId: storeid,
+                productid: $("#slSearchProduct").val(),
+                pageindex: gridopt.pageNumber,
+                pagesize: gridopt.pageSize
+            }, function (msg) {
+                list = msg.Data.rows;
+                grid.bootstrapTable('load', msg.Data);
+            });
+        }
+        $("#btnSearch").on("click", QueryPageList);
+        function GetProductList() {
+            CY.Ajax("ProductListIsStock", {
+                Token: Store.Token()
+            }, {
+                storeId: storeid,
+                category: $("#slSearchCategory").val()
+            }, function (msg) {
+                if (msg.Result) {
+                    //$("#slSearchProduct").render(msg.Data, {
+                    //    Name: {
+                    //        value: function (params) {
+                    //            return this.ProductId;
+                    //        }
+                    //    }
+                    //});
+                    if (msg.Data.length > 0) {
+                        var div = '';
+                        for (var key in msg.Data) {
+                            div += '<option value="' + msg.Data[key].ProductId + '">' + msg.Data[key].Name + '</option>';
+                        }
+                        $("#slSearchProduct").html(div);
+                        $("#slSearchProduct").val(msg.Data[0].ProductId);
+                        QueryPageList();
+                    }
+                } else {
+                    $.toast(msg.Message);
+                }
+            });
+        }
+        $("#slSearchCategory").on("change", function () {
+            GetProductList();
+            productid = "";
+        });
+        GetProductList();
+
+
+        function Delete(m_id) {
+            bootbox.confirm("是否确认?", function (result) {
+                if (result) {
+                    CY.Ajax("StockDelete", {
+                        Token: Store.Token()
+                    }, {
+                        "storeId": storeid,
+                        "stockid": m_id
+                    }, function (msg) {
+                        if (msg.Result) {
+                            $.toast("操作成功！");
+                        } else {
+                            $.toast(msg.Message);
+                        }
+                        QueryPageList();
+                    });
+                }
+            });
+            return false;
+        }
+
+        function Repeat(m_id) {
+            bootbox.confirm("是否确认?", function (result) {
+                if (result) {
+                    CY.Ajax("StockRepeat", {
+                        Token: Store.Token()
+                    }, {
+                        "storeId": storeid,
+                        "stockid": m_id
+                    }, function (msg) {
+                        if (msg.Result) {
+                            $.toast("操作成功！");
+                        } else {
+                            $.toast(msg.Message);
+                        }
+                        QueryPageList();
+                    });
+                }
+            });
+            return false;
+        }
+
+        $("#btDeleteSaveral").on("click", function () {
+            var ids = new Array();
+            $(".sys_stockid").each(function (index, item) {
+                if ($(item).prop("checked")) {
+                    ids.push($(item).val());
+                }
+            });
+            if (ids.length == 0)
+                $.toast("请选择所要删除的项目！");
+            else {
+                bootbox.confirm("是否确认?", function (result) {
+                    if (result) {
+                        CY.Ajax("StockDeleteSaveral", {
+                            Token: Store.Token()
+                        }, {
+                            "storeId": storeid,
+                            "stockids": JSON.stringify(ids)
+                        }, function (msg) {
+                            if (msg.Result) {
+                                $.toast("操作成功！");
+                            } else {
+                                $.toast(msg.Message);
+                            }
+                            QueryPageList();
+                        });
+                    }
+                });
+            }
+            return false;
+        });
+        $("#btnRepeatSaveral").on("click", function () {
+            var ids = new Array();
+            $(".sys_stockid").each(function (index, item) {
+                if ($(item).prop("checked")) {
+                    ids.push($(item).val());
+                }
+            });
+            if (ids.length == 0)
+                $.toast("请选择所要恢复的项目！");
+            else {
+                bootbox.confirm("是否确认?", function (result) {
+                    if (result) {
+                        CY.Ajax("StockRepeatSaveral", {
+                            Token: Store.Token()
+                        }, {
+                            "storeId": storeid,
+                            "stockids": JSON.stringify(ids)
+                        }, function (msg) {
+                            if (msg.Result) {
+                                $.toast("操作成功！");
+                            } else {
+                                $.toast(msg.Message);
+                            }
+                            QueryPageList();
+                        });
+                    }
+                });
+            }
+            return false;
+        });
+
+        $("#btnChkAll").on("click", function () {
+            $(".sys_stockid").each(function (index, item) {
+                $(item).prop("checked", true);
+            });
+        });
+        $("#btnChkAllNot").on("click", function () {
+            $(".sys_stockid").each(function (index, item) {
+                $(item).prop("checked", false);
+            });
+        });
+        $("#btnDeleteAll").on("click", function () {
+            bootbox.confirm("是否确认?", function (result) {
+                if (result) {
+                    CY.Ajax("StockDeleteRecycle", {
+                        Token: Store.Token()
+                    }, {
+                        "storeId": storeid
+                    }, function (msg) {
+                        if (msg.Result) {
+                            $.toast("操作成功！");
+                        } else {
+                            $.toast(msg.Message);
+                        }
+                        QueryPageList();
+                    });
+                }
+            });
+            return false;
+        });
+    </script>
+}

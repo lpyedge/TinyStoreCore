@@ -1,0 +1,59 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <RazorCompileOnPublish>false</RazorCompileOnPublish>
+    <UserSecretsId>8a29c354-bdd2-40ea-9091-85b8345443b3</UserSecretsId>
+    <LangVersion>default</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="App_Data\EmailTemplate\DeliveryEmail.htm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\EmailTemplate\DeliveryEmail_NoStock.htm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\EmailTemplate\DeliveryEmail_StockIp.htm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="App_Data\EmailTemplate\DeliveryEmail_StockNoIp.htm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Views\Home\T5\css\store.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Views\Home\T4\css\store.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Views\Home\T2\css\store.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Views\Home\T3\css\store.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Views\Home\T1\css\store.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BuildBundlerMinifier" Version="3.2.449" />
+    <PackageReference Include="Marvin.Cache.Headers" Version="5.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="5.0.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="5.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TinyStore.BLL\TinyStore.BLL.csproj" />
+    <ProjectReference Include="..\TinyStore.Core\TinyStore.Core.csproj" />
+    <ProjectReference Include="..\TinyStore.Model\TinyStore.Model.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="YPayments, Version=1.0.1.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\DLLs\YPayments.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

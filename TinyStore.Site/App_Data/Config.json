@@ -1,0 +1,71 @@
+{
+    "Config": {
+        "ConnStr": "Data Source=192.168.0.10;Initial Catalog=TinyStore;uid=sa;pwd=FIRE_kingdom;Max Pool Size=512;connect timeout=5",
+        "FormatDateTime": "yyyy-MM-dd HH:mm",
+        "FormatDate": "yyyy-MM-dd",
+        "SiteDomain": "27070.com",
+        "SiteName": "27070",
+        "TaxConfigList": [
+            {
+                "Level": 0,
+                "Rate": 0.02
+            },
+            {
+                "Level": 1,
+                "Rate": 0.015
+            },
+            {
+                "Level": 2,
+                "Rate": 0.01
+            },
+            {
+                "Level": 3,
+                "Rate": 0.006
+            },
+            {
+                "Level": 9,
+                "Rate": 0
+            }
+        ],
+        "WechatPaySettings": [
+            {
+                "Key": "MchId",
+                "Value": "1507823811"
+            },
+            {
+                "Key": "Key",
+                "Value": "A363E654E3D04C6E8E9AFF6E3DE12345"
+            },
+            {
+                "Key": "AppId",
+                "Value": "wx364fa6ef4b28c717"
+            },
+            {
+                "Key": "AppSecret",
+                "Value": "a19f781c0fdb0afcf6060fe3bf81b229"
+            },
+            {
+                "Key": "Domain",
+                "Value": "http://www.gamemakesmoney.com"
+            },
+            {
+                "Key": "IsSubscribe",
+                "Value": ""
+            }
+        ],
+        "AliPaySettings": [
+            {
+                "Key": "APPID",
+                "Value": "2018062760427259"
+            },
+            {
+                "Key": "APPPRIVATEKEY",
+                "Value": "<RSAKeyValue><Modulus>xqASIpjp474d7FZroLCSnixz8TYX3nD2Ba3mFfA3mj7biXbwSr+fTUp3SFvfO3+ZOP+SOIaHXQ7uKJDizWghCss1Vy7JUyT85r7XDG228+fDw00Dk+FvbwqOEFPpa4AFUULSQ17zbRW8h2ssI1SHB4mRJWwthLdVZxIQiAw2utMnekuQqcYnZ7kawHM41iE3IFTJRs0ayxdqtAzxlFOaqnVYOm5IaS8VBV28ZmfZP/uudbiat1AMH5bqStLlFOe5El/VjPloPeGk1ATAd9l+S8EVw+Krchya6XTAar4BZDOP72YO25pv7OpFk7FF5y5F/NrKlFN4SOML2t3H8Kw3nw==</Modulus><Exponent>AQAB</Exponent><P>9ObrG1hUtn9XN2oN66iG6v4or3f7020PGFUduPbXf0PpOyvN3ca3PhoM2v5RsVbOQcOSlGmjjybuRY6Fx8E4ddOp5YVG5lC1lj7zSeR7lDbvpRTiPG6iIxgANCVuZjFH/j39YKBGbe0ZO2SD8vWpO12N+Nkt0aGzwLdiBq5X2wE=</P><Q>z6BNC5dSNz1to3xPGG3PE+sRGCAwySVG4rC4fvo1EnYoBg6Pqgtt4nEpjGl2nN66mxOf6XhqjvbogqklRnyl8P6z7ipWczGYhPQ6WGgbXPBFdB5aW3jhfqlXwv4jHySY8L2KAxNUK/zam76lnxGVZquyIUToZjeggGG3UMhVMp8=</Q><DP>Bb5YqzaCHhmUcQ9CrlEwgNhfGeZleIrpPLfaT5kyaqCsGqAnXtknOQShYo1uWwtfIPm2OVbU6CmQkv8Jsiqc6V6CcIiUphgkehaV3BjIsSwsqKF5wNMTaGFKt+5czXbAan0HsTlxDWjvG4567brHMkY6ayikw3LYZV+no+J42wE=</DP><DQ>siGi2FX8WJ5gSUomhhv39OvRX7SGhpxvw5/AulgqXmt3DTNC+K4TmZpi/i+hbxb8XH4qzWDdc0jM1QUPkPjyWd/8OVKjlvMvGqp6wEyZZVRTEjvUY/RC6quZOxdUxKxedvT2yoqzxYWLfOHFMMMiPdMC4d4/0SrajirH3wvxZJs=</DQ><InverseQ>Wq21U6+Lbleaft3baQeOExZ9Fcu9UB0VijXnhrmLugqM5ONJweGs/djUEzAnruTvA37bC8GYRM6blIemMVsI0SVle3QhclGsqtxynBBycpsmSSpwtrpJbQeCTHoMxE3kdBMlcQ86bpsj+ucK1NXFKQOtX1aVzAxgdnzLP2rP6D8=</InverseQ><D>Q+aMzI8Bxf1ENXsFqBU0yiXgLOGVH1H2iNJ+CZnpKC281y11z9faGY4PYQknMyvXsYiM8A3tUH6+I9gD8LxcL1hwj7FK2cWXPzqWQYVwOclNPwKg6njyoz80eZh1/23wY2s4fheDmBMKNDELEbjfwE/i8qwck3YpF+cxB5FFVHAoJ3jHd/0ctbhx65gTyE0slooA9TWgcL6P8zp6E7tA7w0IX9laPUgF74xqnfDkk1nVFyA50x2Kw8Zu36WK6FAjcgY9pPLHhpBVSErB4YAKyCei28AqhgLtiiztEgu/DRZqN3QzhqULAFBGSOnbL/64SZrkIEeoM3rZDYyd9taoAQ==</D></RSAKeyValue>"
+            },
+            {
+                "Key": "AliPayPublicKey",
+                "Value": "<RSAKeyValue><Modulus>rPM8nq3AD1tLtF4dZR8RuZE+dwf3GN/hjpBJhTz0X9FUc26vq35ebzgtqdSLxhhPbNCDMhNdht4B9HzAbP/KyYpxokmgmvJ2wf98y4hoRUIq4eAkmAuXuMJOjayLCnfW1o0OFB+1V78GF4Q8RFNRSbsW+5mazXCc5OMEfArdGninusDSE4/wtpHgOxDQxkJSjlsznFb6L14jlYy0vE1nHq8FMFVYd5/GU4/oTpiT2SmcrbJkgPKTYbsL+l0+wMdMUK+iKKlPqYyRx8VFpsG5WNXqzsZ0UpW69B1+tzdSIQhmddm3jroTDt8cKMeiz4E8Bo58bJ3ik//xHNV+VKQp2w==</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>"
+            }
+        ]
+    }    
+}

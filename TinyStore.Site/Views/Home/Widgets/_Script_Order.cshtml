@@ -1,0 +1,71 @@
+﻿<partial name="Widgets/_Plugin_Payment" />
+<script src="https://cdn.staticfile.org/dayjs/1.8.34/dayjs.min.js"></script>
+<script>
+        //var orderid = location.pathname.substring(7);
+        var intervalHandle;
+    var order = @Json.Serialize(ViewBag.Order);
+    var store = @Json.Serialize(ViewBag.Store);
+
+        function OrderInfo() {
+                CY.Ajax("OrderInfo", {
+                    "OrderId": order.OrderId,
+                }, function (msg) {
+                    if (msg.Result) {
+                       if (msg.Data.IsDelivery != order.IsDelivery ||
+                           msg.Data.IsPay != order.IsPay) {
+                            order = msg.Data;
+                            if (order.IsPay) {
+                                window.clearInterval(intervalHandle);
+                            }
+                            LoadOrderInfo();
+                        }
+                    }
+                    else {
+                        $.toast(msg.Message);
+                    }
+                });
+        }
+
+        function LoadOrderInfo() {
+            $("#orderid").text(order.OrderId);
+            if (order.IsDelivery && order.IsPay) {
+                $("#state").text("完成订单");
+                $("#state").prop("class", "finish");
+                $("#showpay").hide();
+            }
+            else {
+                $("#state").prop("class", "unfinish");
+                if (order.IsPay && !order.IsDelivery) {
+                    $("#state").text("等待发货");
+                    $("#showpay").hide();
+                } else if (!order.IsPay) {
+                    $("#state").text("用户下单");
+                    $("#showpay").show();
+                }
+            }
+            $("#createdate").text(dayjs(order.CreateDate).format("YYYY-MM-DD HH:mm:ss"));
+            $("#name").text(order.Name);
+            $("#qty").text("X" + order.Quantity);
+            $("#amount").text("￥" + order.Amount);
+            $("#email").text(order.NoticeAccount);
+            $("#contact").text(order.Contact);
+            $("#memo").text(order.Memo);
+        }
+
+    $(function () {
+        $("#storeurl").attr("href", "/" + store.UniqueId);
+
+        LoadOrderInfo();
+
+        if (!order.IsPay) {
+            intervalHandle = window.setInterval(OrderInfo, 2000);
+        }
+
+        $("#showpay").click(function () {
+
+            Payment.Show(order.OrderId);
+        });
+
+    });
+
+</script>

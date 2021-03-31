@@ -1,0 +1,78 @@
+﻿<!doctype html>
+<html>
+<head>
+    <partial name="Widgets/_Header" />
+</head>
+
+<body>
+    <!--主框架-->
+    <div id="page">
+        <div class="home-header flex flex-center items-center txt-white font-family-T">热门推荐</div>
+        <div class="home-box column">
+            <div class="stores-hot col-auto" id="storehot">
+            </div>
+            <div class="company col flex items-center">
+                <div>
+                    <div class="row items-center">
+                        <div class="col">
+                            <div class="titile-EN">COMPANY</div>
+                            <div class="titile-CN">关于我们</div>
+                        </div>
+                        <div class="col-auto"><span class="more dialog-open">详情</span></div>
+                    </div>
+                    <div class="content">
+                        支持各种虚拟道具买卖，方便，安全快捷，买家无需注册，商家只需注册店铺，添加商品即可实现在线销售，可实时了解营收情况。
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="home-more">
+            <a href="@Url.ActionLink("orders","home")">进入游戏列表</a>
+        </div>
+    </div>
+    <!--弹出窗口/关于我们详情-->
+    <div class="dialog-box" style="display:none">
+        <div class="dialog-wrapper">
+            <div class="dialog">
+                <div class="close dialog-close">
+                    <i class="iconfont icon-chahao"></i>
+                </div>
+                <div class="title">关于我们</div>
+                <div class="content">
+                    <p>易游联动努力探索创新，拓宽渠道，为玩家实现更多的变现，与游戏官方合作，互利互赢，推动游戏行业的发展，发现游戏的更多可能！</p>
+                    <p>安徽易游联动网络科技有限公司是由安徽省宿州市高新区招商引资，由上海挈欧信息技术有限公司（Gamebund）控股的全球游戏虚拟道具交易平台提供商。公司在欧洲、中东、南美洲、上海及香港均有分公司。易游联动致力于为全球游戏玩家提供安全、便捷的游戏变现服务。</p>
+                    <p>易游联动秉承技术驱动，科技创新，持续突破技术瓶颈，持续优化安全机制，不断完善用户体验，不断丰富变现场景，力争成为全球最安全便捷交易平台，为用户的虚拟财产变现保驾护航！</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+     
+        var stoerlist =  @Json.Serialize(ViewBag.StoerList);
+
+        $(function () {
+            var uldiv = '<ul>';
+            for (var k in stoerlist) {
+                uldiv += '<li><a href="/' + stoerlist[k].UniqueId + '"><img src="' + stoerlist[k].Logo + '" ><span>' + stoerlist[k].Name + '</span></a></li>';
+            }
+            uldiv += '</ul>';
+            $("#storehot").html(uldiv);
+
+            //弹出窗口
+            $(".dialog-open").click(function () {
+                $(".dialog-box").fadeIn(300);
+                $(".dialog-box").addClass("fadeIn-up");
+                $(".dialog-box").removeClass("fadeOut-up");
+            });
+            
+            $(".dialog-close").click(function () {
+                $(".dialog-box").fadeOut(300);
+                $(".dialog-box").addClass("fadeOut-up");
+                $(".dialog-box").removeClass("fadeIn-up");
+            });
+        });
+
+    </script>
+</body>
+</html>

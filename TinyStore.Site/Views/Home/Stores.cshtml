@@ -1,0 +1,66 @@
+﻿<!doctype html>
+<html>
+<head>
+    <partial name="Widgets/_Header" />
+</head>
+
+<body>
+    <div id="page">
+        <!--头部页眉-->
+        <div class="home-header flex flex-center items-center txt-white font-family-T" id="header">
+            <a class="nav flex flex-center items-center txt-white" href="index.html" title="首页">
+                <i class="iconfont icon-shouye"></i>
+            </a>
+            <span>游戏列表</span>
+        </div>
+        <!--游戏列表-->
+        <div class="stores-nav">
+        </div>
+        <div id="test">
+        </div>
+        <!--字母按钮-->
+        <div class="letter-nav">
+        </div>
+    </div>
+    <script src="https://cdn.staticfile.org/lodash.js/4.17.19/lodash.min.js"></script>
+    <script id="tmpl_letter-nav" type="text/x-dot-template">
+        {{~it:value:index}}
+        <a class="anchor" data-initial="{{=value}}">{{=value}}</a>
+        {{~}}
+    </script>
+    <script id="tmpl_stores-nav" type="text/x-dot-template">
+        {{~it.initials:initial:i}}
+        <ul name="initial-{{=initial}}">
+            <span class="letter-title">{{=initial}}</span>
+            {{ for(var j=0; j<it.datas[initial].length; j++) { }}
+            <li><a href="/{{=it.datas[initial][j].UniqueId}}"><img src="{{=it.datas[initial][j].Logo}}"><span>{{=it.datas[initial][j].Name}}</span></a></li>
+            {{ } }}
+        </ul>
+        {{~}}
+    </script>
+    <script>
+        var stoerlist =  @Json.Serialize(ViewBag.StoerList);;
+
+        $(function () {
+            var datas = _.groupBy(stoerlist, 'Initial');
+            var initials = [];
+
+            for (var initial in datas) {
+                if(initial)
+                initials.push(initial);
+            }
+            initials = initials.sort();
+
+            $(".letter-nav").html(doT.template($("#tmpl_letter-nav").text())(initials));
+            $(".stores-nav").html(doT.template($("#tmpl_stores-nav").text())({ 'initials': initials, 'datas': datas}));
+
+            //锚点滑动效果
+            $("[data-initial]").click(function () {
+                var initial = $(this).attr("data-initial");
+                var initial_offsetTop = $('[name="initial-' + initial + '"]').position().top;//定点基于容器#page的位置
+                $("#page").animate({ scrollTop: initial_offsetTop + "px" }, 200);
+            });
+        });
+    </script>
+</body>
+</html>

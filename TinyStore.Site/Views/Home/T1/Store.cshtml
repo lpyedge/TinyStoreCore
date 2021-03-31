@@ -1,0 +1,167 @@
+﻿<!doctype html>
+<html>
+<head>
+    <title>@ViewBag.Store.Name</title>
+    <partial name="Widgets/_Header" />
+    <link rel="stylesheet" type="text/css" href="/themes/t1/css/store.css" asp-append-version="true">
+</head>
+
+<body>
+    <div id="page">
+        <!--商铺页眉-->
+        <div class="store-header row items-center">
+            <a class="home-icon txt-white" href="/" title="返回首页">
+                <i class="iconfont icon-shouye"></i>
+            </a>
+            <a class="product-icon txt-white sideBar-open" title="打开商品列表">
+                <i class="iconfont icon-soft"></i>
+            </a>
+            <div class="row">
+                <div class="store-logo">
+                    <img id="storelogo">
+                </div>
+                <div class="store-text txt-white col">
+                    <div class="store-name" id="storename">无</div>
+                    <div class="store-memo" id="storememo">无</div>
+                </div>
+            </div>
+            <div class="bottom-nav"></div>
+        </div>
+        <!--商品购买-->
+        <div class="store-main">
+            <!--商品-->
+            <div class="product-box row">
+                <div class="product-icon">
+                    <img id="ProductIcon">
+                </div>
+                <div class="col">
+                    <div class="product-name font-bold" id="ProductName">无</div>
+                    <div class="inventory" id="ProductStock">
+                        库存：
+                        <span id="ProductStockQty">0件</span>
+                    </div>
+                </div>
+            </div>
+
+            <!--商品支付-->
+            <div class="column">
+                <div class="row">
+                    <div class="col flex flex-start items-center">
+                        <span>单价：</span>
+                        <span class="font-family-t" id="ProductPrice">￥0</span>
+                    </div>
+                    <div class="col-auto flex flex-start items-center">
+                        <span>数量：</span>
+                        <span class="order-quantity">
+                            <span class="minus flex flex-center items-center" name="minus">-</span>
+                            <input id="OrderQty" name="quantity" type="number" value="1" class="quantity">
+                            <span class="plus flex flex-center items-center" name="plus">+</span>
+                        </span>
+                    </div>
+                </div>
+                <div class="row flex-start items-center">
+                    <span>合计：</span>
+                    <span class="txt-red font-family-T" id="OrderAmount">￥0</span>
+                </div>
+
+            </div>
+            <!--角色ID-->
+            <div class="order-email">
+                <input type="text" placeholder="请输入游戏角色编号" id="OrderUniqueId">
+            </div>
+            <!--电子信箱-->
+            <div class="order-email">
+                <input type="text" placeholder="请输入接收订单的电子信箱" id="OrderNotice">
+            </div>
+            <!--商品信息-->
+            <div class="product-memo" id="ProductMemo">
+                无
+            </div>
+        </div>
+        <div class="store-footer">
+            <!--提交订单-->
+            <input type="button" value="提交订单" id="OrderPlace">
+        </div>
+    </div>
+    <!--侧面栏商品列表-->
+    <div class="sideBar-box" style="display:none">
+        <div class="sideBar">
+            <div class="close sideBar-close"><i class="iconfont icon-chahao"></i></div>
+            <div class="title" id="goodscount">商品列表 / 0</div>
+            <div class="content">
+                <div class="list" id="productlist">
+                </div>
+            </div>
+        </div>
+    </div>
+    <partial name="Widgets/_Script_Store" />
+    <script>
+
+        //侧面栏
+        $(function () {
+            $(".sideBar-open").click(ProductsShow);
+            $(".sideBar-close").click(ProductsHide);            
+        })
+
+        $("#productlist").click(function (e) {
+            var $productelement = $(e.target);
+            var productid = $productelement.attr("data-productid");
+            if (!productid) {
+                $productelement = $(e.target).parents("[data-productid]");
+                productid = $productelement.attr("data-productid");
+            }
+            if (productid) {
+                $("#productlist").find("[data-select]").removeClass("current");
+                $productelement.addClass("current");
+                product = GetProductModel(productid);
+                RenderProductInfo();
+                SetPriceAndAmount();
+                ProductsHide();
+            }
+        });
+
+        function ProductsShow() {
+            $(".sideBar-box").fadeIn(300);
+            $(".sideBar-box").addClass("fadeIn-left");
+            $(".sideBar-box").removeClass("fadeOut-left");
+        }
+        function ProductsHide() {
+            $(".sideBar-box").fadeOut(300);
+            $(".sideBar-box").addClass("fadeOut-left");
+            $(".sideBar-box").removeClass("fadeIn-left");
+        }
+
+        function RenderProducts() {
+            var listdiv = '';
+            if (productlist && productlist.length > 0) {
+                var categorydatas = _.groupBy(productlist, 'Category');
+                for (var category in categorydatas) {
+                    var datas = categorydatas[category];
+                    listdiv += '<div class="soft-title">' + category + '</div>';
+                    _.forEach(datas, function (data) {
+                        var storenum = data.StockNumber;
+                        if (storenum == -1) {
+                            storenum = "不限量";
+                        }
+                        listdiv += ' <div class="product-box row" data-productid="' + data.ProductId + '"><div class="product-icon"><img src="' + data.Icon + '" ></div><div class="col"><div class="product-name">'
+                            + data.Name + '</div><div class="row info"><div class="">单价：<span class="txt-red font-family-T">￥' + data.Amount +
+                            '</span></div><div class="" id="ProductStock">库存：' + storenum + '</div></div></div></div>';
+                    });
+                }
+                console.log(productlist);
+                console.log(listdiv);
+                $("#goodscount").text("商品列表 / " + productlist.length);
+                $("#productlist").html(listdiv);
+                $("#productlist").find("[data-productid]:first").trigger("click");
+            }
+            else {
+                listdiv += '<div class="product-box row">暂无商品</div>';
+                $("#productlist").html(listdiv);
+                product = null;
+            }
+
+        }
+    </script>
+</body>
+</html>
+

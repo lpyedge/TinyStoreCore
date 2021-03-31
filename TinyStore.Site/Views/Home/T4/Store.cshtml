@@ -1,0 +1,182 @@
+﻿<!doctype html>
+<html>
+<head>
+    <title>@ViewBag.Store.Name</title>
+    <partial name="Widgets/_Header" />
+    <link rel="stylesheet" type="text/css" href="/themes/t4/css/store.css" asp-append-version="true">
+</head>
+
+<body>
+    <div id="page">
+        <!--商铺页眉-->
+        <div class="store-header row items-center">
+            <a class="home-icon flex flex-center items-center txt-white" href="/" title="返回首页">
+                <i class="iconfont icon-shouye"></i>
+            </a>
+            <div class="row">
+                <div class="store-logo">
+                    <img id="storelogo">
+                </div>
+                <div class="store-text txt-white col">
+                    <div class="store-name" id="storename">无</div>
+                    <div class="store-memo" id="storememo">无</div>
+                </div>
+            </div>
+            <div class="bottom-nav"></div>
+        </div>
+        <!--商品列表-->
+        <div class="product-list">
+            <!--商品分类筛选-->
+            <div id="productcategory" class="product-category select">
+                <select>
+                </select>
+            </div>
+            <ul id="productlist">
+            </ul>
+        </div>
+    </div>
+    <!--商品支付弹出窗口-->
+    <div class="dialog-box" id="settlement" style="display:none">
+        <div class="dialog-wrapper">
+            <div class="dialog">
+                <div class="content column">
+                    <div class="row">
+                        <div class="product-img">
+                            <img id="ProductIcon">
+                        </div>
+                        <div class="product-text col column">
+                            <div class="product-name col-auto" id="ProductName"></div>
+                            <div class="col flex items-end">
+                                <span class="product-inventory">剩余1206件</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="store-main col column">
+                        <!--商品支付-->
+                        <div class="row">
+                            <div class="col flex flex-start items-center">
+                                <span>单价：</span>
+                                <span class="font-family-t" id="ProductPrice">￥0</span>
+                            </div>
+                            <div class="col-auto flex flex-start items-center">
+                                <span>数量：</span>
+                                <span class="order-quantity">
+                                    <span class="minus flex flex-center items-center" name="minus">-</span>
+                                    <input id="OrderQty" name="quantity" type="number" value="1" class="quantity">
+                                    <span class="plus flex flex-center items-center" name="plus">+</span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="row flex-start items-center">
+                            <span>合计：</span>
+                            <span class="txt-red font-bold" id="OrderAmount">￥0</span>
+                        </div>
+                        <!--角色ID-->
+                        <div class="order-email">
+                            <input type="text" placeholder="请输入游戏角色编号" id="OrderUniqueId">
+                        </div>
+                        <!--电子信箱-->
+                        <div class="order-email">
+                            <input type="text" placeholder="请输入接收订单的电子信箱" id="OrderNotice">
+                        </div>
+                        <!--商品信息-->
+                        <div class="product-memo col" id="ProductMemo">
+                            无
+                        </div>
+                    </div>
+                    <!--结算按钮-->
+                    <div class="settlement-btn row ">
+                        <div class="col">
+                            <input type="button" value="取消" class="close dialog-close" onclick="$('#settlement').hide();">
+                        </div>
+                        <div class="col">
+                            <input type="button" value="提交" id="OrderPlace" class="submit">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <partial name="Widgets/_Script_Store" />
+    <!--主题Js-->
+    <script>
+        $(function () {
+
+        });
+
+        var productcategorydatas;
+        var productcategorys;
+
+        $("#productlist").click(function (e) {
+            var $productelement = $(e.target);
+            var productid = $(e.target).attr("data-productid");
+            if (!productid) {
+                $productelement = $(e.target).parents("[data-productid]");
+                productid = $productelement.attr("data-productid");
+            }
+            if (productid) {
+                product = GetProductModel(productid);
+                $("#settlement").show();
+                RenderProductInfo();
+                SetPriceAndAmount();
+            }
+        });
+
+        $("#productcategory > select").change(function (e) {
+            var category = $(this).val();
+            if (category != "全部") {
+                $("#productlist").html(doT.template($("#tmpl_store-products").text())(productcategorydatas[category]));
+            }
+            else {
+                $("#productlist").html(doT.template($("#tmpl_store-products").text())(productlist));
+            }
+        });
+
+        function RenderProducts() {
+            if (productlist && productlist.length > 0) {
+                productcategorydatas = _.groupBy(productlist, 'Category');
+                productcategorys = _.keys(productcategorydatas);
+                if (productcategorys.length > 1) {
+                    productcategorys.unshift("全部");
+                    $("#productcategory > select").html(doT.template($("#tmpl_store-productcategorys").text())(productcategorys));
+                    $("#productlist").html(doT.template($("#tmpl_store-products").text())(productlist));
+                } else {
+                    $("#productcategory").hide();
+                    $("#productlist").html(doT.template($("#tmpl_store-products").text())(productlist));
+                }
+
+            }
+        }
+    </script>
+
+    <script id="tmpl_store-products" type="text/x-dot-template">
+        {{ for(var i=0; i<it.length; i++) { }}
+        <li class="row" data-productid="{{=it[i].ProductId}}">
+            <div class="product-img">
+                <img src="{{=it[i].Icon}}">
+            </div>
+            <div class="product-text col column">
+                <div class="product-name col-auto">{{=it[i].Name}}</div>
+                <div class="col flex items-end">
+                    <span class="product-price"><em>￥</em>{{=it[i].Amount}}</span>
+                    <span class="product-inventory">
+                        {{? it[i].DeliveryType == 1 }}
+                        剩余{{=it[i].StockNumber }}件
+                        {{??}}
+                        不限量
+                        {{?}}
+                    </span>
+                </div>
+            </div>
+        </li>
+        {{ } }}
+    </script>
+    <script id="tmpl_store-productcategorys" type="text/x-dot-template">
+        {{ for(var i=0; i<it.length; i++) { }}
+        <option value="{{=it[i]}}">{{=it[i]}}</option>
+        {{ } }}
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,45 @@
+﻿<style>
+    #toast {
+        position: fixed;
+        top: 44%;
+        left: 50%;
+        transform: translateX(-50%);
+        min-width: 120px;
+        max-width: 220px;
+        min-height: 22px;
+        padding: 10px;
+        line-height: 22px;
+        text-align: center;
+        font-size: 18px;
+        color: #fff;
+        background: rgba(0, 0, 0, 0.6);
+        border-radius: 5px;
+        display: none;
+        z-index: 999;
+    }
+</style>
+
+<script>
+     /*
+       $.toast('网络错误，请稍后重试',1400);
+    */
+    $.extend({
+        toast: function (msg, timeout) {
+            if (!timeout) {
+                timeout = 2500;
+            }
+            var oDiv = document.getElementById("toast");
+            if (!oDiv) {                
+                var oDiv = document.createElement("div");
+                oDiv.setAttribute("id", "toast");
+                var oBody = document.getElementsByTagName('body')[0];
+                oBody.append(oDiv);
+            }
+            $('#toast').text(msg.replace(/\n/ig, '<br/>'));
+            $('#toast').fadeIn();
+            setTimeout(function () {
+                $('#toast').fadeOut();
+            }, timeout);
+        }
+    });
+</script>

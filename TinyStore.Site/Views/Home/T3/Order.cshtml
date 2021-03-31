@@ -1,0 +1,83 @@
+﻿<!doctype html>
+<html>
+<head>
+    <title>@ViewBag.Store.Name</title>
+    <partial name="Widgets/_Header" />
+    <link rel="stylesheet" type="text/css" href="/themes/t3/css/store.css" asp-append-version="true">
+</head>
+
+<body>
+    <div id="page">
+        <!--头部页眉-->
+        <div class="order-header flex flex-center items-center txt-white font-family-T">
+            <a class="nav flex flex-center items-center txt-white" href="#" title="返回店铺" id="storeurl">
+                <i class="iconfont icon-back"></i>
+            </a>
+            <span>订单详细</span>
+        </div>
+        <!--订单容器-->
+        <div class="order-box">
+            <div class="order-info">
+                <div>
+                    <span>订单编号：</span>
+                    <span id="orderid"></span>
+                </div>
+                <div>
+                    <span>订单状态：</span>
+                    <span id="state" class="finish">已完成</span>
+
+                </div>
+                <div>
+                    <span>订单时间：</span>
+                    <span id="createdate"></span>
+                </div>
+            </div>
+            <div class="order-info">
+                <div>
+                    <span>商品名称：</span>
+                    <span id="name"></span>
+                </div>
+                <div>
+                    <span>商品数量：</span>
+                    <span id="qty">×0</span>
+                </div>
+                <div>
+                    <span>商品总价：</span>
+                    <span class="font-family-t txt-red" id="amount">￥0</span>
+                </div>
+            </div>
+            <div class="order-info">
+                <div>
+                    <span>角色编号：</span>
+                    <span id="contact"></span>
+                </div>
+            </div>
+            <div class="order-info">
+                <div>
+                    <span>抄送邮箱：</span>
+                    <span id="email"></span>
+                </div>
+            </div>
+            @*<div class="order-info">
+                    <div class="row flex-center">
+                        <input type="button" value="复制兑换码" class="btn" onclick="copyFn('copyCD')">
+                        <input type="button" value="刷新" class="btn" onClick="javascript:location.reload();">
+                    </div>
+                    <div class="row flex-center">
+                        <span class="cd-key" id="copyCD">5RP2E-EPH3K-BR3LG-KMGTE-FN8PY</span>
+                    </div>
+                </div>*@
+            <!--当订单未付款时显示-->
+            <div class="order-info row flex-center" id="showpay" style="display:none">
+                <input type="button" value="继续付款" class="btn full-width dialog-fade">
+            </div>
+
+            <div class="product-memo" id="memo">
+                无
+            </div>
+        </div>
+    </div>
+    <partial name="Widgets/_Script_Order" />
+</body>
+</html>
+

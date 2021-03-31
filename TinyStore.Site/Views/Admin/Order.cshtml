@@ -1,0 +1,485 @@
+﻿<div class="col">
+    <p class="mb-3  bd-text-purple-bright">
+        订单管理
+    </p>
+    <div class="form-inline ">
+        <select class="form-control mr-1" id="slTime">
+            @foreach (TinyStore.EOrderTimeType item in Enum.GetValues(typeof(TinyStore.EOrderTimeType)))
+            {
+                <option value="@((int)item)">@item</option>
+            }
+        </select>
+        <label for="txtDateBegin">起始</label>
+        <div class="input-group ">
+            <input id="txtDateBegin" type="date" class="form-control" value="@DateTime.Now.AddMonths(-1).ToString(SiteContext.Config.FormatDate)" />
+        </div>
+        <label for="txtDateEnd">结束</label>
+        <div class="input-group">
+            <input id="txtDateEnd" type="date" class="form-control" value="@DateTime.Now.ToString(SiteContext.Config.FormatDate)" />
+        </div>
+        <div class="input-group">
+            <input id="chkIsHasReturn" type="checkbox" class="form-control" title="有退款" />
+        </div>
+    </div>
+    <div class="form-inline  mt-2">
+        <div class="ml-1">
+            <select class="form-control" id="slState">
+                <option value="0">所有订单状态*</option>
+                @foreach (TinyStore.EState state in Enum.GetValues(typeof(TinyStore.EState)))
+                {
+                    <option value="@((int)state)">@state</option>
+
+                }
+            </select>
+        </div>
+        <div class="ml-1">
+            <select class="form-control" id="slKey">
+                @foreach (TinyStore.EOrderSearchKey key in Enum.GetValues(typeof(TinyStore.EOrderSearchKey)))
+                {
+                    <option value="@((int)key)">@key</option>
+
+                }
+            </select>
+        </div>
+        <div class="col-2">
+            <input type="text" class="form-control" id="txtKey" />
+        </div>
+    </div>
+    <div class="form-inline mt-2">
+        <div class="col-8">
+        </div>
+        <div class="col-2">
+            <button class="btn btn-info mr-1 btn-sm" id="btnSearch">搜索</button>
+        </div>
+        <div class="col-2">
+            <button class="btn btn-success btn-sm" id="btnCloseNo">设为未结算</button>
+        </div>
+    </div>
+    <table id="grid" class="table table-striped table-bordered" cellspacing="0" width="100%">
+    </table>
+</div>
+<div id="dialogReturn" style="display:none;">
+    <form>
+        <div class="form-group ml-2">
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">实收金额</label>
+                <div class="col-8">
+                    <input type="number" class="form-control" name="Income" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">已退款金额</label>
+                <div class="col-8">
+                    <input type="number" class="form-control" name="ReturnAmount" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">申请退款金额</label>
+                <div class="col-8">
+                    <input type="number" class="form-control" name="ReturnAmountApply" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">原成本</label>
+                <div class="col-8">
+                    <input type="number" class="form-control" name="Cost" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">申请修改成本</label>
+                <div class="col-8">
+                    <input type="number" class="form-control" name="CostUpdateApply" readonly="readonly" />
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<div id="dialogPay" style="display:none;">
+    <form>
+        <div class="form-group ml-2">
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">订单号</label>
+                <div class="col-8">
+                    <input type="text" class="form-control" name="OrderId" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">订单金额</label>
+                <div class="col-8">
+                    <input type="number" class="form-control" name="Amount" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">订单费用</label>
+                <div class="col-8">
+                    <input type="number" class="form-control" name="OrderFee" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">实收金额</label>
+                <div class="col-8">
+                    <input type="number" class="form-control" name="Income" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">交易编号</label>
+                <div class="col-8">
+                    <input type="text" class="form-control" name="TranId" />
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<div id="dialogCost" style="display:none;">
+    <form>
+        <div class="form-group ml-2">
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">收入</label>
+                <div class="col-8">
+                    <input type="number" class="form-control" name="Income" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">退款金额</label>
+                <div class="col-8">
+                    <input type="number" class="form-control" name="ReturnAmount" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">成本</label>
+                <div class="col-8">
+                    <input type="number" class="form-control" name="Cost" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">毛利润</label>
+                <div class="col-8">
+                    <input type="number" class="form-control" name="ProfitGross" readonly="readonly" />
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+@section Scripts{
+    <script>
+        var $dialog, $grid;
+        var list = null;
+
+        $(function () {
+
+            $grid = $('#grid').bootstrapTable(
+                $.extend(baseTableoption, {
+                    uniqueId: "OrderId",
+                    columns: [
+                        { checkbox: true },
+                        {
+                            title: '订单编号',
+                            formatter: function (value, row, index) {
+                                return row.OrderId + "<br/>" + row.Name;
+                            }
+                        }, {
+                            field: 'StoreName',
+                            title: '店铺名称', formatter: function (value, row, index) {
+                                return '<a href= "/' + row.UniqueId + '" target=\"_blank\" class=\"btn-link btn-sm\"><i class=\"fa fa-link\" aria-hidden=\"true\"></i>' + row.StoreName + '</a>';
+                            }
+                        }, {
+                            title: '订单款项', formatter: function (value, row, index) {
+                                var html = "";
+                                if (row.IsPay) {
+                                    if (row.IsSettle)
+                                        html += "<label class='badge badge-success' title='已结算'><i class=\"fa fa-check\"></i></label>";
+                                    else
+                                        html += "<label class='badge badge-danger' title='未结算'><i class=\"fa fa-times\"></i></label>";
+
+                                    if (row.ReturnAmount > 0)
+                                        html += "<a class='btn btn-outline-success ml-1' style='min-width:7rem;' title='收款-退款-成本=毛利润' href='#'>"
+                                    else
+                                        html += "<a class='btn btn-outline-success ml-1' style='min-width:7rem;' title='收款-成本=毛利润' href='#'>"
+                                    var profitGross = row.Income - row.Cost; //毛利润
+                                    html += row.Income.Format0(2);
+                                    if (row.ReturnAmount > 0)
+                                        profitGross -= row.ReturnAmount;
+                                    html += " - " + row.ReturnAmount.Format0(2);
+                                    html += " - " + row.Cost.Format0(2);
+                                    html += " = " + profitGross.Format0(2);
+                                    html += "</a>";
+                                } else {
+                                    html += "<label class='badge badge-danger' title='未付款'>未付款</label>";
+                                }
+                                return html;
+                            }
+                        }, {
+                            title: '状态', formatter: function (value, row, index) {
+                                return "<label class='badge badge-success'>" + GetEnumName("slState", row.State) + "</label>";
+                            }
+                        }, {
+                            title: '支付方式', formatter: function (value, row, index) {
+                                if (row.PaymentType == 3)
+                                    return "<label class='badge badge-info'>支 PC</label>";
+                                //else if (row.PaymentType == "微信扫码支付")
+                                else if (row.PaymentType == 2)
+                                    return "<label class='badge badge-success'><i class='fa fa-weixin'></i> PR</label>";
+                                //else if (row.PaymentType == "银行付款")
+                                //    return "<label class='badge badge-warning'><i class=\"fa fa-credit-card\"></i></label>";
+                                //else if (row.PaymentType == "支付宝扫码支付")
+                                else if (row.PaymentType == 1)
+                                    return "<label class='badge badge-info'>支 PR</label>";
+                                else if (row.PaymentType == 4)
+                                    return "<label class='badge badge-success'><i class='fa fa-weixin'></i> H5</label>";
+                                //else if (row.PaymentType == "微信公众号支付")
+                                //    return "<label class='badge badge-success'><i class='fa fa-weixin'></i> 公众号</label>";
+                                else if (row.PaymentType == 5)
+                                    return "<label class='badge badge-info'>支 Wap</label>";
+                                return "";
+                            }
+                        }, {
+                            //field: 'LastUpdateDate_str',
+                            title: '最终变动时间',
+                            formatter: function (value, row, index) {
+                                return DatetimeFormat(row.LastUpdateDate)
+                            }
+                        }, {
+                            title: '订单管理', formatter: function (value, row, index) {
+                                var btn = "<button onclick=\"CostUpdateShow('" + row.OrderId + "')\" class=\"btn-warning btn-sm m-1\">成本修改</button>";
+                                if (!row.IsPay) {
+                                    btn += "<button onclick=\"PayShow('" + row.OrderId + "')\" class=\"btn-success btn-sm m-1\">确认已付款</button>";
+                                }
+                                if (row.ReturnAmountApply > 0) {
+                                    btn += "<button onclick=\"ReturnShow('" + row.OrderId + "')\" class=\"btn-info btn-sm m-1\">退款</button>";
+                                }
+                                btn += "<button onclick=\"Delete('" + row.OrderId + "')\" class=\"btn-danger btn-sm m-1\">删除</button>";
+                                return btn;
+                            }
+                        }]
+                })
+            );
+
+            QueryPageList();
+        });
+
+
+        function QueryPageList() {
+            var gridopt = $grid.bootstrapTable("getOptions");
+            CY.Ajax("OrderPageList", {
+                Token: Store.Token()
+            }, {
+                begin: $("#txtDateBegin").val(),
+                end: $("#txtDateEnd").val(),
+                state: $("#slState").val(),
+                keykind: $("#slKey").val(),
+                key: $("#txtKey").val(),
+                ishasreturn: $("#chkIsHasReturn").prop("checked"),
+                timetype: $("#slTime").val(),
+                pageindex: gridopt.pageNumber,
+                pagesize: gridopt.pageSize
+            }, function (msg) {
+                $grid.bootstrapTable('load', msg.Data);
+                list = msg.Data.rows;
+                var rule_tel = /^1[3,5,7,8]\d{9}$/g;
+                $.each(list, function (index, order) {
+                    if (rule_tel.test(order.Contact))
+                        order.Contact += "(电话)";
+                    else
+                        order.Contact += "(QQ)";
+                    if (order.NoticeAccount != "") {
+                        if (rule_tel.test(order.NoticeAccount))
+                            order.NoticeAccount += "(电话)";
+                        else
+                            order.NoticeAccount += "(邮箱)";
+                    }
+                });
+            });
+        }
+
+
+        function GetOrderModel(m_id) {
+            var order = null;
+            for (var i = 0; i < list.length; i++) {
+                if (list[i].OrderId == m_id) {
+                    order = list[i];
+                    i = list.length;
+                }
+            }
+            return order;
+        }
+        function CostUpdateShow(m_id) {
+            var order = GetOrderModel(m_id);
+            dialog = bootbox.dialog({
+                show: false,
+                title: "修改成本收入",
+                message: $("#dialogCost").html(),
+                buttons: {
+                    confirm: {
+                        label: "保存",
+                        className: "btn-success",
+                        callback: function () {
+                            //if (dialog.find("form").valid()) {
+                            CY.Ajax("OrderUpdateCost", {
+                                Token: Store.Token()
+                            },
+                                {
+                                    "orderid": m_id,
+                                    "cost": dialog.find("form").find("[name='Cost']").val()
+                                },
+                                function (msg) {
+                                    if (msg.Result) {
+                                        $.toast("操作成功！");
+                                    } else {
+                                        $.toast(msg.Message);
+                                    }
+                                    dialog.modal("hide");
+                                    QueryPageList();
+                                });
+                            //}
+                            return false;
+                        }
+                    }
+                }
+            });
+            dialog.find("form").FormSet(order);
+            dialog.find("form").find("[name='Income']").on("keyup blur", function () {
+                var income = dialog.find("form").find("[name='Income']").val().ParseFloat();
+                var cost = dialog.find("form").find("[name='Cost']").val().ParseFloat();
+                dialog.find("form").find("[name='ProfitGross']").val((income - order.ReturnAmount - cost).Format0(2));
+            });
+            dialog.find("form").find("[name='Cost']").on("keyup blur", function () {
+                var income = dialog.find("form").find("[name='Income']").val().ParseFloat();
+                var cost = dialog.find("form").find("[name='Cost']").val().ParseFloat();
+                dialog.find("form").find("[name='ProfitGross']").val((income - order.ReturnAmount - cost).Format0(2));
+            });
+            dialog.modal("show");
+        }
+        function PayShow(m_id) {
+            var order = GetOrderModel(m_id);
+            dialog = bootbox.dialog({
+                show: false,
+                title: "订单确认已付款",
+                message: $("#dialogPay").html(),
+                buttons: {
+                    confirm: {
+                        label: "确定",
+                        className: "btn-success",
+                        callback: function () {
+                            //if (dialog.find("form").valid()) {
+                            if (dialog.find("form").find("[name='TranId']").val() == "")
+                                $.toast("交易编号不能为空！");
+                            else {
+                                CY.Ajax("OrderPay", {
+                                    Token: Store.Token()
+                                },
+                                    {
+                                        "orderid": m_id,
+                                        "income": dialog.find("form").find("[name='Income']").val(),
+                                        "txnid": dialog.find("form").find("[name='TranId']").val()
+                                    },
+                                    function (msg) {
+                                        if (msg.Result) {
+                                            $.toast("操作成功！");
+                                        } else {
+                                            $.toast(msg.Message);
+                                        }
+                                        dialog.modal("hide");
+                                        QueryPageList();
+                                    });
+                            }
+                            //}
+                            return false;
+                        }
+                    }
+                }
+            });
+            dialog.find("form").FormSet(order);
+            dialog.modal("show");
+        }
+        function ReturnShow(m_id) {
+            var order = GetOrderModel(m_id);
+            dialog = bootbox.dialog({
+                show: false,
+                title: "订单退款",
+                message: $("#dialogReturn").html(),
+                buttons: {
+                    confirm: {
+                        label: "保存",
+                        className: "btn-success",
+                        callback: function () {
+                            //if (dialog.find("form").valid()) {
+                            CY.Ajax("OrderReturn", {
+                                Token: Store.Token()
+                            },
+                                {
+                                    "orderid": m_id
+                                },
+                                function (msg) {
+                                    if (msg.Result) {
+                                        $.toast("操作成功！");
+                                    } else {
+                                        $.toast(msg.Message);
+                                    }
+                                    dialog.modal("hide");
+                                    QueryPageList();
+                                });
+                            //}
+                            return false;
+                        }
+                    }
+                }
+            });
+            dialog.find("form").FormSet(order);
+            dialog.modal("show");
+        }
+        function Delete(m_id) {
+            bootbox.confirm("是否确认?", function (result) {
+                if (result) {
+                    CY.Ajax("OrderDelete", {
+                        Token: Store.Token()
+                    },
+                        {
+                            "orderid": m_id
+                        },
+                        function (msg) {
+                            if (msg.Result) {
+                                $.toast("操作成功！");
+                            } else {
+                                $.toast(msg.Message);
+                            }
+                            QueryPageList();
+                        });
+                }
+            });
+            return false;
+        }
+        $("#dialogReturn").hide();
+        $("#dialogCost").hide();
+        $("#btnSearch").on("click", QueryPageList);
+        $("#btnCloseNo").on("click", function () {
+            var ids = new Array();
+            $.each(grid.bootstrapTable("getSelections"), function (index, item) {
+                ids.push(item.OrderId);
+            })
+            if (ids.length == 0) {
+                $.toast("请选择所要设置的订单！");
+            } else {
+                bootbox.confirm("是否确认?", function (result) {
+                    if (result) {
+                        CY.Ajax("OrderCloseNo", {
+                            Token: Store.Token()
+                        },
+                            {
+                                "ids": JSON.stringify(ids)
+                            },
+                            function (msg) {
+                                if (msg.Result) {
+                                    $.toast("操作成功！");
+                                } else {
+                                    $.toast(msg.Message);
+                                }
+                                QueryPageList();
+                            });
+                    }
+                });
+                return false;
+            }
+        });
+
+    </script>
+}

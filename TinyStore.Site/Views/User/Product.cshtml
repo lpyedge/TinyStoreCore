@@ -1,0 +1,383 @@
+﻿<div class="product">
+    <h4 class="mb-3 bd-text-purple-bright">
+        商品列表
+    </h4>
+    <div class="form-inline">
+        <div class="col-3 col-md-1">
+            <button class="btn btn-info" id="btnSearch">搜索</button>
+        </div>
+        @*@if (!string.IsNullOrEmpty(TinyStore.Config.config.ICardKeyValue))
+            {
+                <div class="col-6 col-md-3">
+                    <button class="btn btn-warning" id="btnAddSupplyShow">增加系统商品</button>
+                </div>
+            }*@
+        <div class="col-6 col-md-1">
+            <button class="btn btn-primary" id="btnAddShow">增加</button>
+        </div>
+    </div>
+    <table id="grid" class="table table-striped table-bordered" cellspacing="0" width="100%">
+    </table>
+    <div class="jumbotron" style="padding:1rem">
+        <i class="fa fa-bullhorn"></i>
+        排序规则：排序数值越小，排位越靠前，如：排序99的会在排序100之上，在购买页面的商品分类列表会以此排序。
+    </div>
+
+</div>
+
+<div id="dialog" style="display:none">
+    <form>
+        <input type="hidden" name="ProductId" value="" />
+        <div class="form-group form-inline row">
+            <label class="col-md-3 control-label">商品名称</label>
+            <div class="col-md-8">
+                <input type="text" class="form-control w-100" maxlength="40" placeholder="商品名称" name="Name" />
+            </div>
+        </div>
+        <div class="form-group form-inline row">
+            <label class="col-md-3 control-label">商品类型</label>
+            <div class="col-md-8">
+                <input type="text" class="form-control w-100" maxlength="40" placeholder="商品类型" name="Category" />
+            </div>
+        </div>
+        <div class="form-group form-inline row">
+            <label class="col-md-3 control-label">商品图标</label>
+            <div class="col-md-8">
+                <img name="Icon" style="width:80px;height:80px" />
+            </div>
+
+        </div>
+        @*<div class="form-group form-inline row">
+                <label class="col-md-3 control-label">是否包手续费</label>
+                <div class="col-md-8">
+                    <input type="checkbox" class="form-control w-100" name="IsContractPayFee" />
+                </div>
+            </div>*@
+        <div class="form-group form-inline row" name="divSupplierId">
+            <label class="col-md-3 control-label">选择供货商</label>
+            <div class="col-md-8 ">
+                <select class="form-control w-100" name="SupplierId" id="SupplierId">
+                    <option value="">无</option>
+
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group form-inline row">
+            <label class="col-md-3 control-label">成本价格 	</label>
+            <div class="col-md-8">
+                <input type="number" class="form-control w-100" name="Cost" step="0.01" min="0" />
+            </div>
+        </div>
+        <div class="form-group form-inline row">
+            <label class="col-md-3 control-label">销售价格 	</label>
+            <div class="col-md-8">
+                <input type="number" class="form-control w-100" name="Amount" step="0.01" min="0.01" />
+            </div>
+        </div>
+        <div class="form-group form-inline row">
+            <label class="col-md-3 control-label">最小购买量</label>
+            <div class="col-md-8">
+                <input type="number" class="form-control w-100" name="QuantityMin" step="1" min="0" />
+            </div>
+        </div>
+
+        <div class="form-group form-inline row">
+            <label class="col-md-3 control-label">商品排序 	</label>
+            <div class="col-md-8">
+                <input type="number" class="form-control w-100" name="Sort" step="1" min="0" />
+            </div>
+        </div>
+        <div class="form-group form-inline row">
+            <label class="col-md-3 control-label">是否上架 	</label>
+            <div class="col-md-8">
+                <input type="checkbox" class="form-control" name="IsShow" />
+            </div>
+        </div>
+        @*<div class="form-group form-inline row">
+                <label class="col-md-3 control-label">下单密码 	</label>
+                <div class="col-md-8">
+                    <input type="text" class="form-control w-100" placeholder="下单密码" name="Password" maxlength="6" />
+                </div>
+            </div>*@
+
+        <div class="form-group form-inline row">
+            <label class="col-md-3 control-label">库存类型 	</label>
+            <div class="col-md-8">
+                <select class="form-control w-100" name="DeliveryType">
+                    @foreach (EDeliveryType type in Enum.GetValues(typeof(EDeliveryType)))
+                    {
+                        <option value="@((int)type)">@type</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group form-inline row">
+            <label class="col-md-3 control-label">商品说明</label>
+            <div class="col-md-8">
+                <textarea name="Memo" class="form-control w-100" rows="7"></textarea>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts{
+    <script>
+        var eDeliveryType = @Json.Serialize(Global.EnumsDic<EDeliveryType>());
+
+        var $dialog, $grid;
+
+        $(function () {
+            QueryPageList();
+            $("#btnSearch").on("click", QueryPageList);
+            $("#btnAddShow").on("click", function () {
+                ProductDialog();                
+            });
+
+            CY.Ajax("SupplierList", {
+                Token: Store.Token()
+            }, {
+                 "storeId": storeid
+             }, function (msg) {
+                    if (msg.Result) {
+                     var div = '<option value="">无</option>';
+                     for (var k in msg.Data) {
+                         div += '<option value="' + msg.Data[k].SId + '">' + msg.Data[k].Name + '</option>';
+                     }
+                     $("#SupplierId").html(div);
+                 }
+             });
+
+        });
+
+        $grid = $('#grid').bootstrapTable(
+            $.extend(baseTableoption, {
+                uniqueId: "ProductId",
+                columns: [{
+                    field: 'Name',
+                    title: '商品名称'
+                }, {
+                    field: 'Amount',
+                    title: '商品价格'
+                }, {
+                    field: 'QuantityMin',
+                    title: '最小购买量'
+                },{
+                    title: '供货商', formatter: function (value, row, index) {
+                        if (3 == row.DeliveryType)
+                            return "系统";
+                        return GetEnumName("SupplierId", row.SupplierId);
+                    }
+                }, {
+                    title: '是否上架', formatter: function (value, row, index) {
+                        if (row.IsShow)
+                            return "<label class='badge badge-success' title='上架'><i class=\"fa fa-check\"></i>上架</label>";
+                        return "<label class='badge badge-danger' title='下架'><i class=\"fa fa-times\"></i>下架</label>";
+                    }
+                }, {
+                    title: '管理', formatter: function (value, row, index) {
+                        var btn = "";
+                        if (row.IsShow)
+                            btn += "<button onclick=\"ModifyIsShow('" + row.ProductId + "'," + (!row.IsShow) + ")\" class=\"btn-primary  btn-sm mr-1\">下架</button>";
+                        else
+                            btn += "<button onclick=\"ModifyIsShow('" + row.ProductId + "'," + (!row.IsShow) + ")\" class=\"btn-primary  btn-sm mr-1\">上架</button>";
+                        btn += "<button onclick=\"ProductDialog('" + index + "')\" class=\"btn-info btn-sm mr-1\">编辑</button>";
+                        btn += "<button onclick=\"Delete('" + index + "')\" class=\"btn-danger btn-sm\">删除</button>";
+                        btn += "<a href=\"/user/order?productid=" + row.ProductId + "\" target=\"_blank\" class=\"btn-link btn-sm\"><i class=\"fa fa-link\" aria-hidden=\"true\"></i>手动订单</a>";
+                        if (row.DeliveryType == 1)
+                            btn += "<a href=\"/user/stock?productid=" + row.ProductId + "\" target=\"_blank\" class=\"btn-link btn-sm\"><i class=\"fa fa-link\" aria-hidden=\"true\"></i>加卡</a>";
+                        return btn;
+                    }
+                }]
+            })
+        );
+        function QueryPageList() {
+            var gridopt = $grid.bootstrapTable("getOptions");
+            CY.Ajax("ProducPageList", {
+                Token: Store.Token()
+            }, {
+                "storeId": storeid,
+                "pageindex": gridopt.pageNumber,
+                "pagesize": gridopt.pageSize
+            }, function (msg) {
+                    if (msg.Result) {
+                        $grid.bootstrapTable('load', msg.Data);
+                    }
+                    else {
+                        $.toast("操作失败！" + msg.Message);
+                    }
+            });
+        }
+
+        function ProductDialog(gridIndex) {
+
+            $dialog = bootbox.dialog({
+                show: false,
+                title: "商品",
+                message: $("#dialog").html(),
+                buttons: {
+                    confirm: {
+                        label: "保存",
+                        className: "btn-success",
+                        callback: function () {
+                            if ($dialog.find("form").valid()) {
+
+                                var product = $dialog.FormGet();
+                                console.log(product);
+                                if (product.DeliveryType ==3 && product.Amount < product.Cost) {
+                                    $.toast("销售价格不能小于成本价格！");
+                                } else {
+                                    product.StoreId = storeid;
+                                    product.Icon = $dialog.find("[name='Icon']").attr('src');
+
+                                    CY.Ajax("ProductSave", {
+                                        Token: Store.Token()
+                                    }, {
+                                        "storeId": storeid,
+                                        "product": JSON.stringify(product)
+                                    }, function (msg) {
+                                        if (msg.Result) {
+                                            $.toast("操作成功！");
+                                        } else {
+                                            $.toast(msg.Message);
+                                        }
+                                        $dialog.modal("hide");
+                                        QueryPageList();
+                                    });
+                                }
+                            }
+                            return false;
+                        }
+                    }
+                }
+            });
+            if (gridIndex >= 0) {
+                var product = $grid.bootstrapTable("getData")[gridIndex];
+                if (product != null) {
+                    $dialog.FormSet(product);
+                    if (product.DeliveryType == 3) {
+                        $dialog.find("[name='divSupplierId']").hide();
+                        $dialog.find("[name='DeliveryType']").prop("disabled", true);
+                        $dialog.find("[name='Cost']").prop("disabled", true);
+                    } else {
+                        $dialog.find("[name='divSupplierId']").show();
+                        $dialog.find("[name='DeliveryType']").prop("disabled", false);
+                        $dialog.find("[name='Cost']").prop("disabled", false);
+                    }
+
+                    $dialog.find("[name='Icon']").attr('src', product.Icon + "?v=" + Math.random());
+
+                }
+            }
+            $dialog.find("input[maxlength]").maxlength({
+                alwaysShow: true,
+                threshold: 10,
+                warningClass: "badge badge-success",
+                limitReachedClass: "badge badge-danger"
+            });
+
+            $dialog.find("form").validate_popover({
+
+                rules: {
+                    Name: {
+                        required: true,
+                        rangelength: [2, 40],
+                    },
+                    Sort: {
+                        required: true
+                    },
+                    //Password: {
+                    //    password_rule: true
+                    //},
+                    Cost: {
+                        required: true,
+                    },
+                    Amount: {
+                        required: true,
+                    },
+                    QuantityMin: {
+                        required: true
+                    },
+                }
+            });
+
+            CY.Page.FileSelect($dialog.find("[name='Icon']"), function (files) {
+                var product = $dialog.FormGet();
+                var formData = new FormData();
+                formData.append("file", files);
+                formData.append("Model", "Product");
+                formData.append("Id", product.ProductId);
+                formData.append("Name", "Logo");
+                $.ajax({
+                    url: CY.AjaxUrl + "/UploadFormFile",
+                    type: 'POST',
+                    headers: { "Token": Store.Token() },
+                    data: formData,
+                    // 告诉jQuery不要去处理发送的数据
+                    processData: false,
+                    // 告诉jQuery不要去设置Content-Type请求头
+                    contentType: false,
+                    success: function (responsejosn) {
+                        if (responsejosn.Result) {
+                            $dialog.find("[name='Icon']").attr('src', "");
+                            $dialog.find("[name='Icon']").attr('src', responsejosn.Data);
+                        }
+                    },
+                    error: function (responseStr) {
+                        $.toast("文件上传失败！");
+                    }
+                });
+            });
+
+            $dialog.modal("show");
+        }
+
+
+        function Delete(gridIndex) {
+            if (gridIndex >= 0) {
+                var product = $grid.bootstrapTable("getData")[gridIndex];
+                bootbox.confirm("是否确认?", function (result) {
+                    if (result) {
+                        CY.Ajax("ProductDelete", {
+                            Token: Store.Token()
+                        }, {
+                                "storeId": storeid,
+                                "productid": product.ProductId
+                        }, function (msg) {
+                            if (msg.Result) {
+                                $.toast("操作成功！");
+                            } else {
+                                $.toast(msg.Message);
+                            }
+                            QueryPageList();
+                        });
+                    }
+                });
+            }
+            return false;
+        }
+
+        function ModifyIsShow(m_id, isshow) {
+            bootbox.confirm("是否确认?", function (result) {
+                if (result) {
+                    CY.Ajax("ProductModifyIsShow", {
+                        Token: Store.Token()
+                    }, {
+                        "storeId": storeid,
+                        "productid": m_id,
+                        "isshow": isshow
+                    }, function (msg) {
+                        if (msg.Result) {
+                            $.toast("操作成功！");
+                        } else {
+                            $.toast(msg.Message);
+                        }
+                        QueryPageList();
+                    });
+                }
+            });
+            return false;
+        }
+    </script>
+}

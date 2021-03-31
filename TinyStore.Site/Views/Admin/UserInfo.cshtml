@@ -1,0 +1,481 @@
+﻿<div class="col">
+    <p class="mb-3  bd-text-purple-bright">
+        用户列表
+    </p>
+    <div class="form-inline">
+        <div class="col-2 ">
+            <div class="input-group ">
+                <input id="txtKey" type="text" placeholder="关键词" class="form-control" />
+            </div>
+        </div>
+        <div class="col-2">
+            <button class="btn btn-info" id="btnSearch">搜索</button>
+        </div>
+    </div>
+    <table id="grid" class="table table-striped table-bordered" cellspacing="0" width="100%" style="height:300px;">
+    </table>
+</div>
+<div id="dialogpassword">
+    <form>
+        <div class="form-group ml-2">
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">帐号</label>
+                <div class="col-5">
+                    <input type="text" class="form-control" name="Account" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">密码</label>
+                <div class="col-5">
+                    <input type="text" class="form-control" name="Password" />
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<div id="dialoglevel">
+    <form>
+        <div class="form-group ml-2">
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">店铺名称</label>
+                <div class="col-5">
+                    <input type="text" class="form-control" name="Name" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">店铺等级</label>
+                <div class="col-5">
+                    <select class="form-control" name="Level">
+                        @foreach (TinyStore.EStoreLevel level in Enum.GetValues(typeof(TinyStore.EStoreLevel)))
+                        {
+                            <option value="@((int)level)">@level</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<div id="dialogextend">
+    <form>
+        <div class="form-group ml-2">
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">商户名称</label>
+                <div class="col-5">
+                    <input type="text" class="form-control" name="Name" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">电子邮箱</label>
+                <div class="col-5">
+                    <input type="text" class="form-control" name="Email" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">手机号</label>
+                <div class="col-5">
+                    <input type="text" class="form-control" name="TelPhone" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">QQ号</label>
+                <div class="col-5">
+                    <input type="text" class="form-control" name="QQ" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">身份证号</label>
+                <div class="col-5">
+                    <input type="text" class="form-control" name="IdCard" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">收款方式</label>
+                <div class="col-5">
+                    <input type="text" class="form-control" name="BankType" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">收款帐号</label>
+                <div class="col-5">
+                    <input type="text" class="form-control" name="BankAccount" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">开户银行</label>
+                <div class="col-5">
+                    <input type="text" class="form-control" name="BankPersonName" readonly="readonly" />
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<div id="dialogstore">
+    <form>
+        <div class="form-group ml-2">
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">商户名称</label>
+                <div class="col-5">
+                    <input type="text" class="form-control" name="Name" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">当前金额</label>
+                <div class="col-5">
+                    <input type="text" class="form-control" name="Amount" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">店铺模板</label>
+                @*<div class="col-5">
+            <input type="text" class="form-control" name="Template" readonly="readonly" />
+        </div>*@
+                <div class="col-lg-5">
+                    <select class="form-control w-100" name="Template" disabled>
+                        @foreach (EStoreTemplate item in Enum.GetValues(typeof(EStoreTemplate)))
+                        {
+                            <option value="@((int)item)">@item</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            @*<div class="form-group form-inline row">
+                <label class="col-4 control-label">首字母</label>
+                <div class="col-5">
+                    <input type="text" class="form-control" name="Initial" readonly="readonly" />
+                </div>
+            </div>*@
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">联系邮箱</label>
+                <div class="col-5">
+                    <input type="text" class="form-control" name="Email" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">联系手机</label>
+                <div class="col-5">
+                    <input type="text" class="form-control" name="TelPhone" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">联系QQ</label>
+                <div class="col-5">
+                    <input type="text" class="form-control" name="QQ" readonly="readonly" />
+                </div>
+            </div>            
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">一级域名</label>
+                <div class="col-5">
+                    <input type="text" class="form-control" name="DomainTop" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">二级域名</label>
+                <div class="col-5">
+                    <input type="text" class="form-control" name="DomainSub" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">单页面</label>
+                <div class="col-5">
+                    <input type="checkbox" class="form-control" name="IsSingle" disabled />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">店铺等级</label>
+                <div class="col-5">
+                    <input type="text" class="form-control" name="Level" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">店铺说明</label>
+                <div class="col-5">
+                    <textarea name="Memo" class="form-control" rows="3" readonly="readonly"></textarea>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+@section Scripts{
+    <script>
+        var dialog;
+        var list = null;
+        var grid = $('#grid').bootstrapTable(
+            $.extend(baseTableoption, {
+                uniqueId: "UserId",
+                columns: [{
+                    //field: 'Store',
+                    title: '店铺图标', formatter: function (value, row, index) {
+                        return row.Logo ? "<img style='width:63px;height:63px' src=" + row.Logo + " />" : "";
+                    }
+                }, {
+                    field: 'Name',
+                    title: '店铺名称'
+                    //}, {
+                    //    //field: 'CreateDate_str',
+                    //    title: '注册日期', formatter: function (value, row, index) {
+                    //        return DatetimeFormat(row.CreateDate)
+                    //    }
+                    //}, {
+                    //    field: 'Email',
+                    //    title: '电子邮箱'
+                    //}, {
+                    //    field: 'TelPhone',
+                    //    title: '手机号'
+                    //}, {
+                    //    field: 'QQ',
+                    //    title: 'QQ号'
+                }, {
+                    field: 'UniqueId',
+                    title: '店铺标识'
+                }, {
+                    //field: 'Store',
+                    title: '店铺等级', formatter: function (value, row, index) {
+                        //if (value) {
+                        return row.Level > 0 ? "<span class=\"badge badge-info\"> Lv" + row.Level + "</span>" : "";
+                        //}
+                    }
+                }, {
+                    title: '用户管理', formatter: function (value, row, index) {
+                        if (row) {
+                            var btn = "<div class=\"btn-group mt-1 mb-1\">";
+                            btn += "<button type=\"button\" class=\"btn btn-success dropdown-toggle\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\">管理</button>";
+                            btn += "<div class=\"dropdown-menu\">";
+                            btn += "<button onclick=\"Extend('" + row.UserId + "')\" class=\"dropdown-item fa fa-user-circle-o\"> 用户详细</button>";
+                            //btn += "<a href=\"" + row.Store.Url + "\" target=\"_blank\" class=\"dropdown-item fa fa-university\"> 店铺详细</a>";
+                            btn += "<button onclick=\"Info('" + row.UserId + "')\" class=\"dropdown-item fa fa-user-circle-o\"> 店铺详细</button>";
+                            btn += "<button onclick=\"LevelUpdateShow('" + row.StoreId + "')\" class=\"dropdown-item fa fa-diamond\"> 店铺等级</button>";
+                            btn += "<button onclick=\"PwdUpdateShow('" + row.UserId + "')\" class=\"dropdown-item fa fa-lock\"> 修改密码</button>";
+                            btn += "<button onclick=\"Login('" + row.UserId + "')\" class=\"dropdown-item fa fa-sign-in\"> 模拟登录</button>";
+                            btn += "<a href=\"/admin/userlog?userid=" + row.UserId + "\" target=\"_blank\" class=\"dropdown-item fa fa-link\"> 操作记录</a>";
+                            btn += "</div></div>";
+                            return btn;
+                        }
+                    }
+                }]
+            })
+        );
+        QueryPageList = function () {
+            var gridopt = grid.bootstrapTable("getOptions");
+            CY.Ajax("UserStorePageList", {
+                Token: Store.Token()
+            }, {
+                key: $("#txtKey").val(),
+                pageindex: gridopt.pageNumber,
+                pagesize: gridopt.pageSize
+            }, function (msg) {
+                list = msg.Data.rows;
+                //$.each(msg.Data.rows, function (index, item) {
+                //    item.Name = item.Extend ? item.Extend.Name : "";
+                //    //item.Email = item.Extend ? item.Extend.Email : "";
+                //    //item.TelPhone = item.Extend ? item.Extend.TelPhone : "";
+                //    //item.QQ = item.Extend ? item.Extend.QQ : "";
+                //});
+                grid.bootstrapTable('load', msg.Data);
+            });
+        }
+        function Info(m_id) {
+            var data = null;
+            for (var i = 0; i < list.length; i++) {
+                if (list[i].UserId == m_id) {
+                    data = list[i];
+                    i = list.length;
+                }
+            }
+            if (data != null) {
+                dialog = bootbox.dialog({
+                    show: false,
+                    title: "店铺详细",
+                    message: $("#dialogstore").html()
+                });
+                dialog.find("form").FormSet(data);
+                dialog.modal("show");
+            }
+        }
+
+
+        function Extend(m_id) {
+            var data = null;
+            for (var i = 0; i < list.length; i++) {
+                if (list[i].UserId == m_id) {
+                    data = list[i];
+                    i = list.length;
+                }
+            }
+            if (data != null) {
+                dialog = bootbox.dialog({
+                    show: false,
+                    title: "用户详细",
+                    message: $("#dialogextend").html()
+                });
+
+                CY.Ajax("UserExtend", {
+                    Token: Store.Token()
+                }, {
+                    "id": m_id,
+                }, function (msg) {
+                    if (msg.Result) {
+                        dialog.find("form").FormSet(msg.Data);
+                        dialog.modal("show");
+                    }
+                    else {
+                        $.toast(msg.Message);
+                    }
+                });
+
+            }
+        }
+        //function StoreInfo(m_id) {
+        //    var data = null;
+        //    for (var i = 0; i < list.length; i++) {
+        //        if (list[i].UserId == m_id) {
+        //            data = list[i];
+        //            i = list.length;
+        //        }
+        //    }
+        //    if (data != null) {
+        //        dialog = bootbox.dialog({
+        //            show: false,
+        //            title: "店铺详细",
+        //            message: $("#dialogstore").html()
+        //        });
+        //        dialog.find("form").FormSet(data.Store);
+        //        dialog.modal("show");
+        //    }
+        //}
+        function PwdUpdateShow(m_id) {
+            var data = null;
+            for (var i = 0; i < list.length; i++) {
+                if (list[i].UserId == m_id) {
+                    data = list[i];
+                    i = list.length;
+                }
+            }
+            if (data != null) {
+                dialog = bootbox.dialog({
+                    show: false,
+                    title: "修改密码",
+                    message: $("#dialogpassword").html(),
+                    buttons: {
+                        confirm: {
+                            label: "保存",
+                            className: "btn-success",
+                            callback: function () {
+                                if (dialog.find("form").valid()) {
+                                    CY.Ajax("UserPwdModify", {
+                                        Token: Store.Token()
+                                    },
+                                        {
+                                            "id": m_id,
+                                            "pwd": dialog.find("form").find("[name='Password']").val(),
+                                        },
+                                        function (msg) {
+                                            if (msg.Result) {
+                                                $.toast("操作成功！");
+                                            } else {
+                                                $.toast(msg.Message);
+                                            }
+                                            dialog.modal("hide");
+                                            QueryPageList();
+                                        });
+                                }
+                                return false;
+                            }
+                        }
+                    }
+                });
+                dialog.find("form").find("input[maxlength]").maxlength({
+                    alwaysShow: true,
+                    threshold: 10,
+                    warningClass: "badge badge-success",
+                    limitReachedClass: "badge badge-danger"
+                });
+                dialog.find("form").validate_popover({
+                    
+                    rules: {
+                        Password: {
+                            required: true,
+                            rangelength: [5, 10],
+                        }
+                    }
+                });
+                dialog.find("form").find("[name='Account']").val(data.Account);
+                dialog.modal("show");
+            }
+        }
+        function LevelUpdateShow(s_id) {
+            var data = null;
+            for (var i = 0; i < list.length; i++) {
+                if (list[i].StoreId == s_id) {
+                    data = list[i];
+                    i = list.length;
+                }
+            }
+            if (data != null) {
+                dialog = bootbox.dialog({
+                    show: false,
+                    title: "修改等级",
+                    message: $("#dialoglevel").html(),
+                    buttons: {
+                        confirm: {
+                            label: "保存",
+                            className: "btn-success",
+                            callback: function () {
+                                if (dialog.find("form").valid()) {
+                                    CY.Ajax("UserStoreLevelModify", {
+                                        Token: Store.Token()
+                                    },
+                                        {
+                                            "id": s_id,
+                                            "level": dialog.find("form").find("[name='Level']").val()
+                                        },
+                                        function (msg) {
+                                            if (msg.Result) {
+                                                $.toast("操作成功！");
+                                            } else {
+                                                $.toast(msg.Message);
+                                            }
+                                            dialog.modal("hide");
+                                            QueryPageList();
+                                        });
+                                }
+                                return false;
+                            }
+                        }
+                    }
+                });
+                dialog.find("form").find("[name='Name']").val(data.Name);
+                dialog.find("form").find("[name='Level']").val(data.Level);
+                dialog.modal("show");
+            }
+        }
+      
+        //function Url2UserLog(m_id) {
+        //    window.open("/admin/userlog?UserId=" + m_id);
+        //}
+        function Login(m_id) {
+            CY.Ajax("UserLogin", {
+                Token: Store.Token()
+            },
+                {
+                    "id": m_id
+                },
+                function (msg) {
+                    if (msg.Result) {
+                        $.toast("操作成功！");
+                    } else {
+                        $.toast(msg.Message);
+                    }
+                });
+        }
+
+        $(function () {
+            $("#dialoglevel").hide();
+            $("#dialogpassword").hide();
+            $("#dialogextend").hide();
+            $("#dialogstore").hide();
+            $("#btnSearch").on("click", QueryPageList);
+            QueryPageList();
+        });
+    </script>
+}

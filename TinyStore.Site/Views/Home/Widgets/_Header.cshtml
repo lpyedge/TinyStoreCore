@@ -1,0 +1,50 @@
+﻿<!--文档编码格式-->
+<meta charset="utf-8">
+<!--让 IE 浏览器运行最新的渲染模式下-->
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<!--多内核浏览器默认采用webkit高速模式渲染页面-->
+<meta name="renderer" content="webkit">
+<!--页面显示宽度,默认为设备宽度,默认缩放比例为1-->
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1,maximum-scale =1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="full-screen" content="true" />
+<meta name="x5-fullscreen" content="true" />
+<meta name="360-fullscreen" content="true" />
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+<script type="text/javascript" src="https://cdn.staticfile.org/jquery/3.5.1/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdn.staticfile.org/dot/1.1.3/doT.min.js"></script>
+<link rel="stylesheet" type="text/css" href="//at.alicdn.com/t/font_1964411_nboy3sdd1c.css">
+
+<environment include="Development">
+    <link href="~/css/base.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/default.css" rel="stylesheet" asp-append-version="true" />
+    <script src="~/output/main.js" type="text/javascript" asp-append-version="true"></script>
+</environment>
+<environment exclude="Development">
+    <link href="~/output/main.min.css" rel="stylesheet" asp-append-version="true" />
+    <script src="~/output/main.min.js" type="text/javascript" asp-append-version="true"></script>
+</environment>
+
+
+<partial name="Widgets/_Plugin_Toast" />
+
+<script>
+    $("html").css("font-size", window.innerWidth < 540 ? window.innerWidth / 10 + "px" : "54px");
+
+    //复制CD-Key
+    function copyFn(id) {
+        "use strict";
+        var val = document.getElementById(id);
+        window.getSelection().selectAllChildren(val);
+        document.execCommand("Copy");
+        alert("复制成功");
+    }
+
+
+    CY.AjaxUrl = "/api";
+    CY.MVC = true;
+    CY.AjaxMask = false;
+</script>

@@ -1,0 +1,96 @@
+<table width="650" align="center" bgcolor="#ffffff" cellspacing="0" cellpadding="0" border="0" style="border-collapse: collapse;font-size: 14px;">
+    <thead>
+        <tr height="60">
+            <th colspan="6" style="text-align: center;border-bottom: 1px solid #ddd;">
+                <a href="">
+                    <img style="height: 50px;" src="https://6pmgame.oss-cn-hangzhou.aliyuncs.com/Publish/6.png" />
+                </a>
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr height="10">
+            <td colspan="6"></td>
+        </tr>
+        <tr>
+            <td colspan="6">
+                <span style="line-height: 26px;font-weight: bold;font-size: 16px;">尊敬的用户 您好！</span>
+                <br />
+                <span style="margin-left: 25px;line-height: 26px;">感谢您在{SiteName}购物</span>
+            </td>
+        </tr>
+        <tr height="15">
+            <td colspan="6"></td>
+        </tr>
+        <tr height="26">
+            <td width="25"></td>
+            <td colspan="4" color="#6a6a6a">
+                您于<span>{DeliveryDate}</span> 成功购买了 <span>{Name}</span> 产品，所购订单信息如下：
+            </td>
+            <td width="25"></td>
+        </tr>
+        <tr>
+            <td width="25"></td>
+            <td colspan="4">
+                <table width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#fafafa" style="text-align: center;line-height: 32px;">
+                    <tr bgcolor="#00c1ea" style="height: 32px;line-height: 32px;color: #fff;">
+                        <th>
+                            <span>订单号</span>
+                        </th>
+                        <th>
+                            <span>产品名</span>
+                        </th>
+                        <th>
+                            <span>价格</span>
+                        </th>
+                        <th>
+                            <span>卖家QQ</span>
+                        </th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span>{OrderId}</span>
+                        </td>
+                        <td>
+                            <span>{Name}</span>
+                        </td>
+                        <td>
+                            <span>￥{Amount}</span>
+                        </td>
+                        <td>
+                            <span>{StoreQQ}</span>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+            <td width="25"></td>
+        </tr>
+        <tr>
+            <td width="25"></td>
+            <td colspan="4" style="text-align: right;">
+                <!--<a href="{ProductUrl}" style="line-height: 40px;color: #00c1ea;" target="_blank">再次购买&gt;</a>-->
+            </td>
+            <td width="25"></td>
+        </tr>
+        <tr>
+            <td colspan="6">
+                <span style="line-height: 26px;font-weight: bold;font-size: 16px;">你购买的卡号及卡密如下：</span>
+            </td>
+        </tr>
+        {AddTemplate}
+        <!--<tr>
+            <td width="25"></td>
+            <td colspan="4" style="text-align: right;">
+                详情见：
+                <a href="{OrderUrl}" style="line-height: 40px;color: #00c1ea;" target="_blank">
+                {OrderUrl}</a>
+            </td>
+            <td width="25"></td>
+        </tr>-->
+        <tr height="50">
+            <td colspan="6" style="color: #6a6a6a;">
+                <sapn>感谢您使用{SiteName}网站购物！本邮件由系统自动发出，请勿回复。</sapn>
+            </td>
+        </tr>
+    </tbody>
+</table>

@@ -1,0 +1,378 @@
+﻿<style>
+
+    .lbl_name {
+        width: 400px;
+        word-wrap: break-word;
+        word-break: normal;
+    }
+</style>
+
+<div class="stock">
+    <h4 class="mb-3 bd-text-purple-bright">
+        卡密列表
+    </h4>
+    <div class="form-inline ">
+        选择产品:
+        <select class="form-control" id="slSearchProduct">
+            <option value="">全部</option>
+        </select>
+        <div class="col-6">
+            <button class="btn btn-info mr-1" id="btnSearch">搜索</button>
+            <button class="btn btn-primary mr-1" id="btnAddShow">增加</button>
+            <button class="btn btn-danger mr-1" id="btnDelete">批量删除</button>
+            <button class="btn btn-warning mr-1" id="btnNameTextAreaShow">别名修改</button>
+            <button class="btn btn-success mr-1" id="btnNameTextAreaSave" style="display:none">保存</button>
+        </div>
+    </div>
+    <table id="grid" class="table table-striped table-bordered" cellspacing="0" width="100%">
+    </table>
+</div>
+
+<div id="dialogInfo">
+    <div class="form-group">
+        <div class="form-group form-inline row">
+            <label class="col-3 control-label">别名 	</label>
+            <div class="col-9">
+                <input type="text" class="form-control" name="Name" readonly="readonly" />
+            </div>
+        </div>
+        <div class="form-group form-inline row">
+            <label class="col-3 control-label">卡号 	</label>
+            <div class="col-9">
+                <input type="text" class="form-control" name="CardName" readonly="readonly" />
+            </div>
+        </div>
+        <div class="form-group form-inline row">
+            <label class="col-3 control-label">密码 	</label>
+            <div class="col-9">
+                <textarea class="form-control" name="CardPassword" readonly="readonly" style="width: 100%" rows="3"></textarea>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="dialog">
+    <div class="form-group ml-2">
+        <div class="form-group form-inline row">
+            <label class="col-3 control-label">卡密格式</label>
+            <div class="col-9">
+                <select class="form-control" name="slSplit">
+                    @*<option value=" ">用" "分隔</option>*@
+                    <option value=",">用","分隔</option>
+                    <option value="|">用"|"分隔</option>
+                    <option value="">自定义分隔</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group form-inline row" name="divSplit" style="display: none;">
+            <label class="col-3 control-label">分隔符</label>
+            <div class="col-9">
+                <input type="text" class="form-control" maxlength="1" placeholder="分隔符" name="txtSplit" />
+            </div>
+        </div>
+        <div class="form-group form-inline row">
+            <label class="col-3 control-label">格式演示 	</label>
+            <div class="col-9">
+                <input type="text" class="form-control" name="txtFormat" readonly="readonly" />
+            </div>
+        </div>
+        <div class="form-group form-inline row">
+            <label class="col-3 control-label">卡密内容 	</label>
+            <div class="col-9">
+                <textarea name="txtStock" class="form-control" style="width: 100%" rows="3"></textarea>
+            </div>
+        </div>
+        <div class="form-group form-inline row">
+            <label class="col-3 control-label">检查重复 	</label>
+            <div class="col-9">
+                <input type="checkbox" name="checkrepeat_name" />卡号重复
+                <input type="checkbox" name="checkrepeat_pwd" />卡密重复
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts{
+    <script>
+
+        var dialog;
+        var id = "";
+        var list = null;
+
+        $(function () {
+
+            $("#btnSearch").on("click", QueryPageList);
+            
+            
+            GetProductList();
+
+            $("#btnAddShow").on("click", function () {
+                id = "";
+                CreateDialog();
+                dialog.modal("show");
+            });
+            $("#btnDelete").on("click", function () {
+                var ids = new Array();
+                $.each(grid.bootstrapTable("getSelections"), function (index, item) {
+                    ids.push(item.StockId);
+                });
+                if (ids.length == 0)
+                    $.toast("请选择所要删除的项目！");
+                else {
+                    bootbox.confirm("是否确认?", function (result) {
+                        if (result) {
+                            CY.Ajax("StockDeleteSaveral2Recycle", {
+                                Token: Store.Token()
+                            }, {
+                                "storeId":storeid,
+                                "stockids": JSON.stringify(ids)
+                            }, function (msg) {
+                                if (msg.Result) {
+                                    $.toast("操作成功！");
+                                } else {
+                                    $.toast(msg.Message);
+                                }
+                                QueryPageList();
+                            });
+                        }
+                    });
+                }
+                return false;
+            });
+
+            $("#btnNameTextAreaShow").on("click", function () {
+                var ids = new Array();
+                $.each(grid.bootstrapTable("getSelections"), function (index, item) {
+                    ids.push(item.StockId);
+                });
+                if (ids.length == 0)
+                    $.toast("请选择所要修改的项目！");
+                else {
+                    $("#btnNameTextAreaShow").hide();
+                    $("#btnNameTextAreaSave").show();
+                    $.each(ids, function (i, id) {
+                        $("[data-id='" + id + "']").each(function (n, e) {
+                            if ($(e).hasClass("lbl_name"))
+                                $(e).hide();
+                            else
+                                $(e).show();
+                        });
+                    });
+                }
+                return false;
+            });
+            $("#btnNameTextAreaSave").on("click", function () {
+
+                var list = new Array();
+                $(".lbl_name").each(function (index, item) {
+                    var id = $(item).attr("data-id");
+                    var old_name = $(item).html().trim();
+                    var new_name = $(item).next().val().trim();
+                    if (old_name != new_name) {
+                        list.push({ id: id, name: new_name });
+                    }
+                });
+                bootbox.confirm("是否确认?", function (result) {
+                    if (result) {
+                        $("#btnNameTextAreaShow").show();
+                        $("#btnNameTextAreaSave").hide();
+                        if (list.length > 0) {
+                            CY.Ajax("StockUpdateName", {
+                                Token: Store.Token()
+                            }, {
+                                "storeId":storeid,
+                                "stocklist": JSON.stringify(list)
+                            }, function (msg) {
+                                if (msg.Result) {
+                                    $.toast("操作成功！");
+                                } else {
+                                    $.toast(msg.Message);
+                                }
+                                $(".lbl_name").each(function (index, item) {
+                                    $(item).show();
+                                    $(item).next().hide();
+                                });
+                                QueryPageList();
+                            });
+                        }
+                    }
+                });
+                return false;
+            });
+        });
+        function GetProductList() {
+            CY.Ajax("ProductListIsStock", {
+                Token: Store.Token()
+            }, {
+                storeId: storeid,
+                category: $("#slSearchCategory").val()
+            }, function (msg) {
+                if (msg.Result) {
+                    if (msg.Data.length > 0) {
+                        var div = '';
+                        for (var key in msg.Data) {
+                            div += '<option value="' + msg.Data[key].ProductId + '">' + msg.Data[key].Name + '</option>';
+                        }
+                        $("#slSearchProduct").html(div);
+                        $("#slSearchProduct").val(msg.Data[0].ProductId);
+                        if (CY.Page.Query().productid) {
+                            $("#slSearchProduct").val(CY.Page.Query().productid);
+                        }
+                        QueryPageList();
+                    }
+                } else {
+                    //alert(msg.Message);
+                    $.toast(msg.Message);
+                }
+            });
+        }
+        var grid = $('#grid').bootstrapTable(
+            $.extend(baseTableoption, {
+                uniqueId: "StockId",
+                columns: [
+                    { checkbox: true },
+                    {
+                        title: '别名', formatter: function (value, row, index) {
+                            return "<label class='lbl_name' data-id='" + row.StockId + "'>" + row.Name + "</label><textarea class='form-control' style='display:none; width:100%' data-id='" + row.StockId + "'>" + row.Name + "</textarea>";
+                        }
+                    }, {
+                        title: '是否已发送', formatter: function (value, row, index) {
+                            return row.IsUsed ? "已发送" : "未发送";
+                        }
+                    }, {
+                        title: '发送时间', formatter: function (value, row, index) {
+                            return row.IsUsed ? DatetimeFormat(row.DeliveryDate) : "未发送";
+                        }
+                    }, {
+                        title: '管理', formatter: function (value, row, index) {
+                            var btn = "";
+                            btn += "<button onclick=\"Delete('" + row.StockId + "')\" class=\"btn-danger btn-sm mr-1\">删除</button>";
+                            btn += "<button onclick=\"ShowCard('" + row.StockId + "')\" class=\"btn-warning btn-sm mr-1\">查看卡密</button>";
+                            return btn;
+                        }
+                    }]
+            })
+        );
+        QueryPageList = function () {
+            var gridopt = grid.bootstrapTable("getOptions");
+            CY.Ajax("StockPageList", {
+                Token: Store.Token()
+            }, {
+                storeId:storeid,
+                productid: $("#slSearchProduct").val(),
+                pageindex: gridopt.pageNumber,
+                pagesize: gridopt.pageSize
+            }, function (msg) {
+                list = msg.Data.rows;
+                grid.bootstrapTable('load', msg.Data);
+            });
+        }
+
+
+        function SplitChange() {
+            var sp = dialog.find("[name='slSplit']").val();
+            if (sp == "") {
+                dialog.find("[name='divSplit']").show();
+                dialog.find("[name='txtSplit']").focus();
+            } else {
+                dialog.find("[name='txtFormat']").val("AAAAAAA" + sp + "BBBBBBBB");
+                dialog.find("[name='divSplit']").hide();
+            }
+        }
+        function CreateDialog() {
+            dialog = bootbox.dialog({
+                show: false,
+                title: "卡密",
+                size: "large",
+                message: $("#dialog").html(),
+                buttons: {
+                    confirm: {
+                        label: "保存",
+                        className: "btn-success",
+                        callback: function () {
+                            var sp = dialog.find("[name='slSplit']").val();
+                            if (sp == "") {
+                                sp = dialog.find("[name='txtSplit']").val();
+                            }
+                            var stock = dialog.find("[name='txtStock']").val();
+                            if (sp == "") {
+                                $.toast("请输入分隔符");
+                            } else if (stock == "") {
+                                $.toast("请输入卡密内容");
+                            } else {
+                                CY.Ajax("StockInsert", {
+                                    Token: Store.Token()
+                                }, {
+                                    "storeId":storeid,
+                                    "productid": $("#slSearchProduct").val(),
+                                    "sp": sp,
+                                    "stock": stock,
+                                    "checkrepeatname": dialog.find("[name='checkrepeat_name']").prop("checked"),
+                                    "checkrepeatpwd": dialog.find("[name='checkrepeat_pwd']").prop("checked")
+                                }, function (msg) {
+                                    if (msg.Result) {
+                                        $.toast("操作成功！" + msg.Message);
+                                    } else {
+                                        $.toast(msg.Message);
+                                    }
+                                    dialog.modal("hide");
+                                    QueryPageList();
+                                });
+                            }
+                            return false;
+                        }
+                    }
+                }
+            });
+            dialog.find("input[maxlength]").maxlength({
+                alwaysShow: true,
+                threshold: 10,
+                warningClass: "badge badge-success",
+                limitReachedClass: "badge badge-danger"
+            });
+            dialog.find("[name='txtSplit']").on("keyup", function () {
+                dialog.find("[name='txtFormat']").val("AAAAAAA" + dialog.find("[name='txtSplit']").val() + "BBBBBBBB");
+            });
+            dialog.find("[name='slSplit']").on("change", SplitChange);
+            SplitChange();
+        }
+
+        function ShowCard(m_id) {
+            dialog = bootbox.dialog({
+                show: false,
+                title: "卡密",
+                message: $("#dialogInfo").html()
+            });
+            for (var i = 0; i < list.length; i++) {
+                if (list[i].StockId == m_id) {
+                    dialog.FormSet(list[i]);
+                    i = list.length;
+                }
+            }
+            dialog.modal("show");
+        }
+        function Delete(m_id) {
+            bootbox.confirm("是否确认?", function (result) {
+                if (result) {
+                    CY.Ajax("StockDelete2Recycle", {
+                        Token: Store.Token()
+                    }, {
+                        "storeId":storeid,
+                        "stockid": m_id
+                    }, function (msg) {
+                        if (msg.Result) {
+                            $.toast("操作成功！");
+                        } else {
+                            $.toast(msg.Message);
+                        }
+                        QueryPageList();
+                    });
+                }
+            });
+            return false;
+        }
+
+        $("#dialogInfo").hide();
+        $("#dialog").hide();
+
+    </script>
+}

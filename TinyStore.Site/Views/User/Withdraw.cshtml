@@ -1,0 +1,362 @@
+﻿<div class="withdraw" id="msgalert" style="display:none">
+    <div class="jumbotron" style="padding: 1rem">
+        <i class="fa fa-bullhorn"></i>
+        当前账户可申请结算金额达不到结算标准，暂不能申请结算！
+    </div>
+</div>
+<div class="withdraw" id="msgshow">
+    <h4 class="mb-3 bd-text-purple-bright">
+        提现申请列表
+    </h4>
+    <div class="form-inline">
+        <label for="txtDateBegin">起始时间</label>
+        <div class="input-group col-md-2">
+            <input id="txtDateBegin" type="date" class="form-control" value="@DateTime.Now.AddDays(-7).ToString(SiteContext.Config.FormatDate)" />
+        </div>
+        <label for="txtDateEnd">结束时间</label>
+        <div class="input-group col-md-2">
+            <input id="txtDateEnd" type="date" class="form-control" value="@DateTime.Now.ToString(SiteContext.Config.FormatDate)" />
+        </div>
+        <div class="input-group col-md-3">
+            <select class="form-control" id="slState">
+                <option value="0">请选择处理状态</option>
+                @foreach (EWithDrawState state in Enum.GetValues(typeof(EWithDrawState)))
+                {
+                    <option value="@((int)state)">@state</option>
+                }
+            </select>
+        </div>
+        <div class="col-6 col-md-1">
+            <button class="btn btn-info" id="btnSearch">搜索</button>
+        </div>
+        <div class="col-6 col-md-2">
+            <button class="btn btn-primary" id="btnAddShow">增加</button>
+        </div>
+    </div>
+    <table id="grid" class="table table-striped table-bordered" cellspacing="0" width="100%">
+    </table>
+</div>
+<div id="dialog">
+    <form>
+        <div class="form-group ml-2">
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">提现金额</label>
+                <div class="col-5">
+                    <input type="number" class="form-control" name="Amount" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">收款方式</label>
+                <div class="col-5">
+                    <select class="form-control" name="BankType" id="ebanktype">
+                        <option value="0">请选择</option>
+                        @foreach (EBankType type in Enum.GetValues(typeof(EBankType)))
+                        {
+                            <option value="@((int)type)">@type</option>
+
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">收款帐号</label>
+                <div class="col-5">
+                    <input type="text" class="form-control" name="BankAccount" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">收款开户行</label>
+                <div class="col-5">
+                    <input type="text" class="form-control" name="BankPersonName" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">收款名称</label>
+                <div class="col-5">
+                    <input type="text" class="form-control" name="Name" />
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<div id="dialogInfo">
+    <form>
+        <div class="form-group ml-2">
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">提现金额</label>
+                <div class="col-5">
+                    <input type="text" class="form-control" name="Amount" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">收款方式</label>
+                <div class="col-5">
+                    <input type="text" class="form-control" name="BankType" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">收款帐号</label>
+                <div class="col-5">
+                    <input type="text" class="form-control" name="BankAccount" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">收款开户行</label>
+                <div class="col-5">
+                    <input type="text" class="form-control" name="BankPersonName" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">收款名称</label>
+                <div class="col-5">
+                    <input type="text" class="form-control" name="Name" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">申请日期</label>
+                <div class="col-5">
+                    <input type="text" class="form-control" name="CreateDate" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row">
+                <label class="col-4 control-label">处理状态</label>
+                <div class="col-5">
+                    <input type="text" class="form-control" name="State" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row IsFinish IsSuccess">
+                <label class="col-4 control-label">到账金额</label>
+                <div class="col-5">
+                    <input type="text" class="form-control" name="Income" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row IsFinish IsSuccess">
+                <label class="col-4 control-label">交易编号</label>
+                <div class="col-5">
+                    <input type="text" class="form-control" name="TranId" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row IsFinish">
+                <label class="col-4 control-label">结束日期</label>
+                <div class="col-5">
+                    <input type="text" class="form-control" name="FinishDate" readonly="readonly" />
+                </div>
+            </div>
+            <div class="form-group form-inline row IsFinish">
+                <label class="col-4 control-label">附言</label>
+                <div class="col-5">
+                    <textarea name="Memo" class="form-control" rows="3" readonly="readonly"></textarea>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts{
+    <script>
+        var ebanketype = @Json.Serialize(Global.EnumsDic<EBankType>());
+        var ewdstate = @Json.Serialize(Global.EnumsDic<EWithDrawState>());
+        var userextend = Store.UserExtend();
+
+        $(function () {
+
+            if (storecurrent) {
+                $("#ebanktype").val(storecurrent.BankType);
+            }
+
+            $("#btnAddShow").on("click", function () {
+                CreateDialog();
+                dialog.modal("show");
+            });
+            QueryPageList();
+            $("#dialog").hide();
+            $("#dialogInfo").hide();
+            Alertshow();
+            $("#btnSearch").on("click", QueryPageList);
+        });
+
+
+        var dialog;
+        var list = null;
+        var grid = $('#grid').bootstrapTable(
+            $.extend(baseTableoption, {
+                uniqueId: "WithDrawId",
+                columns: [{
+                    field: 'Amount',
+                    title: '提现金额'
+                }, {
+                    //field: 'BankType_str',
+                    title: '收款方式', formatter: function (value, row, index) {
+                        return ebanketype[row.BankType];
+                    }
+                }, {
+                    //field: 'CreateDate_str',
+                    title: '申请日期', formatter: function (value, row, index) {
+                        return DatetimeFormat(row.CreateDate);
+                    }
+                }, {
+                    //field: 'State_str',
+                    title: '处理状态', formatter: function (value, row, index) {
+                        if (!row.IsFinish)
+                            return "未处理";
+                        if (row.Income == 0)
+                            return "提现失败";
+                        return "提现成功";
+                    }
+                }, {
+                    title: '结束日期', formatter: function (value, row, index) {
+                        return row.IsFinish ? DatetimeFormat(row.FinishDate) : "";
+                    }
+                }, {
+                    title: '提现管理', formatter: function (value, row, index) {
+                        var btn = "<button onclick=\"WithDrawInfo('" + row.WithDrawId + "')\" class=\"btn-info btn-sm m-1\">查看详细</button>";
+                        if (!row.IsFinish)
+                            btn += "<button onclick=\"Delete('" + row.WithDrawId + "')\" class=\"btn-danger btn-sm m-1\">删除</button>";
+                        return btn;
+                    }
+                }]
+            })
+        );
+        QueryPageList = function () {
+            var gridopt = grid.bootstrapTable("getOptions");
+            CY.Ajax("WithDrawPageList", {
+                Token: Store.Token()
+            }, {
+                storeId:storeid,
+                begin: $("#txtDateBegin").val(),
+                end: $("#txtDateEnd").val(),
+                state: $("#slState").val(),
+                pageindex: gridopt.pageNumber,
+                pagesize: gridopt.pageSize
+            }, function (msg) {
+                grid.bootstrapTable('load', msg.Data);
+                list = msg.Data.rows;
+            });
+        }
+
+
+        function CreateDialog() {
+            dialog = bootbox.dialog({
+                show: false,
+                title: "提现",
+                message: $("#dialog").html(),
+                buttons: {
+                    confirm: {
+                        label: "保存",
+                        className: "btn-success",
+                        callback: function () {
+                            if (dialog.find("form").valid()) {
+                                CY.Ajax("WithDrawInsert", {
+                                    Token: Store.Token()
+                                }, {
+                                    "storeId": storeid,
+                                    "amount": dialog.find("form").find("[name='Amount']").val(),
+                                    "banktype": dialog.find("form").find("[name='BankType']").val(),
+                                    "bankaccount": dialog.find("form").find("[name='BankAccount']").val(),
+                                    "BankPersonName": dialog.find("form").find("[name='BankPersonName']").val(),
+                                    "name": dialog.find("form").find("[name='Name']").val()
+                                }, function (msg) {
+                                    if (msg.Result) {
+                                        $.toast("操作成功！");
+                                    } else {
+                                        $.toast(msg.Message);
+                                    }
+                                    dialog.modal("hide");
+                                    QueryPageList();
+                                });
+                            }
+                            return false;
+                        }
+                    }
+                }
+            });
+            dialog.find("form").find("input[maxlength]").maxlength({
+                alwaysShow: true,
+                threshold: 10,
+                warningClass: "badge badge-success",
+                limitReachedClass: "badge badge-danger"
+            });
+            dialog.find("form").validate_popover({
+                
+                rules: {
+                    Name: {
+                        required: true,
+                        rangelength: [2, 10],
+                    },
+                    BankAccount: {
+                        required: true,
+                        rangelength: [10, 20],
+                    },
+                    BankPersonName: {
+                        required: true,
+                        rangelength: [2, 40],
+                    },
+                }
+            });
+            dialog.find("form").FormSet(userextend);
+        }
+
+        function Delete(m_id) {
+            bootbox.confirm("是否确认?", function (result) {
+                if (result) {
+                    CY.Ajax("WithDrawDelete", {
+                        Token: Store.Token()
+                    }, {
+                        "storeId": storeid,
+                        "id": m_id
+                    }, function (msg) {
+                        if (msg.Result) {
+                            $.toast("操作成功！");
+                        } else {
+                            $.toast(msg.Message);
+                        }
+                        QueryPageList();
+                    });
+                }
+            });
+            return false;
+        }
+        function WithDrawInfo(m_id) {
+            var data = null;
+            for (var i = 0; i < list.length; i++) {
+                if (list[i].WithDrawId == m_id) {
+                    data = list[i];
+                    i = list.length;
+                }
+            }
+            if (data != null) {
+                dialog = bootbox.dialog({
+                    show: false,
+                    title: "查看详细",
+                    message: $("#dialogInfo").html()
+                });
+                dialog.find("form").FormSet(data);
+                dialog.find("form").find("[name='BankType']").val(ebanketype[data.BankType]);
+                dialog.find("form").find("[name='CreateDate']").val(DatetimeFormat(data.CreateDate));
+                var state = "提现成功";
+                if (!data.IsFinish)
+                    state = "未处理";
+                else if (data.Income == 0)
+                    state = "提现失败";
+                dialog.find("form").find("[name='State']").val(state);
+                if (data.IsFinish)
+                    dialog.find("form").find("[name='FinishDate']").val(DatetimeFormat(data.FinishDate));
+
+                if (!data.IsFinish) {
+                    dialog.find("form").find(".IsFinish").hide();
+                }
+                else if (data.Income == 0) {
+                    dialog.find("form").find(".IsSuccess").hide();
+                }
+                dialog.modal("show");
+            }
+        }
+        function Alertshow() {
+            if (storecurrent) {
+                if (storecurrent.Amount < 10) {
+                    $("#msgalert").show();
+                }
+            }
+        }
+    </script>
+}

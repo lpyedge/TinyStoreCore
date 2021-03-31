@@ -1,0 +1,126 @@
+﻿<!doctype html>
+<html>
+<head>
+    <title>@ViewBag.Store.Name</title>
+    <partial name="Widgets/_Header" />
+    <link rel="stylesheet" type="text/css" href="/themes/t3/css/store.css" asp-append-version="true">
+</head>
+
+<body>
+    <div id="page">
+        <!--头部页眉-->
+        <div class="store-header row items-center">
+            <a class="home-icon flex flex-center items-center txt-white" href="/" title="返回首页">
+                <i class="iconfont icon-shouye"></i>
+            </a>
+            <div class="row">
+                <div class="store-logo">
+                    <img id="storelogo">
+                </div>
+                <div class="store-text txt-white col">
+                    <div class="store-name" id="storename">无</div>
+                    <div class="store-memo" id="storememo">无</div>
+                </div>
+            </div>
+            <div class="bottom-nav"></div>
+        </div>
+        <!--商品购买-->
+        <div class="store-main">
+            <!--商品选择-->
+            <div class="product-select select">
+                <select id="slGood">
+                </select>
+            </div>
+            <!--商品信息-->
+            <div class="product-memo" id="ProductMemo">
+                无
+            </div>
+            <!--商品支付-->
+            <div class="row">
+                <div class="col flex flex-start items-center">
+                    <span>单价：</span>
+                    <span class="font-family-t" id="ProductPrice">￥0</span>
+                </div>
+                <div class="col-auto flex flex-start items-center">
+                    <span>数量：</span>
+                    <span class="order-quantity">
+                        <span class="minus flex flex-center items-center" name="minus">-</span>
+                        <input id="OrderQty" name="quantity" type="number" value="1" class="quantity">
+                        <span class="plus flex flex-center items-center" name="plus">+</span>
+                    </span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col flex flex-start items-center">
+                    <span>合计：</span>
+                    <span class="font-bold txt-red font-family-t" id="OrderAmount">￥0</span>
+                </div>
+                <div class="col-auto flex flex-start items-center" id="ProductStock">
+                    库存：
+                    <span id="ProductStockQty">0件</span>
+                </div>
+            </div>
+            <!--角色编号或电话-->
+            <div class="order-email" style="padding-bottom:5px">
+                <input type="text" placeholder="请输入游戏角色编号" id="OrderUniqueId">
+            </div>
+            <!--电子信箱-->
+            <div class="order-email">
+                <input type="text" placeholder="请输入接收订单的电子信箱" id="OrderNotice">
+            </div>
+        </div>
+
+        <div class="store-footer">
+            <!--提交订单-->
+            <input type="button" value="提交订单" id="OrderPlace">
+        </div>
+    </div>
+    <partial name="Widgets/_Script_Store" />
+    <!--主题Js-->
+    <script>
+
+        $(function () {
+
+        });
+
+        $("#slGood").change(function () {
+            var productid = $(this).val();
+            product = GetProductModel(productid);
+            RenderProductInfo();
+            SetPriceAndAmount();
+        });
+
+        function RenderProducts() {
+            //productlist [{category:"aa",productlist:[]},{category:"bb",productlist:[]},]
+            var options = "";
+            if (productlist && productlist.length > 0) {
+
+                var categorydatas = _.groupBy(productlist, 'Category');
+                for (var category in categorydatas) {
+                    var datas = categorydatas[category];
+                    options += '<optgroup label="' + category + '">';
+                    _.forEach(datas, function (data) {
+
+                        options += '<option value= "' + data.ProductId + '">' + data.Name + '</option>';
+                    });
+                    options += '</optgroup>';
+                }
+
+                $("#slGood").html(options);
+                $("#slGood").get(0).selectedIndex = 0;
+                var productid = $("#slGood").val();
+                product = GetProductModel(productid);
+            }
+            else {
+                options += "<option value=''>暂无商品</option>";
+                $("#slGood").html(options);
+                product = null;
+            }
+            RenderProductInfo();
+            SetPriceAndAmount();
+        }
+
+    </script>
+</body>
+</html>
+

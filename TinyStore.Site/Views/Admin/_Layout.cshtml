@@ -1,0 +1,124 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <partial name="Widgets/_Header" />
+</head>
+<body class="bd-home">
+    <header class="navbar navbar-expand navbar-dark flex-column flex-md-row bd-navbar" style="min-height:3rem;">
+        <div class="navbar-nav flex-row ml-md-auto d-none d-md-flex">
+        </div>
+        <div class="navbar-nav-scroll">
+            <ul class="navbar-nav bd-navbar-nav flex-row">
+                <li class="nav-item">
+                    <a class="nav-link active" href="/">首页</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link">帮助中心</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link">联系我们</a>
+                </li>
+            </ul>
+        </div>
+        <a class="btn btn-bd-yellow d-none d-lg-inline-block mb-3 mb-md-0 ml-md-3" href="/admin/index">管理中心</a>
+        <a class="btn btn-bd-yellow d-none d-lg-inline-block mb-3 mb-md-0 ml-md-3" id="aLogout" href="javascript:;">退出登录</a>
+    </header>
+
+    <main role="main">
+        <div class="row">
+            <div class="col-md-2">
+                <div class="panel-group table-responsive" role="tablist">
+                    <div class="panel panel-primary leftMenu">
+                        <div class="panel-heading" data-toggle="collapse" role="tab">
+                            <h6 class="bd-text-purple">
+                                <i class="fa fa-home"></i>
+                                管理中心
+                                <i class="fa fa-caret-down"></i>
+                            </h6>
+                        </div>
+                        <div class="panel-collapse" role="tabpanel">
+                            <ul class="list-group">
+                                <li class="list-group-item">
+                                    <a class="menu-item-left" href="/admin/order">
+                                        订单管理
+                                    </a>
+                                </li>
+                                <li class="list-group-item">
+                                    <a class="menu-item-left" href="/admin/orderdelete">
+                                        订单回收站
+                                    </a>
+                                </li>
+                                <li class="list-group-item">
+                                    <a class="menu-item-left" href="/admin/productsupply">
+                                        供货管理
+                                    </a>
+                                </li>
+                                <li class="list-group-item">
+                                    <a class="menu-item-left" href="/admin/userinfo">
+                                        用户管理
+                                    </a>
+                                </li>
+                                <li class="list-group-item">
+                                    <a class="menu-item-left" href="/admin/withdraw">
+                                        提现申请
+                                    </a>
+                                </li>
+                                <li class="list-group-item">
+                                    <a class="menu-item-left" href="/admin/adminlog">
+                                        管理员操作记录
+                                    </a>
+                                </li>
+                                <li class="list-group-item" id="adminshow" style="display:none">
+                                    <a class="menu-item-left" href="/admin/admin">
+                                        管理员管理
+                                    </a>
+                                </li>
+                                @*<li class="list-group-item" id="">
+                                        <a class="menu-item-left" href="/admin/vpn">
+                                            VPN网站管理
+                                        </a>
+                                    </li>*@
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-10">
+                <div class="container">
+                    @RenderBody()
+                </div>
+            </div>
+        </div>
+    </main>
+    <script type="text/javascript">
+        var admin = Store.Admin();
+
+        $(function () {
+            if (!admin) {
+                location.href = "/admin/login";
+            }
+
+            if (admin.IsRoot) {
+                $("#adminshow").show();
+            }
+
+            $("#aLogout").on("click", function () {
+                Store.AdminRemove();
+                Store.TokenRemove();
+                setTimeout(function () { location.href = "/admin/login" }, 1000);
+            });
+        })
+
+        function GetEnumName(id, checkValue) {
+            var select = document.getElementById(id);
+            for (var i = 0; i < select.options.length; i++) {
+                if (select.options[i].value == checkValue) {
+                    return select.options[i].text;
+                }
+            }
+        }
+
+    </script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

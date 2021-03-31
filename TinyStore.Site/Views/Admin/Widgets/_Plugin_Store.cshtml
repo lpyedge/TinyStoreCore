@@ -1,0 +1,28 @@
+﻿<script>
+var Store = {};
+//密钥
+Store.Token = function (token) {
+    if (token) {
+        localStorage.setItem("AdminToken", JSON.stringify(token));
+    } else {
+        return JSON.parse(localStorage.getItem("AdminToken"));
+    }
+};
+
+Store.TokenRemove = function () {
+    localStorage.removeItem("AdminToken");
+};
+
+Store.Admin = function (admin) {
+    if (admin) {
+        localStorage.setItem("Admin", JSON.stringify(admin));
+    } else {
+        return JSON.parse(localStorage.getItem("Admin"));
+    }
+};
+
+Store.AdminRemove = function () {
+    localStorage.removeItem("Admin");
+};
+
+</script>

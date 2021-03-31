@@ -1,0 +1,237 @@
+﻿<div class="col">
+    <p class="mb-3  bd-text-purple-bright">
+        <span id="suppliername"></span>的结算记录列表
+    </p>
+    <div class="form-inline ">
+        <label for="txtDateBegin">起始时间</label>
+        <div class="input-group ">
+            <input id="txtDateBegin" type="date" class="form-control" value="@DateTime.Now.AddDays(-7).ToString(SiteContext.Config.FormatDate)" />
+        </div>
+        <label for="txtDateEnd">结束时间</label>
+        <div class="input-group">
+            <input id="txtDateEnd" type="date" class="form-control" value="@DateTime.Now.ToString(SiteContext.Config.FormatDate)" />
+        </div>
+    </div>
+    <div class="form-inline mt-2">
+        <div class="col-10 "></div>
+        <div class="col-2">
+            <button class="btn btn-primary mr-1" id="btnAddShow">增加</button>
+            <button class="btn btn-info" id="btnSearch">搜索</button>
+        </div>
+    </div>
+    <table id="grid" class="table table-striped table-bordered" cellspacing="0" width="100%">
+    </table>
+</div>
+<div id="dialog">
+    <form>
+        <div class="form-group form-inline row">
+            <label class="col-lg-3 control-label">金额</label>
+            <div class="col-lg-8">
+                <input type="number" class="form-control" name="Amount" step="0.01" , min="0.01" />
+            </div>
+        </div>
+        <div class="form-group form-inline row">
+            <label class="col-lg-3 control-label">流水号</label>
+            <div class="col-lg-8">
+                <input type="text" class="form-control w-100" placeholder="流水号" name="TxnId" />
+            </div>
+        </div>
+        <div class="form-group form-inline row">
+            <label class="col-lg-3 control-label">账户类型</label>
+            <div class="col-lg-8">
+                <select class="form-control" name="BankType">
+                    @foreach (EBankType type in Enum.GetValues(typeof(EBankType)))
+                    {
+                        <option value="@((int)type)">@type</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="form-group form-inline row">
+            <label class="col-lg-3 control-label">说明文字</label>
+            <div class="col-lg-8">
+                <textarea name="Memo" class="form-control w-100" rows="3"></textarea>
+            </div>
+        </div>
+    </form>
+</div>
+@section Scripts{
+    <script>
+        var esupplierBankType = @Json.Serialize(Global.EnumsDic<EBankType>());
+        var sid = location.pathname.replace("/user/ordercloserecord/","");
+        
+        var dialog;
+        var id = "";
+        var list = null;
+
+        $(function () {
+            $("#dialog").hide();
+            if (sid) {
+                CY.Ajax("SupplierModel", {
+                    Token: Store.Token()
+                }, {
+                    "sid": sid,
+                }, function (msg) {
+                    if (msg.Result) {
+                        $("#suppliername").text(msg.Data.Name);
+                    }
+                    else {
+                        sid = "";
+                        $.toast(msg.Message);
+                    }
+                });
+            }
+            else {
+
+            }
+
+            if (sid) {
+                QueryPageList();
+                $("#btnSearch").on("click", QueryPageList);
+                $("#btnAddShow").on("click", function () {
+                    id = "";
+                    CreateDialog();
+                    dialog.modal("show");
+                });
+            }
+        });
+
+
+        var grid = $('#grid').bootstrapTable(
+            $.extend(baseTableoption, {
+                uniqueId: "OCRId",
+                columns: [{
+                    field: 'Amount',
+                    title: '金额'
+                }, {
+                    field: 'TxnId',
+                    title: '流水号'
+                }, {
+                    //field: 'BankType_str',
+                    title: '账户类型', formatter: function (value, row, index) {
+                        return esupplierBankType[row.BankType];
+                    }
+                }, {
+                    //field: 'CreateDate_str',
+                    title: '添加时间', formatter: function (value, row, index) {
+                        return DatetimeFormat(row.CreateDate);
+                    }
+                }, {
+                    title: '管理', formatter: function (value, row, index) {
+                        var btn = "<button onclick=\"ModifyShow('" + row.OCRId + "')\" class=\"btn-info btn-sm m-1\">编辑</button>";
+                        btn += "<button onclick=\"Delete('" + row.OCRId + "')\" class=\"btn-danger btn-sm m-1\">删除</button>";
+                        return btn;
+                    }
+                }]
+            })
+        );
+        QueryPageList = function () {
+            var gridopt = grid.bootstrapTable("getOptions");
+            CY.Ajax("OrderCloseRecordPageList", {
+                Token: Store.Token()
+            }, {
+                storeId:storeid,
+                sid: sid,
+                begin: $("#txtDateBegin").val(),
+                end: $("#txtDateEnd").val(),
+                pageindex: gridopt.pageNumber,
+                pagesize: gridopt.pageSize
+            }, function (msg) {
+                if (msg.Result) {
+                    list = msg.Data.rows;
+                    grid.bootstrapTable('load', msg.Data);
+                }
+                else {
+                    $.toast(msg.Message);
+                }
+            });
+        }        
+
+        function CreateDialog() {
+            dialog = bootbox.dialog({
+                show: false,
+                title: "商品分类",
+                message: $("#dialog").html(),
+                buttons: {
+                    confirm: {
+                        label: "保存",
+                        className: "btn-success",
+                        callback: function () {
+                            if (dialog.find("form").valid()) {
+                                CY.Ajax("OrderCloseRecordSave", {
+                                    Token: Store.Token()
+                                }, {
+                                    "storeId":storeid,
+                                    "ocrid": id,
+                                    "sid": sid,
+                                    "amount": dialog.find("form").find("[name='Amount']").val(),
+                                    "txnid": dialog.find("form").find("[name='TxnId']").val(),
+                                    "banktype": dialog.find("form").find("[name='BankType']").val(),
+                                    "memo": dialog.find("form").find("[name='Memo']").val()
+                                }, function (msg) {
+                                    if (msg.Result) {
+                                        $.toast("操作成功！");
+                                    } else {
+                                        $.toast(msg.Message);
+                                    }
+                                    dialog.modal("hide");
+                                    QueryPageList();
+                                });
+                            }
+                            return false;
+                        }
+                    }
+                }
+            });
+            dialog.find("form").find("input[maxlength]").maxlength({
+                alwaysShow: true,
+                threshold: 10,
+                warningClass: "badge badge-success",
+                limitReachedClass: "badge badge-danger"
+            });
+            dialog.find("form").validate_popover({
+                
+                rules: {
+                    Amount: {
+                        required: true
+                    }
+                }
+            });
+        }
+       
+
+        function ModifyShow(ocrid) {
+            id = ocrid;
+            CreateDialog();
+            for (var i = 0; i < list.length; i++) {
+                if (list[i].OCRId == ocrid) {
+                    dialog.find("form").FormSet(list[i]);
+                    i = list.length;
+                }
+            }
+            dialog.modal("show");
+        }
+        function Delete(m_id) {
+            bootbox.confirm("是否确认?", function (result) {
+                if (result) {
+                    CY.Ajax("OrderCloseRecordDelete", {
+                        Token: Store.Token()
+                    }, {
+                        "storeId":storeid,
+                        "ocrid": m_id,
+                        "sid": sid,
+                    }, function (msg) {
+                        if (msg.Result) {
+                            $.toast("操作成功！");
+                        } else {
+                            $.toast(msg.Message);
+                        }
+                        QueryPageList();
+                    });
+                }
+            });
+            return false;
+        }
+        
+    </script>
+}

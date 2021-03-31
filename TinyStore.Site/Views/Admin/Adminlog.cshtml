@@ -1,0 +1,100 @@
+﻿<div class="col">
+    <p class="mb-3  bd-text-purple-bright">
+        操作列表
+    </p>
+    <div class="form-inline ">
+        <label for="txtDateBegin">起始时间</label>
+        <div class="input-group ">
+            <input id="txtDateBegin" type="date" class="form-control" value="@DateTime.Now.AddMonths(-1).ToString(SiteContext.Config.FormatDate)" />
+        </div>
+        <label for="txtDateEnd">结束时间</label>
+        <div class="input-group">
+            <input id="txtDateEnd" type="date" class="form-control" value="@DateTime.Now.ToString(SiteContext.Config.FormatDate)" />
+        </div>
+        <div class="col-2">
+            <select class="form-control" id="slType">
+                <option value="0">所有操作*</option>
+                @foreach (TinyStore.EAdminLogType type in Enum.GetValues(typeof(TinyStore.EAdminLogType)))
+                {
+                    <option value="@((int)type)">@type</option>
+
+                }
+            </select>
+        </div>
+        <div class="col-2" id="adminaccountsearch" style="display:none">
+            <select class="form-control" id="slAdmin">
+                <option value="0">所有管理员*</option>
+                @foreach (TinyStore.Model.AdminModel admin in TinyStore.BLL.AdminBLL.QueryListAll())
+                {
+                    <option value="@admin.AdminId">@admin.Account</option>
+                }
+            </select>
+        </div>
+        <div class="col-2">
+            <button class="btn btn-info" id="btnSearch">搜索</button>
+        </div>
+    </div>
+    <table id="grid" class="table table-striped table-bordered" cellspacing="0" width="100%">
+    </table>
+</div>
+@section Scripts{
+    <script>
+        var $grid;
+
+        $(function () {
+            if (admin.IsRoot) {
+                $("#adminaccountsearch").show();
+            } else {
+                $("#slAdmin").val(admin.AdminId);
+            }
+
+            $grid = $('#grid').bootstrapTable(
+                $.extend(baseTableoption, {
+                    uniqueId: "AdminLogId",
+                    columns: [{
+                        field: 'Account',
+                        title: '管理员'
+                    }, {
+                        field: 'Name',
+                        title: '操作名称'
+                    }, {
+                        title: '操作类型', formatter: function (value, row, index) {
+                            return GetEnumName("slType", row.AdminLogType);
+                        }
+
+                    }, {
+                        title: '操作日期',
+                        formatter: function (value, row, index) {
+                            return DatetimeFormat(row.CreateDate);
+                        }
+                    }, {
+                        field: 'ClientIP',
+                        title: '客户端IP'
+                    }]
+                })
+            );
+
+            QueryPageList();
+
+            $("#btnSearch").on("click", QueryPageList);
+        })
+
+        function QueryPageList() {
+            var gridopt = $grid.bootstrapTable("getOptions");
+            CY.Ajax("AdminLogPageList", {
+                Token: Store.Token()
+            }, {
+                begin: $("#txtDateBegin").val(),
+                end: $("#txtDateEnd").val(),
+                logtype: $("#slType").val(),
+                adminid: $("#slAdmin").val(),
+                pageindex: gridopt.pageNumber,
+                pagesize: gridopt.pageSize
+            }, function (msg) {
+                    $grid.bootstrapTable('load', msg.Data);
+            });
+        }
+
+        
+    </script>
+}

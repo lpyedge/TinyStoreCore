@@ -1,0 +1,153 @@
+﻿<!--背景阴影-->
+<div class="blackmask"></div>
+<!--支付方式弹出窗口-->
+<div class="dialog-box" id="payment" style="display:none">
+    <div class="dialog-wrapper">
+        <div class="dialog">
+            <div class="close dialog-close">
+                <i class="iconfont icon-chahao"></i>
+            </div>
+            <div class="title">请选择支付方式</div>
+            <div class="content">
+                <div class="payment row">
+                    <div class="unit">
+                        <a name="wechat"> 
+                            <span class="wechat"></span>
+                            微信支付
+                        </a>
+                    </div>
+                    <div class="unit">
+                        <a name="alipay">
+                            <span class="alipay"></span>
+                            支付宝支付
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    
+    /*支付方式*/
+    .payment {
+        display:flex;
+        justify-content: space-evenly;
+    }
+
+    .payment .unit {
+        margin: 0.3rem 0.6rem;
+        text-align: center
+    }
+
+    .payment span {
+        width: 2.14rem;
+        height: 2.14rem;
+        border-radius: 0.43rem;
+        margin-bottom: 0.14rem;
+        display: block
+    }
+
+    .payment .wechat {
+        background: url(/images/wechat.png) no-repeat center #3daf34;
+        background-size: cover
+    }
+
+    .payment .alipay {
+        background: url(/images/alipay.png) no-repeat center #02a8f2;
+        background-size: cover
+    }
+
+</style>
+<script>
+    var Payment = {};
+
+    Payment.Show = function () {
+        $(".blackmask,#payment").fadeIn(150);
+        $("#payment .dialog").addClass("fadeIn-up");
+        $("#payment .dialog").removeClass("fadeOut-up");
+
+        //关闭付款方式选择页面
+        $("#payment").find(".dialog-close").click(function () {
+            $(".blackmask,#payment").fadeOut(150);
+            $("#payment .dialog").addClass("fadeOut-up");
+            $("#payment .dialog").removeClass("fadeIn-up");
+        });
+
+        if (arguments.length == 4) {
+            Payment.OrderId = undefined;
+            Payment.ProductId = arguments[0];
+            Payment.Quantity = arguments[1];
+            Payment.Contact = arguments[2];
+            Payment.NoticeAccount = arguments[3];
+
+        } else if (arguments.length == 1) {
+            Payment.OrderId = arguments[0];
+        }
+    }
+
+    Payment.AppLaunched = function (isVisibility) {
+        if (!isVisibility && Payment.OrderId) {
+            location.href = "/order_" + Payment.OrderId;
+        }
+    }
+
+
+    $(function () {
+        //支付
+        $("#payment").find("[name]").on("click", function (e) {
+            var payname = $(this).attr("name");
+            var paymentid = "";
+            if (payname == "wechat") {
+                paymentid = 4
+            }
+            else if (payname == "alipay") {
+                paymentid = 3
+            }
+            if (paymentid) {
+
+                if (Payment.OrderId) {
+
+                    CY.Ajax("OrderPay", {
+                        "orderid": Payment.OrderId,
+                        "paymentid": paymentid
+                    }, function (msg) {
+                        if (msg.Result) {                            
+                            if (msg.Data && msg.Data.Url) {
+                                CY.Page.AppLaunch(msg.Data.Url);
+                            }
+                        } else {
+                            $.toast(msg.Message);
+                        }
+                    });
+                } else {
+                    CY.Ajax("OrderInsert",
+                        {
+                            "productid": Payment.ProductId,
+                            "quantity": Payment.Quantity,
+                            "contact": Payment.Contact,
+                            "noticeaccount": Payment.NoticeAccount,
+                            "paymentid": paymentid
+                        },
+                        function (msg) {
+                            if (msg.Result) {
+                                Payment.OrderId = msg.Message;
+                                if (msg.Data && msg.Data.Url) {
+                                    CY.Page.AppLaunch(msg.Data.Url);
+                                }
+
+                                CY.Page.VisibilityListener(Payment.AppLaunched);
+                            } else {
+                                $.toast(msg.Message);
+                            }
+                        });
+                }
+            }
+            else {
+                $.toast("请完善信息！");
+            }
+        });
+    })
+
+
+</script>
