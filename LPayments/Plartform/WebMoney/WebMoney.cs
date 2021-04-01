@@ -157,28 +157,44 @@ namespace LPayments.Plartform.WebMoney
 
             if (!Currencies.Contains(p_Currency)) throw new ArgumentException("Currency is not allowed!");
 
-            var formhtml =
-                new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +
-                                  "' action='https://merchant.wmtransfer.com/lmi/payment.asp' method='post' >");
-            formhtml.AppendFormat("<input type='hidden' name='LMI_PAYEE_PURSE' value='{0}' />", this[PID]);
-            formhtml.AppendFormat("<input type='hidden' name='LMI_PAYMENT_AMOUNT' value='{0}' />",
-                p_Amount.ToString("0.##"));
-            formhtml.AppendFormat("<input type='hidden' name='OrderId' value='{0}' />", p_OrderId);
-            formhtml.AppendFormat("<input type='hidden' name='OrderName' value='{0}' />", p_OrderName);
-            formhtml.AppendFormat("<input type='hidden' name='LMI_PAYMENT_DESC_BASE64' value='{0}' />",
-                Convert.ToBase64String(Encoding.UTF8.GetBytes(p_OrderName)));
-            formhtml.AppendFormat("<input type='hidden' name='LMI_SUCCESS_URL' value='{0}' />", p_ReturnUrl);
-            formhtml.AppendFormat("<input type='hidden' name='LMI_RESULT_URL' value='{0}' />", p_NotifyUrl);
-            formhtml.Append("<input type='hidden' name='LMI_SUCCESS_METHOD' value='2' />");
-            //formhtml.Append("<input type='hidden' name='LMI_SIM_MODE' value='0' />");
-            formhtml.Append("<input type='hidden' name='recipient_description' value='" + new Uri(p_ReturnUrl).Scheme +
-                            "://" + new Uri(p_ReturnUrl).Authority + "' />");
-            formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
-            formhtml.Append("</form>");
+            // var formhtml =
+            //     new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +
+            //                       "' action='https://merchant.wmtransfer.com/lmi/payment.asp' method='post' >");
+            // formhtml.AppendFormat("<input type='hidden' name='LMI_PAYEE_PURSE' value='{0}' />", this[PID]);
+            // formhtml.AppendFormat("<input type='hidden' name='LMI_PAYMENT_AMOUNT' value='{0}' />",
+            //     p_Amount.ToString("0.##"));
+            // formhtml.AppendFormat("<input type='hidden' name='OrderId' value='{0}' />", p_OrderId);
+            // formhtml.AppendFormat("<input type='hidden' name='OrderName' value='{0}' />", p_OrderName);
+            // formhtml.AppendFormat("<input type='hidden' name='LMI_PAYMENT_DESC_BASE64' value='{0}' />",
+            //     Convert.ToBase64String(Encoding.UTF8.GetBytes(p_OrderName)));
+            // formhtml.AppendFormat("<input type='hidden' name='LMI_SUCCESS_URL' value='{0}' />", p_ReturnUrl);
+            // formhtml.AppendFormat("<input type='hidden' name='LMI_RESULT_URL' value='{0}' />", p_NotifyUrl);
+            // formhtml.Append("<input type='hidden' name='LMI_SUCCESS_METHOD' value='2' />");
+            // //formhtml.Append("<input type='hidden' name='LMI_SIM_MODE' value='0' />");
+            // formhtml.Append("<input type='hidden' name='recipient_description' value='" + new Uri(p_ReturnUrl).Scheme +
+            //                 "://" + new Uri(p_ReturnUrl).Authority + "' />");
+            // formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
+            // formhtml.Append("</form>");
 
-            var pt = new PayTicket();
-            pt.FormHtml = formhtml.ToString();
-            return pt;
+            var datas = new Dictionary<string, string>()
+            {
+                ["LMI_PAYEE_PURSE"]=this[PID],
+                ["LMI_PAYMENT_AMOUNT"]= p_Amount.ToString("0.##"),
+                ["OrderId"]= p_OrderId,
+                ["sssss"]= p_OrderName,
+                ["LMI_PAYMENT_DESC_BASE64"]= Convert.ToBase64String(Encoding.UTF8.GetBytes(p_OrderName)),
+                ["LMI_SUCCESS_URL"]= p_ReturnUrl,
+                ["LMI_RESULT_URL"]= p_NotifyUrl,
+                ["LMI_SUCCESS_METHOD"]= "2",
+                ["recipient_description"]= new Uri(p_ReturnUrl).Scheme + "://" + new Uri(p_ReturnUrl).Authority ,
+            };
+            
+            return new PayTicket()
+            {
+                Action = EAction.UrlPost,
+                Uri = "https://merchant.wmtransfer.com/lmi/payment.asp",
+                Datas = datas
+            };
         }
     }
 }

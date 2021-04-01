@@ -138,49 +138,55 @@ namespace LPayments.Plartform.ShengPay
             if (string.IsNullOrEmpty(this[Key])) throw new ArgumentNullException("Key");
             if (!Currencies.Contains(p_Currency)) throw new ArgumentException("Currency is not allowed!");
 
-            var sPara = new Dictionary<string, string>();
+            var datas = new Dictionary<string, string>();
             //构造签名参数数组,签名方法要求不可变动前后顺序
-            sPara.Add("Name", "B2CPayment");
-            sPara.Add("Version", "V4.1.1.1.1");
-            sPara.Add("Charset", "UTF-8");
-            sPara.Add("MsgSender", this[PID]);
+            datas.Add("Name", "B2CPayment");
+            datas.Add("Version", "V4.1.1.1.1");
+            datas.Add("Charset", "UTF-8");
+            datas.Add("MsgSender", this[PID]);
             var timestamp = TimeStamp();
             if (!string.IsNullOrWhiteSpace(timestamp) && timestamp.Contains("SUCCESS") &&
                 timestamp.Contains("timestamp"))
-                sPara.Add("SendTime", Utils.Json.Deserialize<dynamic>(timestamp).timestamp);
-            sPara.Add("OrderNo", p_OrderId);
-            sPara.Add("OrderAmount", p_Amount.ToString("0.##"));
-            sPara.Add("OrderTime", DateTime.UtcNow.AddHours(8).ToString("yyyyMMddHHmmss"));
+                datas.Add("SendTime", Utils.Json.Deserialize<dynamic>(timestamp).timestamp);
+            datas.Add("OrderNo", p_OrderId);
+            datas.Add("OrderAmount", p_Amount.ToString("0.##"));
+            datas.Add("OrderTime", DateTime.UtcNow.AddHours(8).ToString("yyyyMMddHHmmss"));
 
             if (!string.IsNullOrWhiteSpace(m_PayChannel) && !string.IsNullOrWhiteSpace(m_InstCode))
             {
-                sPara.Add("PayType", "PT001");
-                sPara.Add("PayChannel", m_PayChannel);
-                sPara.Add("InstCode", m_InstCode);
+                datas.Add("PayType", "PT001");
+                datas.Add("PayChannel", m_PayChannel);
+                datas.Add("InstCode", m_InstCode);
             }
 
-            sPara.Add("PageUrl", p_ReturnUrl);
-            sPara.Add("BackUrl", p_ReturnUrl);
-            sPara.Add("NotifyUrl", p_NotifyUrl);
-            sPara.Add("ProductName", p_OrderName);
-            sPara.Add("BuyerIp", p_ClientIP.ToString());
-            sPara.Add("Ext1", p_OrderName);
-            sPara.Add("SignType", "MD5");
+            datas.Add("PageUrl", p_ReturnUrl);
+            datas.Add("BackUrl", p_ReturnUrl);
+            datas.Add("NotifyUrl", p_NotifyUrl);
+            datas.Add("ProductName", p_OrderName);
+            datas.Add("BuyerIp", p_ClientIP.ToString());
+            datas.Add("Ext1", p_OrderName);
+            datas.Add("SignType", "MD5");
+            
+            var sign = Utils.Core.MD5(datas.Aggregate("", (c, p) => c + p.Value) + this[Key]);
+            datas.Add("SignMsg", sign);
 
-            var formhtml =
-                new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +
-                                  "' action='" +
-                                  GATEWAY + "?_input_charset=utf-8' method='post' >");
-            foreach (var temp in sPara)
-                formhtml.Append("<input type='hidden' name='" + temp.Key + "' value='" + temp.Value + "'/>");
-            formhtml.Append("<input type='hidden' name='SignMsg' value='" +
-                            Utils.Core.MD5(sPara.Aggregate("", (c, p) => c + p.Value) + this[Key]) + "'/>");
-            formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
-            formhtml.Append("</form>");
+            // var formhtml =
+            //     new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +
+            //                       "' action='" +
+            //                       GATEWAY + "?_input_charset=utf-8' method='post' >");
+            // foreach (var temp in datas)
+            //     formhtml.Append("<input type='hidden' name='" + temp.Key + "' value='" + temp.Value + "'/>");
+            // formhtml.Append("<input type='hidden' name='SignMsg' value='" +
+            //                 Utils.Core.MD5(datas.Aggregate("", (c, p) => c + p.Value) + this[Key]) + "'/>");
+            // formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
+            // formhtml.Append("</form>");
 
-            var pt = new PayTicket();
-            pt.FormHtml = formhtml.ToString();
-            return pt;
+            return new PayTicket()
+            {
+                Action = EAction.UrlPost,
+                Uri = GATEWAY + "?_input_charset=utf-8",
+                Datas = datas
+            };
         }
 
         private string TimeStamp()

@@ -159,42 +159,45 @@ namespace LPayments.Plartform.PaymentWall
                 throw new ArgumentException("PayExtend Error");
             if (!Currencies.Contains(p_Currency)) throw new ArgumentException("Currency is not allowed!");
 
-            var data = new SortedDictionary<string, string>();
-            data["key"] = this[WidgetProjectKey];
-            data["widget"] = this[Widget];
-            data["lang"] = "en";
-            data["amount"] = p_Amount.ToString("0.##");
-            data["currencyCode"] = p_Currency.ToString();
-            data["ag_external_id"] = p_OrderId;
-            data["ag_name"] = p_OrderName;
-            data["ag_type"] = "fixed";
-            data["sign_version"] = "2";
+            var datas = new SortedDictionary<string, string>();
+            datas["key"] = this[WidgetProjectKey];
+            datas["widget"] = this[Widget];
+            datas["lang"] = "en";
+            datas["amount"] = p_Amount.ToString("0.##");
+            datas["currencyCode"] = p_Currency.ToString();
+            datas["ag_external_id"] = p_OrderId;
+            datas["ag_name"] = p_OrderName;
+            datas["ag_type"] = "fixed";
+            datas["sign_version"] = "2";
 
             if (!string.IsNullOrWhiteSpace(m_ps))
-                data["ps"] = m_ps;
+                datas["ps"] = m_ps;
 
-            data["uid"] = (extend_params as PayExtend).Email; //必填
-            data["email"] = (extend_params as PayExtend).Email; //看情况填
-            data["history[registration_ip]"] = p_ClientIP.ToString(); //看情况填
+            datas["uid"] = (extend_params as PayExtend).Email; //必填
+            datas["email"] = (extend_params as PayExtend).Email; //看情况填
+            datas["history[registration_ip]"] = p_ClientIP.ToString(); //看情况填
 
-            data["success_url"] = p_ReturnUrl;
-            data["pingback_url"] = p_NotifyUrl;
+            datas["success_url"] = p_ReturnUrl;
+            datas["pingback_url"] = p_NotifyUrl;
 
-            data["sign"] =
-                Utils.Core.MD5(data.Aggregate("", (x, y) => x += y.Key + "=" + y.Value) + this[WidgetSecretsKey]);
+            datas["sign"] =
+                Utils.Core.MD5(datas.Aggregate("", (x, y) => x += y.Key + "=" + y.Value) + this[WidgetSecretsKey]);
 
-            var formhtml =
-                new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +
-                                  "' action='https://api.paymentwall.com/api/" + this[ApiType] + "' method='get' >");
-            foreach (var item in data)
-                formhtml.AppendFormat("<input type='hidden' name='{0}' value='{1}' />", item.Key, item.Value);
+            // var formhtml =
+            //     new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +
+            //                       "' action='https://api.paymentwall.com/api/" + this[ApiType] + "' method='get' >");
+            // foreach (var item in data)
+            //     formhtml.AppendFormat("<input type='hidden' name='{0}' value='{1}' />", item.Key, item.Value);
+            //
+            // formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
+            // formhtml.Append("</form>");
 
-            formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
-            formhtml.Append("</form>");
-
-            var pt = new PayTicket();
-            pt.FormHtml = formhtml.ToString();
-            return pt;
+            return new PayTicket()
+            {
+                Action = EAction.UrlPost,
+                Uri = "https://api.paymentwall.com/api/" + this[ApiType],
+                Datas = datas
+            };
         }
 
         public class PayExtend

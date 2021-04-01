@@ -143,40 +143,70 @@ namespace LPayments.Plartform.Paypal
             if (string.IsNullOrEmpty(this[Account])) throw new ArgumentNullException("Account");
             if (!Currencies.Contains(p_Currency)) throw new ArgumentException("Currency is not allowed!");
 
-            var formhtml =
-                new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +
-                                  "' action='https://www.paypal.com/cgi-bin/webscr' method='post' >");
-            formhtml.Append("<input type='hidden' name='cmd' value='_xclick' />");
-            formhtml.AppendFormat("<input type='hidden' name='business' value='{0}' />", this[Account]);
-            formhtml.AppendFormat("<input type='hidden' name='amount' value='{0}' />", p_Amount.ToString("0.##"));
-            formhtml.AppendFormat("<input type='hidden' name='currency_code' value='{0}' />", p_Currency);
-            formhtml.AppendFormat("<input type='hidden' name='item_number' value='{0}' />", p_OrderId);
-            formhtml.AppendFormat("<input type='hidden' name='item_name' value='{0}' />", p_OrderName);
-            formhtml.AppendFormat("<input type='hidden' name='lc' value='{0}' />", "en");
+            // var formhtml =
+            //     new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +
+            //                       "' action='https://www.paypal.com/cgi-bin/webscr' method='post' >");
+            // formhtml.Append("<input type='hidden' name='cmd' value='_xclick' />");
+            // formhtml.AppendFormat("<input type='hidden' name='business' value='{0}' />", this[Account]);
+            // formhtml.AppendFormat("<input type='hidden' name='amount' value='{0}' />", p_Amount.ToString("0.##"));
+            // formhtml.AppendFormat("<input type='hidden' name='currency_code' value='{0}' />", p_Currency);
+            // formhtml.AppendFormat("<input type='hidden' name='item_number' value='{0}' />", p_OrderId);
+            // formhtml.AppendFormat("<input type='hidden' name='item_name' value='{0}' />", p_OrderName);
+            // formhtml.AppendFormat("<input type='hidden' name='lc' value='{0}' />", "en");
+            //
+            // var pe = extend_params as PayExtend;
+            // if (pe != null)
+            // {
+            //     formhtml.AppendFormat("<input type='hidden' name='image_url' value='{0}' />", pe.Logo);
+            //     //For digital goods, this field is required, and you must set it to 1.
+            //     //no_shipping=0,paypal会发送客户送货信息给notify地址
+            //     formhtml.Append("<input type='hidden' name='no_shipping' value='" +
+            //                     (pe.IsShipping ? "0" : "1") + "' />");
+            // }
+            //
+            // formhtml.Append("<input type='hidden' name='quantity' value='1' />");
+            //
+            //
+            // formhtml.AppendFormat("<input type='hidden' name='notify_url' value='{0}' />", p_NotifyUrl);
+            // formhtml.AppendFormat("<input type='hidden' name='return' value='{0}' />", p_ReturnUrl);
+            // formhtml.AppendFormat("<input type='hidden' name='cancel_return' value='{0}' />", p_CancelUrl);
+            //
+            // formhtml.Append("<input type='hidden' name='no_note' value='1' />");
+            // formhtml.Append("<input type='hidden' name='charset' value='UTF-8' />");
+            // formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
+            // formhtml.Append("</form>");
 
+            var datas = new Dictionary<string, string>()
+            {
+                ["cmd"] = "_xclick",
+                ["business"] = this[Account],
+                ["amount"] = p_Amount.ToString("0.##"),
+                ["currency_code"] = p_Currency.ToString(),
+                ["item_number"] = p_OrderId,
+                ["item_name"] = p_OrderName,
+                ["lc"] = "en",
+                ["quantity"] = "1",
+                ["notify_url"] = p_NotifyUrl,
+                ["return"] = p_ReturnUrl,
+                ["cancel_return"] = p_CancelUrl,
+                ["no_note"] = "1",
+                ["charset"] = "UTF-8",
+                ["no_shipping"] = "0",
+            };
             var pe = extend_params as PayExtend;
             if (pe != null)
-                formhtml.AppendFormat("<input type='hidden' name='image_url' value='{0}' />", pe.Logo);
+            {
+                if (!string.IsNullOrWhiteSpace(pe.Logo))
+                    datas["image_url"] = pe.Logo;
+                datas["no_shipping"] = (pe.IsShipping ? "0" : "1");
+            }
 
-            formhtml.Append("<input type='hidden' name='quantity' value='1' />");
-
-            //For digital goods, this field is required, and you must set it to 1.
-            //no_shipping=0,paypal会发送客户送货信息给notify地址
-            formhtml.Append("<input type='hidden' name='no_shipping' value='" +
-                            (pe.IsShipping ? "0" : "1") + "' />");
-
-            formhtml.AppendFormat("<input type='hidden' name='notify_url' value='{0}' />", p_NotifyUrl);
-            formhtml.AppendFormat("<input type='hidden' name='return' value='{0}' />", p_ReturnUrl);
-            formhtml.AppendFormat("<input type='hidden' name='cancel_return' value='{0}' />", p_CancelUrl);
-
-            formhtml.Append("<input type='hidden' name='no_note' value='1' />");
-            formhtml.Append("<input type='hidden' name='charset' value='UTF-8' />");
-            formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
-            formhtml.Append("</form>");
-
-            var pt = new PayTicket();
-            pt.FormHtml = formhtml.ToString();
-            return pt;
+            return new PayTicket()
+            {
+                Action = EAction.UrlPost,
+                Uri = "https://www.paypal.com/cgi-bin/webscr",
+                Datas = datas
+            };
         }
 
         private static bool ValidateStr(IDictionary<string, string> form)
@@ -220,7 +250,10 @@ namespace LPayments.Plartform.Paypal
             /// </summary>
             public string Logo { get; set; }
 
-            public bool IsShipping { get; set; } = false;
+            /// <summary>
+            /// 需要发货地址
+            /// </summary>
+            public bool IsShipping { get; set; } = true;
         }
     }
 }

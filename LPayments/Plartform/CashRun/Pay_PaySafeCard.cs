@@ -13,7 +13,7 @@ namespace LPayments.Plartform.CashRun
         public const string MerchantID = "MerchantID";
         public const string PayUrl = "PayUrl";
 
-        public Pay_PaySafeCard():base()
+        public Pay_PaySafeCard() : base()
         {
         }
 
@@ -80,27 +80,44 @@ namespace LPayments.Plartform.CashRun
             if (string.IsNullOrEmpty(this[PayUrl])) throw new ArgumentNullException("PayUrl");
             if (!Currencies.Contains(p_Currency)) throw new ArgumentException("Currency is not allowed!");
 
-            var formhtml =
-                new StringBuilder(
-                    string.Format(
-                        "<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +
-                        "' action='{0}' method='post' >",
-                        this[PayUrl]));
-            formhtml.AppendFormat("<input type='hidden' name='mtid' value='{0}-{1}' />", this[MerchantID], p_OrderId);
-            formhtml.AppendFormat("<input type='hidden' name='language' value='{0}' />", "en");
-            formhtml.AppendFormat("<input type='hidden' name='amount' value='{0}' />", p_Amount.ToString("0.##"));
-            formhtml.AppendFormat("<input type='hidden' name='currency' value='{0}' />", p_Currency);
-            if (p_Currency == ECurrency.USD)
-                formhtml.Append("<input type='hidden' name='zone' value='US' />");
-            formhtml.AppendFormat("<input type='hidden' name='abort_link' value='{0}' />", p_CancelUrl);
-            formhtml.AppendFormat("<input type='hidden' name='success_link' value='{0}' />", p_ReturnUrl);
-            formhtml.AppendFormat("<input type='hidden' name='notification_link' value='{0}' />", p_NotifyUrl);
-            formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
-            formhtml.Append("</form>");
+            // var formhtml =
+            //     new StringBuilder(
+            //         string.Format(
+            //             "<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +
+            //             "' action='{0}' method='post' >",
+            //             this[PayUrl]));
+            // formhtml.AppendFormat("<input type='hidden' name='mtid' value='{0}-{1}' />", this[MerchantID], p_OrderId);
+            // formhtml.AppendFormat("<input type='hidden' name='language' value='{0}' />", "en");
+            // formhtml.AppendFormat("<input type='hidden' name='amount' value='{0}' />", p_Amount.ToString("0.##"));
+            // formhtml.AppendFormat("<input type='hidden' name='currency' value='{0}' />", p_Currency);
+            // if (p_Currency == ECurrency.USD)
+            //     formhtml.Append("<input type='hidden' name='zone' value='US' />");
+            // formhtml.AppendFormat("<input type='hidden' name='abort_link' value='{0}' />", p_CancelUrl);
+            // formhtml.AppendFormat("<input type='hidden' name='success_link' value='{0}' />", p_ReturnUrl);
+            // formhtml.AppendFormat("<input type='hidden' name='notification_link' value='{0}' />", p_NotifyUrl);
+            // formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
+            // formhtml.Append("</form>");
 
-            var pt = new PayTicket();
-            pt.FormHtml = formhtml.ToString();
-            return pt;
+            var datas = new Dictionary<string, string>()
+            {
+                ["mtid"] = this[MerchantID] + "-" + p_OrderId,
+                ["language"] = "en",
+                ["amount"] = p_Amount.ToString("0.##"),
+                ["currency"] = p_Currency.ToString(),
+                ["abort_link"] = p_CancelUrl,
+                ["success_link"] = p_ReturnUrl,
+                ["notification_link"] = p_NotifyUrl,
+            };
+
+            if (p_Currency == ECurrency.USD)
+                datas["zone"] = "US";
+
+            return new PayTicket()
+            {
+                Action = EAction.UrlPost,
+                Uri = this[PayUrl],
+                Datas = datas
+            };
         }
     }
 }

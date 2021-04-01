@@ -45,6 +45,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\LPayments\LPayments.csproj" />
     <ProjectReference Include="..\TinyStore.BLL\TinyStore.BLL.csproj" />
     <ProjectReference Include="..\TinyStore.Core\TinyStore.Core.csproj" />
     <ProjectReference Include="..\TinyStore.Model\TinyStore.Model.csproj" />

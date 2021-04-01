@@ -166,26 +166,30 @@ namespace LPayments.Plartform.Paynet
                     = string.Format("https://checkout.payment.net/#/payment/{0}/checkout", checkoutJson.oData.sHash);
 #endif
 
-                    var gatewayUri =
-                        new Uri(gateurl +
-                                string.Format("?success_url={0}&cancel_url={1}",
-                                    Utils.HttpWebUtility.UriDataEncode(p_ReturnUrl),
-                                    Utils.HttpWebUtility.UriDataEncode(p_CancelUrl)));
+                    var gatewayUri = new Uri(gateurl +
+                                             string.Format("?success_url={0}&cancel_url={1}",
+                                                 Utils.HttpWebUtility.UriDataEncode(p_ReturnUrl),
+                                                 Utils.HttpWebUtility.UriDataEncode(p_CancelUrl)));
 
-                    pt.FormHtml = "<script>location.href='" + gatewayUri + "';</script>";
-                    pt.Url = gatewayUri.ToString();
+                    // pt.FormHtml = "<script>location.href='" + gatewayUri + "';</script>";
+                    // pt.Uri = ;
+                    return new PayTicket()
+                    {
+                        Action = EAction.UrlGet,
+                        Uri = gatewayUri.ToString()
+                    };
                 }
-                else
+
+                return new PayTicket(false)
                 {
-                    pt.Message = checkoutres;
-                }
-            }
-            else
-            {
-                pt.Message = authorizationres;
+                    Message = checkoutres
+                };
             }
 
-            return pt;
+            return new PayTicket(false)
+            {
+                Message = authorizationres
+            };
         }
     }
 }

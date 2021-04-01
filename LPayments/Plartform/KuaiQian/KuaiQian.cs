@@ -145,33 +145,33 @@ namespace LPayments.Plartform.KuaiQian
             if (string.IsNullOrEmpty(this[PublicRSAXml])) throw new ArgumentNullException("PublicRSAXml");
             if (!Currencies.Contains(p_Currency)) throw new ArgumentException("Currency is not allowed!");
 
-            var sPara = new Dictionary<string, string>();
+            var datas = new Dictionary<string, string>();
             //构造签名参数数组,签名方法要求不可变动前后顺序
-            sPara.Add("inputCharset", "1");
-            sPara.Add("pageUrl", p_ReturnUrl);
-            sPara.Add("bgUrl", p_NotifyUrl);
-            sPara.Add("version", "v2.0");
-            sPara.Add("language", "1");
-            sPara.Add("signType", "4");
+            datas.Add("inputCharset", "1");
+            datas.Add("pageUrl", p_ReturnUrl);
+            datas.Add("bgUrl", p_NotifyUrl);
+            datas.Add("version", "v2.0");
+            datas.Add("language", "1");
+            datas.Add("signType", "4");
 
-            sPara.Add("merchantAcctId", this[MerchantID]);
+            datas.Add("merchantAcctId", this[MerchantID]);
             //sPara.Add("payerIP", p_ClientIP.ToString());
 
-            sPara.Add("orderId", p_OrderId);
-            sPara.Add("orderAmount", (p_Amount * 100).ToString("0"));
-            sPara.Add("orderTime", DateTime.UtcNow.AddHours(8).ToString("yyyyMMddHHmmss"));
+            datas.Add("orderId", p_OrderId);
+            datas.Add("orderAmount", (p_Amount * 100).ToString("0"));
+            datas.Add("orderTime", DateTime.UtcNow.AddHours(8).ToString("yyyyMMddHHmmss"));
             //sPara.Add("orderTimestamp", DateTime.UtcNow.AddHours(8).ToString("yyyyMMddHHmmss"));
-            sPara.Add("productName", p_OrderName);
-            sPara.Add("ext1", p_OrderName);
-            sPara.Add("payType", m_payType);
+            datas.Add("productName", p_OrderName);
+            datas.Add("ext1", p_OrderName);
+            datas.Add("payType", m_payType);
             //固定选择值：00、10、12、13、14、17、21、22 00代表显示快钱各支付方式列表（默认开通10、12、 13三种支付方式）； 10代表只显示银行卡支付方式； 10 - 1 代表储蓄卡网银支付；10 - 2 代表信用卡网银 支付 12代表只显示快钱账户支付方式； 13代表只显示线下支付方式； 14代表显示企业网银支付； 17预付卡支付; 21 快捷支付 21 - 1 代表储蓄卡快捷；21 - 2 代表信用卡快捷； 23 分期支付 23 - 2代表信用卡快捷分期支付* 其中”-”只允许在半角状态下输入,无字符集限 制. *企业网银支付、信用卡无卡支付 / 快捷支付、手机语 音支付、预付卡支付、分期支付需单独申请，默认不 开通。
             if (m_payType == "10" || m_payType == "10-1" || m_payType == "10-2")
             {
-                sPara.Add("bankId", m_bankId);
+                datas.Add("bankId", m_bankId);
             }
 
             //签名顺序严格要求一致,值非空的才进行签名
-            var signstr = sPara
+            var signstr = datas
                 .Where(p => !string.IsNullOrWhiteSpace(p.Value) && p.Key != "payerIP" && p.Key != "orderTimestamp" &&
                             p.Key != "bankId").Aggregate("", (x, y) => x += y.Key + "=" + y.Value + "&").TrimEnd('&');
 
@@ -181,25 +181,24 @@ namespace LPayments.Plartform.KuaiQian
                 Utils.HASHCrypto.CryptoEnum.SHA1,
                 Encoding.UTF8.GetBytes(signstr));
 
-            sPara.Add("signMsg", Convert.ToBase64String(signMsgBytes));
+            datas.Add("signMsg", Convert.ToBase64String(signMsgBytes));
 
-            //var hwu = new HttpWebUtility();
-            //var res = hwu.Response(new Uri(GATEWAY),
-            //         HttpWebUtility.HttpMethod.POST, sPara);
+            // var formhtml =
+            //     new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +
+            //                       "' action='" +
+            //                       GATEWAY + "' method='post' >");
+            // foreach (var temp in sPara)
+            //     formhtml.Append("<input type='hidden' name='" + temp.Key + "' value='" + temp.Value + "'/>");
+            // //formhtml.Append("<input type='hidden' name='SignMsg' value='" + Utils.HASHCrypto.Generate( Utils.HASHCrypto.CryptoEnum.MD5).Encrypt(sPara.Aggregate("", (c, p) => c + p.Value) + this[Key]) + "'/>");
+            // formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
+            // formhtml.Append("</form>");
 
-            var formhtml =
-                new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +
-                                  "' action='" +
-                                  GATEWAY + "' method='post' >");
-            foreach (var temp in sPara)
-                formhtml.Append("<input type='hidden' name='" + temp.Key + "' value='" + temp.Value + "'/>");
-            //formhtml.Append("<input type='hidden' name='SignMsg' value='" + Utils.HASHCrypto.Generate( Utils.HASHCrypto.CryptoEnum.MD5).Encrypt(sPara.Aggregate("", (c, p) => c + p.Value) + this[Key]) + "'/>");
-            formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
-            formhtml.Append("</form>");
-
-            var pt = new PayTicket();
-            pt.FormHtml = formhtml.ToString();
-            return pt;
+            return new PayTicket()
+            {
+                Action =  EAction.UrlPost,
+                Uri = GATEWAY,
+                Datas = datas
+            };
         }
     }
 }

@@ -118,41 +118,65 @@ namespace LPayments.Plartform.Paypal
 
             var pe = extend_params as PayExtend;
 
-            var formhtml =
-                new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +
-                                  "' action='https://www.paypal.com/cgi-bin/webscr' method='post' >");
-            formhtml.Append("<input type='hidden' name='cmd' value='_xclick-subscriptions' />");
+            // var formhtml =
+            //     new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +
+            //                       "' action='https://www.paypal.com/cgi-bin/webscr' method='post' >");
+            // formhtml.Append("<input type='hidden' name='cmd' value='_xclick-subscriptions' />");
+            //
+            // formhtml.AppendFormat("<input type='hidden' name='business' value='{0}' />", this[Account]);
+            // formhtml.AppendFormat("<input type='hidden' name='item_name' value='{0}' />", p_OrderName);
+            // formhtml.AppendFormat("<input type='hidden' name='currency_code' value='{0}' />", p_Currency);
+            // formhtml.AppendFormat("<input type='hidden' name='lc' value='{0}' />", "en");
+            //
+            // formhtml.AppendFormat("<input type='hidden' name='a3' value='{0}' />", p_Amount.ToString("0.##"));
+            // formhtml.AppendFormat("<input type='hidden' name='p3' value='{0}' />", pe.Value);
+            // formhtml.AppendFormat("<input type='hidden' name='t3' value='{0}' />", pe.Unit);
+            //
+            // formhtml.Append("<input type='hidden' name='no_shipping' value='1' />");
+            //
+            // formhtml.AppendFormat("<input type='hidden' name='image_url' value='{0}' />", pe.Logo);
+            // // Display the total payment amount to buyers during checkou
+            // // Y — display the total
+            // // N — do not display the total
+            // formhtml.AppendFormat("<input type='hidden' name='disp_tot' value='{0}' />", "Y");
+            //
+            // formhtml.AppendFormat("<input type='hidden' name='return' value='{0}' />", p_ReturnUrl);
+            // formhtml.AppendFormat("<input type='hidden' name='notify_url' value='{0}' />", p_NotifyUrl);
+            // formhtml.AppendFormat("<input type='hidden' name='cancel_return' value='{0}' />", p_CancelUrl);
+            //
+            // //formhtml.AppendFormat("<input type='hidden' name='bn' value='{0}' />", "DesignerFotos_Subscribe_WPS_US");
+            // //formhtml.Append("<input type='hidden' name='no_note' value='1' />");
+            // //formhtml.Append("<input type='hidden' name='charset' value='UTF-8' />");
+            // formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
+            // formhtml.Append("</form>");
 
-            formhtml.AppendFormat("<input type='hidden' name='business' value='{0}' />", this[Account]);
-            formhtml.AppendFormat("<input type='hidden' name='item_name' value='{0}' />", p_OrderName);
-            formhtml.AppendFormat("<input type='hidden' name='currency_code' value='{0}' />", p_Currency);
-            formhtml.AppendFormat("<input type='hidden' name='lc' value='{0}' />", "en");
+            var datas = new Dictionary<string, string>()
+            {
+                ["cmd"] = "_xclick-subscriptions",
+                ["business"] = this[Account],
+                ["item_name"] = p_OrderName,
+                ["currency_code"] = p_Currency.ToString(),
+                ["lc"] = "en",
+                ["a3"] = p_Amount.ToString("0.##"),
+                ["p3"] = pe.Value.ToString(),
+                ["t3"] = pe.Unit.ToString(),
+                ["disp_tot"] = "Y",
+                ["return"] = p_ReturnUrl,
+                ["notify_url"] = p_NotifyUrl,
+                ["cancel_return"] = p_CancelUrl,
+                ["charset"] = "UTF-8",
+                ["no_shipping"] = "0",
+            };
 
-            formhtml.AppendFormat("<input type='hidden' name='a3' value='{0}' />", p_Amount.ToString("0.##"));
-            formhtml.AppendFormat("<input type='hidden' name='p3' value='{0}' />", pe.Value);
-            formhtml.AppendFormat("<input type='hidden' name='t3' value='{0}' />", pe.Unit);
-
-            formhtml.Append("<input type='hidden' name='no_shipping' value='1' />");
-
-            formhtml.AppendFormat("<input type='hidden' name='image_url' value='{0}' />", pe.Logo);
-            // Display the total payment amount to buyers during checkou
-            // Y — display the total
-            // N — do not display the total
-            formhtml.AppendFormat("<input type='hidden' name='disp_tot' value='{0}' />", "Y");
-
-            formhtml.AppendFormat("<input type='hidden' name='return' value='{0}' />", p_ReturnUrl);
-            formhtml.AppendFormat("<input type='hidden' name='notify_url' value='{0}' />", p_NotifyUrl);
-            formhtml.AppendFormat("<input type='hidden' name='cancel_return' value='{0}' />", p_CancelUrl);
-
-            //formhtml.AppendFormat("<input type='hidden' name='bn' value='{0}' />", "DesignerFotos_Subscribe_WPS_US");
-            //formhtml.Append("<input type='hidden' name='no_note' value='1' />");
-            //formhtml.Append("<input type='hidden' name='charset' value='UTF-8' />");
-            formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
-            formhtml.Append("</form>");
-
-            var pt = new PayTicket();
-            pt.FormHtml = formhtml.ToString();
-            return pt;
+            if (!string.IsNullOrWhiteSpace(pe.Logo))
+                datas["image_url"] = pe.Logo;
+            
+            return new PayTicket()
+            {
+                Action = EAction.UrlPost,
+                Uri = "https://www.paypal.com/cgi-bin/webscr",
+                Datas = datas
+            };
         }
 
         private static bool ValidateStr(string body)
@@ -161,7 +185,7 @@ namespace LPayments.Plartform.Paypal
 
             //tls12 加密
             System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-            
+
             var param = Encoding.ASCII.GetBytes(body + "&cmd=_notify-validate");
             var myRequest = (HttpWebRequest) WebRequest.Create("https://ipnpb.paypal.com/cgi-bin/webscr");
             myRequest.Method = "POST";

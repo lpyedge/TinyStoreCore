@@ -172,7 +172,7 @@ namespace LPayments.Plartform.OrangeBank
 
                     if (m_qrcode)
                     {
-                        pt.Url = resdatadic["trade_qrcode"];
+                        pt.Uri = resdatadic["trade_qrcode"];
                         //pt.FormHtml = Core.FormQR(Core.QR(resdatadic["trade_qrcode"], this.GetType()), p_OrderId, p_Amount, p_OrderName);
                     }
                     else

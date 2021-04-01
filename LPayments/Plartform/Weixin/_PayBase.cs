@@ -173,7 +173,6 @@ namespace LPayments.Plartform.Weixin
 
             var result = WxPayApi.UnifiedOrder(data); //调用统一下单接口
 
-            var pt = new PayTicket();
             if (string.Equals(result.GetValue("return_code").ToString(), "SUCCESS", StringComparison.OrdinalIgnoreCase)
                 && string.Equals(result.GetValue("result_code").ToString(), "SUCCESS",
                     StringComparison.OrdinalIgnoreCase)
@@ -185,16 +184,26 @@ namespace LPayments.Plartform.Weixin
                     {
                         var url = result.GetValue("code_url").ToString(); //获得统一下单接口返回的二维码链接
 
-                        //var imgbase64 = Core.QR(url, Core.WXIconBase64);
-                        //pt.FormHtml = Core.FormQR(imgbase64, p_OrderId, p_Amount, p_OrderName);
-                        pt.Url = url;
-                        //pt.Extra = imgbase64;
+                        // //var imgbase64 = Core.QR(url, Core.WXIconBase64);
+                        // //pt.FormHtml = Core.FormQR(imgbase64, p_OrderId, p_Amount, p_OrderName);
+                        // pt.Uri = url;
+                        // //pt.Extra = imgbase64;
+                        //
+                        // pt.Message = result.ToJson();
 
-                        pt.Message = result.ToJson();
+                        return new PayTicket()
+                        {
+                            Action = EAction.QrCode,
+                            Uri = url,
+                            Token = result.ToJson()
+                        };
                     }
                     catch (Exception ex)
                     {
-                        pt.Message = ex.Message + "\r\n\r\n" + result.ToJson();
+                        return new PayTicket(false)
+                        {
+                            Message = ex.Message + "\r\n\r\n" + result.ToJson()
+                        };
                     }
                 }
                 else if (string.Equals(m_tradetype, "MWEB", StringComparison.OrdinalIgnoreCase))
@@ -209,8 +218,8 @@ namespace LPayments.Plartform.Weixin
                         if (extend_params != null && !string.IsNullOrEmpty((extend_params as Pay_H5.PayExtend).Domain))
                         {
                             //var lip = new CY_Common.Net.LocalIPBaidu();
-                            
-                            var heads = new Dictionary<string, string>();      
+
+                            var heads = new Dictionary<string, string>();
                             heads["referer"] = (extend_params as Pay_H5.PayExtend).Domain;
 
                             heads["x-forwarded-for"] = p_ClientIP.ToString(); // + "," + lip.IP.ToString();
@@ -225,20 +234,35 @@ namespace LPayments.Plartform.Weixin
                             var m = Regex.Match(source, @"weixin://wap/pay\?[\w%&=]+", RegexOptions.IgnoreCase);
                             if (m.Success)
                             {
-                                pt.Url = m.Value;
-                                pt.FormHtml = "<script>location.href='" + m.Value + "';</script>";
+                                // pt.Uri = m.Value;
+                                // pt.FormHtml = "<script>location.href='" + m.Value + "';</script>";
+                                return new PayTicket()
+                                {
+                                    Action = EAction.UrlScheme,
+                                    Uri = m.Value,
+                                };
                             }
 
-                            pt.Message = source + "\r\n\r\n" + result.ToJson();
+                            return new PayTicket(false)
+                            {
+                                Message = source + "\r\n\r\n" + result.ToJson()
+                            };
                         }
                         else
                         {
-                            pt.Url = url;
+                            return new PayTicket()
+                            {
+                                Action = EAction.UrlGet,
+                                Uri = url,
+                            };
                         }
                     }
                     catch (Exception ex)
                     {
-                        pt.Message = ex.Message + "\r\n\r\n" + result.ToJson();
+                        return new PayTicket(false)
+                        {
+                            Message = ex.Message + "\r\n\r\n" + result.ToJson()
+                        };
                     }
                 }
                 else if (string.Equals(m_tradetype, "JSAPI", StringComparison.OrdinalIgnoreCase))
@@ -253,15 +277,25 @@ namespace LPayments.Plartform.Weixin
                         jsApiParam.SetValue("signType", "MD5");
                         jsApiParam.SetValue("paySign", jsApiParam.MakeSign());
 
-                        var jsapiparamstr = jsApiParam.ToJson();
+                        //var jsapiparamstr = jsApiParam.ToJson();
 
-                        pt.Extra = jsapiparamstr;
+                        // pt.Extra = jsapiparamstr;
+                        //
+                        // pt.Message = jsapiparamstr + "\r\n\r\n" + result.ToJson();
 
-                        pt.Message = jsapiparamstr + "\r\n\r\n" + result.ToJson();
+                        return new PayTicket()
+                        {
+                            Action = EAction.Token,
+                            Token = jsApiParam.ToJson(),
+                            Message = result.ToJson(),
+                        };
                     }
                     catch (Exception ex)
                     {
-                        pt.Message = ex.Message + "\r\n\r\n" + result.ToJson();
+                        return new PayTicket(false)
+                        {
+                            Message = ex.Message + "\r\n\r\n" + result.ToJson()
+                        };
                     }
                 }
                 else if (string.Equals(m_tradetype, "APP", StringComparison.OrdinalIgnoreCase))
@@ -277,22 +311,33 @@ namespace LPayments.Plartform.Weixin
                         jsApiParam.SetValue("noncestr", WxPayApi.GenerateNonceStr());
                         jsApiParam.SetValue("sign", jsApiParam.MakeSign());
 
-                        var jsapiparamstr = jsApiParam.ToJson();
+                        //var jsapiparamstr = jsApiParam.ToJson();
 
-                        pt.Extra = jsapiparamstr;
+                        // pt.Extra = jsapiparamstr;
+                        // //pt.Extra = Utils.Json.Serialize(new { prepayid = result.GetValue("prepay_id").ToString() ,sign = signstr });
+                        // pt.Message = result.ToJson();
 
-                        //pt.Extra = Utils.Json.Serialize(new { prepayid = result.GetValue("prepay_id").ToString() ,sign = signstr });
-
-                        pt.Message = result.ToJson();
+                        return new PayTicket()
+                        {
+                            Action = EAction.Token,
+                            Token = jsApiParam.ToJson(),
+                            Message = result.ToJson(),
+                        };
                     }
                     catch (Exception ex)
                     {
-                        pt.Message = ex.Message + "\r\n\r\n" + result.ToJson();
+                        return new PayTicket(false)
+                        {
+                            Message = ex.Message + "\r\n\r\n" + result.ToJson()
+                        };
                     }
                 }
             }
-
-            return pt;
+            
+            return new PayTicket(false)
+            {
+                Message = result.ToJson()
+            };
         }
 
 

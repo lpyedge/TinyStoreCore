@@ -13,54 +13,11 @@ namespace LPayments.Plartform.PaypalExpress
     [PayChannel(EChannel.PaypalExpress, ePayType = EPayType.PC)]
     public class PaypalBase_Express : _PaypalExpress, IPay
     {
-        private const string FormData =
-            "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:pt=\"http://svcs.paypal.com/types/pt\">"
-            + "<soapenv:Header />"
-            + "<soapenv:Body>"
-            + "<pt:SetTransactionContextRequest>"
-            + "<requestEnvelope>"
-            + "<errorLanguage>en_US</errorLanguage>"
-            + "</requestEnvelope>"
-            + "<trackingId>[token]</trackingId>"
-            + "<senderAccount>"
-            + "<partnerAccount>"
-            + "<email>[email]</email>"
-            + "<phone>[phone]</phone>"
-            + "<firstName>[firstname]</firstName>"
-            + "<lastName>[lastname]</lastName>"
-            + "<createDate>[createdate]</createDate>"
-            + "<transactionCountTotal>[transactioncounttotal]</transactionCountTotal>"
-            + "<transactionCountThreeMonths>[transactioncountthreemonths]</transactionCountThreeMonths>"
-            + "</partnerAccount>"
-            + "</senderAccount>"
-            + "<receiverAccount>"
-            + "</receiverAccount>"
-            + "<subOrders>"
-            + "<subOrder />"
-            + "</subOrders>"
-            + "<device>"
-            + "<userAgent>[useragent]</userAgent>"
-            + "</device>"
-            + "<ipAddress>"
-            + "<ipAddress>[ipaddress]</ipAddress>"
-            + "</ipAddress>"
-            + "<additionalData>"
-            + "<pair>"
-            + "<key>Country</key>"
-            + "<value>[country]</value>"
-            + "</pair>"
-            + "</additionalData>"
-            + "</pt:SetTransactionContextRequest>"
-            + "</soapenv:Body>"
-            + "</soapenv:Envelope>";
-
-       
-        public PaypalBase_Express():base()
+        public PaypalBase_Express() : base()
         {
-            
         }
 
-        public PaypalBase_Express(string p_SettingsJson):base(p_SettingsJson)
+        public PaypalBase_Express(string p_SettingsJson) : base(p_SettingsJson)
         {
         }
 
@@ -307,98 +264,48 @@ namespace LPayments.Plartform.PaypalExpress
             {
                 var token = decoder["TOKEN"];
 
-                #region RAAS防诈骗验证
+// #if DEBUG
+//                 var formhtml =
+//                     new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +
+//                                       "' action='" +
+//                                       "https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_express-checkout&useraction=commit&token=" +
+//                                       token + "' method='post' >");
+// #else
+//                 var formhtml =
+// new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" + "' action='" + "https://www.paypal.com/cgi-bin/webscr?cmd=_express-checkout&useraction=commit&token=" + token + "' method='post' >");
+// #endif
+//                 formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
+//                 formhtml.Append("</form>");
+//                 var pt = new PayTicket();
+//                 pt.FormHtml = formhtml.ToString();
+//                 pt.Uri = "https://www.paypal.com/cgi-bin/webscr?cmd=_express-checkout&useraction=commit&token=" + token;
+//                 //前端通过Js操作Cookies写入 extra的内容 key为 token
+//                 //Set-Cookie: redirect_to=; Path=/; Max-Age=0
+//                 pt.Token = token;
 
-                var pe = extend_params as PayExtend;
-                if (pe != null)
-                    SetTransactionContext(token, pe.UserAgent, p_ClientIP.ToString(), pe.Email,
-                        pe.Phone, pe.Firstname, pe.Lastname, pe.Country, pe.Createdate, pe.Transactioncounttotal,
-                        pe.Transactioncountthreemonths);
-
-                #endregion RAAS防诈骗验证
 
                 //https://www.paypal.com/cgi-bin/webscr?cmd=_express-checkout&useraction=commit&token=1232131231
                 //https://www.paypal.com/cgi-bin/webscr?cmd=_express-checkout&token=1232131231
                 //加上useraction=commit则用户在paypal的付款界面不展示收货地址和继续按钮，展示点击付款按钮，更适合虚拟产品的支付
+                return new PayTicket()
+                {
+                    Action = EAction.UrlGet,
 
+                    Uri =
 #if DEBUG
-                var formhtml =
-                    new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +
-                                      "' action='" +
-                                      "https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_express-checkout&useraction=commit&token=" +
-                                      token + "' method='post' >");
+                        $"https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_express-checkout&useraction=commit&token={token}",
 #else
-                var formhtml =
-new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" + "' action='" + "https://www.paypal.com/cgi-bin/webscr?cmd=_express-checkout&useraction=commit&token=" + token + "' method='post' >");
+                        $"https://www.paypal.com/cgi-bin/webscr?cmd=_express-checkout&useraction=commit&token={token}",
 #endif
-                formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
-                formhtml.Append("</form>");
-                var pt = new PayTicket();
-                pt.FormHtml = formhtml.ToString();
-                pt.Url = "https://www.paypal.com/cgi-bin/webscr?cmd=_express-checkout&useraction=commit&token=" + token;
-                //前端通过Js操作Cookies写入 extra的内容 key为 token
-                //Set-Cookie: redirect_to=; Path=/; Max-Age=0
-                pt.Extra = token;
-                return pt;
+                    Token = pStresponsenvp
+                };
             }
-            else
+
+            return new PayTicket(false)
             {
-                var pt = new PayTicket();
-                pt.Message = "ErrorCode=" + decoder["L_ERRORCODE0"] + "&" + "Desc=" + decoder["L_SHORTMESSAGE0"] + "&" +
-                             "Desc2=" + decoder["L_LONGMESSAGE0"];
-                return pt;
-            }
-        }
-
-        private bool SetTransactionContext(string ectoken, string userAgent, string ipAddress, string email,
-            string phone, string firstname, string lastname, string country, DateTime createDate,
-            int transactionCountTotal, int transactionCountThreeMonths)
-        {
-            //tls12 加密
-            System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-
-
-            var heads = new Dictionary<string, string>();
-
-            //hwu.SetContentType("text/xml; charset=utf-8");
-            //hwu.Expect100 = true;
-            ////hwu.SetWebProxy("127.0.0.1", 8888);
-            heads["Content-Type"] = "text/xml; charset=utf-8";
-
-            heads["X-PAYPAL-SECURITY-USERID"] = this[Username];
-            heads["X-PAYPAL-SECURITY-PASSWORD"] = this[Password];
-            heads["X-PAYPAL-SECURITY-SIGNATURE"] = this[Signature];
-
-            var res = _HWU.Response(new Uri(
-#if DEBUG
-                "https://svcs.sandbox.paypal.com/RiskAssessment/SetTransactionContext?wsdl"
-#else
-                "https://svcs.paypal.com/RiskAssessment/SetTransactionContext?wsdl"
-#endif
-            ), HttpWebUtility.HttpMethod.Get, null, heads);
-
-            heads.Add("SOAPAction", "urn:SetTransactionContext");
-
-            var body = FormData.Replace("[token]", ectoken)
-                .Replace("[email]", email)
-                .Replace("[phone]", phone)
-                .Replace("[firstname]", firstname)
-                .Replace("[lastname]", lastname)
-                .Replace("[createdate]", createDate.ToString("yyyy-MM-ddTHH:mm:ss.fffzzz"))
-                .Replace("[transactioncounttotal]", transactionCountTotal.ToString())
-                .Replace("[transactioncountthreemonths]", transactionCountThreeMonths.ToString())
-                .Replace("[country]", country)
-                .Replace("[useragent]", userAgent)
-                .Replace("[ipaddress]", ipAddress);
-            res = _HWU.ResponseBody(new Uri(
-#if DEBUG
-                "https://svcs.sandbox.paypal.com/RiskAssessment/SetTransactionContext"
-#else
-                "https://svcs.paypal.com/RiskAssessment/SetTransactionContext"
-#endif
-            ), HttpWebUtility.HttpMethod.Post, body, heads);
-
-            return res.Contains("<ack>Success</ack>");
+                Message = "ErrorCode=" + decoder["L_ERRORCODE0"] + "&" + "Desc=" + decoder["L_SHORTMESSAGE0"] + "&" +
+                          "Desc2=" + decoder["L_LONGMESSAGE0"]
+            };
         }
 
         public string HttpCall(string NvpRequest) //CallNvpServer

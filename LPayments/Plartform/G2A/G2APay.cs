@@ -14,9 +14,8 @@ namespace LPayments.Plartform.G2APay
         public const string APIHash = "APIHash";
         public const string APISecret = "APISecret";
 
-        public G2APay():base()
+        public G2APay() : base()
         {
-            
         }
 
         public G2APay(string p_SettingsJson) : this()
@@ -117,7 +116,7 @@ namespace LPayments.Plartform.G2APay
             return result;
         }
 
-        public PayTicket Pay(string p_OrderId, double p_Amount,
+        public virtual PayTicket Pay(string p_OrderId, double p_Amount,
             ECurrency p_Currency, string p_OrderName, IPAddress p_ClientIP = null, string p_ReturnUrl = "",
             string p_NotifyUrl = "", string p_CancelUrl = "", dynamic extend_params = null)
         {
@@ -148,27 +147,37 @@ namespace LPayments.Plartform.G2APay
             var res = _HWU.Response(new Uri("https://checkout.pay.g2a.com/index/createQuote"),
                 HttpWebUtility.HttpMethod.Post, dic);
 
-            var pt = new PayTicket();
 
             if (!res.Contains("\"ok\""))
             {
-                pt.Message = "生成交易链接失败！" + res;
-                return pt;
+                return new PayTicket(false)
+                {
+                    Message = res
+                };
             }
 
             var json = Utils.Json.Deserialize<dynamic>(res);
 
-            var formhtml =
-                new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +
-                                  "' action='https://checkout.pay.g2a.com/index/gateway' method='get' >");
+            // var formhtml =
+            //     new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +
+            //                       "' action='https://checkout.pay.g2a.com/index/gateway' method='get' >");
+            //
+            // formhtml.AppendFormat("<input type='hidden' name='{0}' value='{1}' />", "token", json.token);
+            //
+            // formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
+            // formhtml.Append("</form>");
 
-            formhtml.AppendFormat("<input type='hidden' name='{0}' value='{1}' />", "token", json.token);
+            var datas = new Dictionary<string, string>()
+            {
+                ["token"] = json.token
+            };
 
-            formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
-            formhtml.Append("</form>");
-
-            pt.FormHtml = formhtml.ToString();
-            return pt;
+            return new PayTicket()
+            {
+                Action = EAction.UrlGet,
+                Uri = "https://checkout.pay.g2a.com/index/gateway?" + HttpWebUtility.BuildQueryString(datas),
+                Datas = datas
+            };
         }
 
         public bool Refund(string email, string transactionId, string userOrderId, double amount, double refundedAmount)

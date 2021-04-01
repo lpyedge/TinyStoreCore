@@ -11,11 +11,11 @@ namespace LPayments.Plartform.Payssion
     {
         protected string m_pmid = "";
 
-        public PayBase():base()
+        public PayBase() : base()
         {
         }
 
-        public PayBase(string p_SettingsJson):base(p_SettingsJson)
+        public PayBase(string p_SettingsJson) : base(p_SettingsJson)
         {
         }
 
@@ -92,8 +92,13 @@ namespace LPayments.Plartform.Payssion
                         Utils.HttpWebUtility.UriDataEncode(p_NotifyUrl),
                         Utils.Core.MD5(string.Join("|", this[ApiKey], p_Amount.ToString("0.00"), p_Currency, p_OrderId,
                             this[SecretKey])));
-                pt.Url = url;
-                pt.FormHtml = "<script>location.href='" + url + "';</script>";
+                // pt.Uri = url;
+                // pt.FormHtml = "<script>location.href='" + url + "';</script>";
+                return new PayTicket()
+                {
+                    Action = EAction.UrlGet,
+                    Uri = url
+                };
             }
             else
             {
@@ -126,19 +131,23 @@ namespace LPayments.Plartform.Payssion
 
                 var res = _HWU.Response(uri, HttpWebUtility.HttpMethod.Post, dic);
 
-                if (!res.Contains("\"result_code\":200"))
-                {
-                    pt.Message = "生成交易链接失败！" + res;
-                }
-                else
+                if (res.Contains("\"result_code\":200"))
                 {
                     var json = Utils.Json.Deserialize<dynamic>(res);
-                    pt.Url = (string) json.redirect_url;
-                    pt.FormHtml = "<script>location.href='" + (string) json.redirect_url + "';</script>";
+                    // pt.Uri = (string) json.redirect_url;
+                    // pt.FormHtml = "<script>location.href='" + (string) json.redirect_url + "';</script>";
+                    return new PayTicket()
+                    {
+                        Action = EAction.UrlGet,
+                        Uri = (string) json.redirect_url
+                    };
                 }
-            }
 
-            return pt;
+                return new PayTicket(false)
+                {
+                    Message = res
+                };
+            }
         }
     }
 }

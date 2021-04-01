@@ -9,12 +9,12 @@ namespace LPayments.Plartform.AliPayO
 {
     [PayPlatformAttribute("支付宝旧版", "", SiteUrl = "https://www.alipay.com")]
     [PayChannel(EChannel.AliPayBatch)]
-    public class Pay_Batch : IPayChannel,IPay
+    public class Pay_Batch : IPayChannel, IPay
     {
         public const string PID = "PID";
         public const string Key = "Key";
 
-        public Pay_Batch(): base()
+        public Pay_Batch() : base()
         {
         }
 
@@ -96,7 +96,7 @@ namespace LPayments.Plartform.AliPayO
             return result;
         }
 
-        public PayTicket Pay(string p_OrderId, double p_Amount,
+        public virtual PayTicket Pay(string p_OrderId, double p_Amount,
             ECurrency p_Currency, string p_OrderName, IPAddress p_ClientIP = null, string p_ReturnUrl = "",
             string p_NotifyUrl = "", string p_CancelUrl = "", dynamic extend_params = null)
         {
@@ -110,17 +110,17 @@ namespace LPayments.Plartform.AliPayO
             if ((p_OrderId.Length < 11) | (p_OrderId.Length > 32))
                 throw new ArgumentException("p_OrderId must between 11 and 32");
 
-            var sPara = new Dictionary<string, string>();
+            var datas = new Dictionary<string, string>();
             //构造签名参数数组
-            sPara.Add("service", "batch_trans_notify");
-            sPara.Add("partner", this[PID]);
-            sPara.Add("_input_charset", "utf-8");
-            sPara.Add("notify_url", p_NotifyUrl);
-            sPara.Add("batch_no", p_OrderId);
+            datas.Add("service", "batch_trans_notify");
+            datas.Add("partner", this[PID]);
+            datas.Add("_input_charset", "utf-8");
+            datas.Add("notify_url", p_NotifyUrl);
+            datas.Add("batch_no", p_OrderId);
 
-            sPara.Add("sign_type", "MD5");
+            datas.Add("sign_type", "MD5");
 
-            sPara.Add("total_fee", p_Amount.ToString("0.##"));
+            datas.Add("total_fee", p_Amount.ToString("0.##"));
             //sPara.Add("exter_invoke_ip", p_ClientIP.ToString());
 
             var pe = extend_params as PayExtend;
@@ -128,31 +128,29 @@ namespace LPayments.Plartform.AliPayO
                 if (!string.IsNullOrWhiteSpace(pe.PayName) && !string.IsNullOrWhiteSpace(pe.PayAccount) &&
                     pe.PayDetails.Count > 0)
                 {
-                    sPara.Add("account_name", pe.PayName);
-                    sPara.Add("Email ", pe.PayAccount);
-                    sPara.Add("batch_num", pe.PayDetails.Count.ToString());
-                    sPara.Add("batch_fee", pe.PayDetails.Aggregate(0.00, (x, y) => x + y.Amount).ToString("0.00"));
+                    datas.Add("account_name", pe.PayName);
+                    datas.Add("Email ", pe.PayAccount);
+                    datas.Add("batch_num", pe.PayDetails.Count.ToString());
+                    datas.Add("batch_fee", pe.PayDetails.Aggregate(0.00, (x, y) => x + y.Amount).ToString("0.00"));
 
                     var detail_data = "";
                     for (var i = 0; i < pe.PayDetails.Count; i++)
                         detail_data += string.Format("{0}^{1}^{2}^{3}", i, pe.PayDetails[i].Account,
                             pe.PayDetails[i].Name, pe.PayDetails[i].Amount.ToString("0.00"));
 
-                    sPara.Add("detail_data", detail_data);
+                    datas.Add("detail_data", detail_data);
                 }
+            
+            var sign = Build_MD5Sign(datas, this[Key]);
+            datas.Add("sign_type", "MD5");
+            datas.Add("sign", sign);
 
-            var formhtml =
-                new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +
-                                  "' action='https://mapi.alipay.com/gateway.do?_input_charset=utf-8' method='post' >");
-            foreach (var temp in sPara)
-                formhtml.Append("<input type='hidden' name='" + temp.Key + "' value='" + temp.Value + "'/>");
-            formhtml.Append("<input type='hidden' name='sign' value='" + Build_MD5Sign(sPara, this[Key]) + "'/>");
-            formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
-            formhtml.Append("</form>");
-
-            var pt = new PayTicket();
-            pt.FormHtml = formhtml.ToString();
-            return pt;
+            return new PayTicket()
+            {
+                Action = EAction.UrlPost,
+                Uri = "https://mapi.alipay.com/gateway.do?_input_charset=utf-8",
+                Datas = datas
+            };
         }
 
         public class PayExtend

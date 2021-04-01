@@ -13,47 +13,6 @@ namespace LPayments.Plartform.PaypalExpress
     [PayPlatformAttribute("Paypal", "贝宝", SiteUrl = "https://www.paypal.com", NotifyProxy = true)]
     public abstract class _PaypalExpress : IPayChannel
     {
-        private const string FormData =
-            "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:pt=\"http://svcs.paypal.com/types/pt\">"
-            + "<soapenv:Header />"
-            + "<soapenv:Body>"
-            + "<pt:SetTransactionContextRequest>"
-            + "<requestEnvelope>"
-            + "<errorLanguage>en_US</errorLanguage>"
-            + "</requestEnvelope>"
-            + "<trackingId>[token]</trackingId>"
-            + "<senderAccount>"
-            + "<partnerAccount>"
-            + "<email>[email]</email>"
-            + "<phone>[phone]</phone>"
-            + "<firstName>[firstname]</firstName>"
-            + "<lastName>[lastname]</lastName>"
-            + "<createDate>[createdate]</createDate>"
-            + "<transactionCountTotal>[transactioncounttotal]</transactionCountTotal>"
-            + "<transactionCountThreeMonths>[transactioncountthreemonths]</transactionCountThreeMonths>"
-            + "</partnerAccount>"
-            + "</senderAccount>"
-            + "<receiverAccount>"
-            + "</receiverAccount>"
-            + "<subOrders>"
-            + "<subOrder />"
-            + "</subOrders>"
-            + "<device>"
-            + "<userAgent>[useragent]</userAgent>"
-            + "</device>"
-            + "<ipAddress>"
-            + "<ipAddress>[ipaddress]</ipAddress>"
-            + "</ipAddress>"
-            + "<additionalData>"
-            + "<pair>"
-            + "<key>Country</key>"
-            + "<value>[country]</value>"
-            + "</pair>"
-            + "</additionalData>"
-            + "</pt:SetTransactionContextRequest>"
-            + "</soapenv:Body>"
-            + "</soapenv:Envelope>";
-
         public readonly string Account = "Account";
         public readonly string Password = "Password";
         public readonly string Signature = "Signature";

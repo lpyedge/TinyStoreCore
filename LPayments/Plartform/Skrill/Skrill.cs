@@ -140,28 +140,46 @@ namespace LPayments.Plartform.Skrill
             if (string.IsNullOrEmpty(this[Account])) throw new ArgumentNullException("Account");
             if (!Currencies.Contains(p_Currency)) throw new ArgumentException("Currency is not allowed!");
 
-            var formhtml =
-                new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +
-                                  "' action='https://www.skrill.com/app/payment.pl' method='post' >");
+            // var formhtml =
+            //     new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +
+            //                       "' action='https://www.skrill.com/app/payment.pl' method='post' >");
+            //
+            // formhtml.AppendFormat("<input type='hidden' name='pay_to_email' value='{0}' />", this[Account]);
+            // formhtml.AppendFormat("<input type='hidden' name='language' value='{0}' />", "en");
+            // formhtml.AppendFormat("<input type='hidden' name='amount' value='{0}' />", p_Amount.ToString("0.##"));
+            // formhtml.AppendFormat("<input type='hidden' name='currency' value='{0}' />", p_Currency);
+            // formhtml.AppendFormat("<input type='hidden' name='transaction_id' value='{0}' />", p_OrderId);
+            // formhtml.AppendFormat("<input type='hidden' name='detail1_description' value='{0}' />", p_OrderName);
+            // formhtml.AppendFormat("<input type='hidden' name='return_url' value='{0}' />", p_ReturnUrl);
+            // formhtml.AppendFormat("<input type='hidden' name='status_url' value='{0}' />", p_NotifyUrl);
+            // formhtml.AppendFormat("<input type='hidden' name='cancel_url' value='{0}' />", p_CancelUrl);
+            // formhtml.AppendFormat("<input type='hidden' name='merchant_fields' value='{0}' />", p_OrderName);
+            // formhtml.Append("<input type='hidden' name='recipient_description' value='" + new Uri(p_ReturnUrl).Scheme +
+            //                 "://" + new Uri(p_ReturnUrl).Authority + "' />");
+            // formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
+            // formhtml.Append("</form>");
 
-            formhtml.AppendFormat("<input type='hidden' name='pay_to_email' value='{0}' />", this[Account]);
-            formhtml.AppendFormat("<input type='hidden' name='language' value='{0}' />", "en");
-            formhtml.AppendFormat("<input type='hidden' name='amount' value='{0}' />", p_Amount.ToString("0.##"));
-            formhtml.AppendFormat("<input type='hidden' name='currency' value='{0}' />", p_Currency);
-            formhtml.AppendFormat("<input type='hidden' name='transaction_id' value='{0}' />", p_OrderId);
-            formhtml.AppendFormat("<input type='hidden' name='detail1_description' value='{0}' />", p_OrderName);
-            formhtml.AppendFormat("<input type='hidden' name='return_url' value='{0}' />", p_ReturnUrl);
-            formhtml.AppendFormat("<input type='hidden' name='status_url' value='{0}' />", p_NotifyUrl);
-            formhtml.AppendFormat("<input type='hidden' name='cancel_url' value='{0}' />", p_CancelUrl);
-            formhtml.AppendFormat("<input type='hidden' name='merchant_fields' value='{0}' />", p_OrderName);
-            formhtml.Append("<input type='hidden' name='recipient_description' value='" + new Uri(p_ReturnUrl).Scheme +
-                            "://" + new Uri(p_ReturnUrl).Authority + "' />");
-            formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
-            formhtml.Append("</form>");
+            var datas = new Dictionary<string, string>()
+            {
+                ["pay_to_email"] = this[Account],
+                ["language"] = "en",
+                ["amount"] = p_Amount.ToString("0.##"),
+                ["currency"] = p_Currency.ToString(),
+                ["transaction_id"] = p_OrderId,
+                ["detail1_description"] = p_OrderName,
+                ["return_url"] = p_ReturnUrl,
+                ["status_url"] = p_NotifyUrl,
+                ["cancel_url"] = p_CancelUrl,
+                ["merchant_fields"] = p_OrderName,
+                ["recipient_description"] = new Uri(p_ReturnUrl).Scheme + "://" + new Uri(p_ReturnUrl).Authority,
+            };
 
-            var pt = new PayTicket();
-            pt.FormHtml = formhtml.ToString();
-            return pt;
+            return new PayTicket()
+            {
+                Action = EAction.UrlPost,
+                Uri = "https://www.skrill.com/app/payment.pl",
+                Datas = datas
+            };
         }
     }
 }

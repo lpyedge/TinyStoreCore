@@ -57,7 +57,7 @@ namespace LPayments.Plartform.SofortBank
                 ECurrency.GBP
             };
         }
-        
+
         public PayResult Notify(IDictionary<string, string> form, IDictionary<string, string> query,
             IDictionary<string, string> head, string body, string notifyip)
         {
@@ -148,23 +148,37 @@ namespace LPayments.Plartform.SofortBank
             if (string.IsNullOrEmpty(this[ProjectId])) throw new ArgumentNullException("ProjectId");
             if (!Currencies.Contains(p_Currency)) throw new ArgumentException("Currency is not allowed!");
 
-            var formhtml =
-                new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +
-                                  "' action='https://www.directebanking.com/payment/start' method='post' >");
-            formhtml.AppendFormat("<input type='hidden' name='user_id' value='{0}' />", this[UserId]);
-            formhtml.AppendFormat("<input type='hidden' name='language_id' value='{0}' />", "en");
-            formhtml.AppendFormat("<input type='hidden' name='amount' value='{0}' />", p_Amount.ToString("0.##"));
-            formhtml.AppendFormat("<input type='hidden' name='currency_id' value='{0}' />", p_Currency);
-            formhtml.AppendFormat("<input type='hidden' name='project_id' value='{0}' />", this[ProjectId]);
-            formhtml.AppendFormat("<input type='hidden' name='reason_1' value='{0}' />", p_OrderId);
-            formhtml.AppendFormat("<input type='hidden' name='reason_2' value='{0}' />",
-                p_OrderName.Length > 27 ? p_OrderName.Substring(0, 27) : p_OrderName);
-            formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
-            formhtml.Append("</form>");
+            // var formhtml =
+            //     new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +
+            //                       "' action='https://www.directebanking.com/payment/start' method='post' >");
+            // formhtml.AppendFormat("<input type='hidden' name='user_id' value='{0}' />", this[UserId]);
+            // formhtml.AppendFormat("<input type='hidden' name='language_id' value='{0}' />", "en");
+            // formhtml.AppendFormat("<input type='hidden' name='amount' value='{0}' />", p_Amount.ToString("0.##"));
+            // formhtml.AppendFormat("<input type='hidden' name='currency_id' value='{0}' />", p_Currency);
+            // formhtml.AppendFormat("<input type='hidden' name='project_id' value='{0}' />", this[ProjectId]);
+            // formhtml.AppendFormat("<input type='hidden' name='reason_1' value='{0}' />", p_OrderId);
+            // formhtml.AppendFormat("<input type='hidden' name='reason_2' value='{0}' />",
+            //     p_OrderName.Length > 27 ? p_OrderName.Substring(0, 27) : p_OrderName);
+            // formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
+            // formhtml.Append("</form>");
 
-            var pt = new PayTicket();
-            pt.FormHtml = formhtml.ToString();
-            return pt;
+            var datas = new Dictionary<string, string>()
+            {
+                ["user_id"] = this[UserId],
+                ["language_id"] = "en",
+                ["amount"] = p_Amount.ToString("0.##"),
+                ["currency_id"] = p_Currency.ToString(),
+                ["project_id"] = this[ProjectId],
+                ["reason_1"] = p_OrderId,
+                ["reason_2"] = p_OrderName.Length > 27 ? p_OrderName.Substring(0, 27) : p_OrderName,
+            };
+
+            return new PayTicket()
+            {
+                Action = EAction.UrlPost,
+                Uri = "https://www.directebanking.com/payment/start",
+                Datas = datas
+            };
         }
     }
 }

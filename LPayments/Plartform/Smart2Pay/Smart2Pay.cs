@@ -84,41 +84,69 @@ namespace LPayments.Plartform.Smart2Pay
             if (string.IsNullOrEmpty(this[MerchantID])) throw new ArgumentNullException("MerchantID");
             if (!Currencies.Contains(p_Currency)) throw new ArgumentException("Currency is not allowed!");
 
-            var formhtml =
-                new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +
-                                  "' action='https://admin.smart2pay.com/payment/pay.cgi' method='post' >");
-            formhtml.Append(
-                "<input type='hidden' name='card-allowed' value='Visa,Mastercard,Amex,Discover,Diners,JCB,EasyLink,Bermuda,IslandCard,Butterfield,KeyCard,MilStar,Solo,Switch' />");
-            formhtml.Append("<input type='hidden' name='comm-title' value='Comments' />");
-            formhtml.AppendFormat("<input type='hidden' name='comments' value='{0}' />", p_OrderName);
-            formhtml.Append("<input type='hidden' name='easycart' value='0' />");
-            formhtml.Append("<input type='hidden' name='shipinfo' value='0' />");
-            formhtml.AppendFormat("<input type='hidden' name='customname1' value='{0}' />", "OrderName");
-            formhtml.AppendFormat("<input type='hidden' name='customvalue1' value='{0}' />", p_OrderName);
-            formhtml.AppendFormat("<input type='hidden' name='customname2' value='{0}' />", "Amount");
-            formhtml.AppendFormat("<input type='hidden' name='customvalue2' value='{0}' />", p_Amount.ToString("0.##"));
-            formhtml.AppendFormat("<input type='hidden' name='customname3' value='{0}' />", "Currency");
-            formhtml.AppendFormat("<input type='hidden' name='customvalue3' value='{0}' />",
-                p_Currency.ToString().ToLowerInvariant());
+            // var formhtml =
+            //     new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +
+            //                       "' action='https://admin.smart2pay.com/payment/pay.cgi' method='post' >");
+            // formhtml.Append(
+            //     "<input type='hidden' name='card-allowed' value='Visa,Mastercard,Amex,Discover,Diners,JCB,EasyLink,Bermuda,IslandCard,Butterfield,KeyCard,MilStar,Solo,Switch' />");
+            // formhtml.Append("<input type='hidden' name='comm-title' value='Comments' />");
+            // formhtml.AppendFormat("<input type='hidden' name='comments' value='{0}' />", p_OrderName);
+            // formhtml.Append("<input type='hidden' name='easycart' value='0' />");
+            // formhtml.Append("<input type='hidden' name='shipinfo' value='0' />");
+            // formhtml.AppendFormat("<input type='hidden' name='customname1' value='{0}' />", "OrderName");
+            // formhtml.AppendFormat("<input type='hidden' name='customvalue1' value='{0}' />", p_OrderName);
+            // formhtml.AppendFormat("<input type='hidden' name='customname2' value='{0}' />", "Amount");
+            // formhtml.AppendFormat("<input type='hidden' name='customvalue2' value='{0}' />", p_Amount.ToString("0.##"));
+            // formhtml.AppendFormat("<input type='hidden' name='customname3' value='{0}' />", "Currency");
+            // formhtml.AppendFormat("<input type='hidden' name='customvalue3' value='{0}' />",
+            //     p_Currency.ToString().ToLowerInvariant());
+            //
+            // formhtml.AppendFormat("<input type='hidden' name='currency' value='{0}' />",
+            //     p_Currency.ToString().ToLowerInvariant());
+            // formhtml.AppendFormat("<input type='hidden' name='orderID' value='{0}' />", p_OrderId);
+            // formhtml.AppendFormat("<input type='hidden' name='order-id' value='{0}' />", p_OrderId);
+            // formhtml.AppendFormat("<input type='hidden' name='publisher-name' value='{0}' />", this[MerchantID]);
+            // formhtml.AppendFormat("<input type='hidden' name='publisher-email' value='{0}' />", this[NotifyEmail]);
+            // formhtml.AppendFormat("<input type='hidden' name='card-amount' value='{0}' />", p_Amount.ToString("0.##"));
+            // formhtml.AppendFormat("<input type='hidden' name='receipt-url' value='{0}' />",
+            //     new Uri(p_ReturnUrl).Scheme + "://" + new Uri(p_ReturnUrl).Authority);
+            // formhtml.AppendFormat("<input type='hidden' name='problem-link' value='{0}' />", p_CancelUrl);
+            // formhtml.AppendFormat("<input type='hidden' name='return_url' value='{0}' />", p_ReturnUrl);
+            // formhtml.AppendFormat("<input type='hidden' name='success-link' value='{0}' />", p_NotifyUrl);
+            // formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
+            // formhtml.Append("</form>");
 
-            formhtml.AppendFormat("<input type='hidden' name='currency' value='{0}' />",
-                p_Currency.ToString().ToLowerInvariant());
-            formhtml.AppendFormat("<input type='hidden' name='orderID' value='{0}' />", p_OrderId);
-            formhtml.AppendFormat("<input type='hidden' name='order-id' value='{0}' />", p_OrderId);
-            formhtml.AppendFormat("<input type='hidden' name='publisher-name' value='{0}' />", this[MerchantID]);
-            formhtml.AppendFormat("<input type='hidden' name='publisher-email' value='{0}' />", this[NotifyEmail]);
-            formhtml.AppendFormat("<input type='hidden' name='card-amount' value='{0}' />", p_Amount.ToString("0.##"));
-            formhtml.AppendFormat("<input type='hidden' name='receipt-url' value='{0}' />",
-                new Uri(p_ReturnUrl).Scheme + "://" + new Uri(p_ReturnUrl).Authority);
-            formhtml.AppendFormat("<input type='hidden' name='problem-link' value='{0}' />", p_CancelUrl);
-            formhtml.AppendFormat("<input type='hidden' name='return_url' value='{0}' />", p_ReturnUrl);
-            formhtml.AppendFormat("<input type='hidden' name='success-link' value='{0}' />", p_NotifyUrl);
-            formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
-            formhtml.Append("</form>");
+            var datas = new Dictionary<string, string>()
+            {
+                ["publisher-name"]=this[MerchantID],
+                ["publisher-email"]=this[NotifyEmail],
+                ["card-allowed"] = "Visa,Mastercard,Amex,Discover,Diners,JCB,EasyLink,Bermuda,IslandCard,Butterfield,KeyCard,MilStar,Solo,Switch",
+                ["comm-title"]="Comments",
+                ["comments"]=p_OrderName,
+                ["easycart"]="0",
+                ["shipinfo"]="0",
+                ["customname1"]="OrderName",
+                ["customvalue1"]=p_OrderName,
+                ["customname2"]="Amount",
+                ["customvalue2"]= p_Amount.ToString("0.##"),
+                ["customname3"]="Currency",
+                ["customvalue3"]=p_Currency.ToString(),
+                ["currency"]=p_Currency.ToString().ToLowerInvariant(),
+                ["orderID"]=p_OrderId,
+                ["order-id"]=p_OrderId,
+                ["card-amount"]=p_Amount.ToString("0.##"),
+                ["receipt-url"]=new Uri(p_ReturnUrl).Scheme + "://" + new Uri(p_ReturnUrl).Authority,
+                ["problem-link"]=p_CancelUrl,
+                ["return_url"]=p_ReturnUrl,
+                ["success-link"]=p_NotifyUrl,
+            };
 
-            var pt = new PayTicket();
-            pt.FormHtml = formhtml.ToString();
-            return pt;
+            return new PayTicket()
+            {
+                Action = EAction.UrlPost,
+                Uri = "https://admin.smart2pay.com/payment/pay.cgi",
+                Datas = datas
+            };
         }
 
         //    if (Params.Trim() == "")

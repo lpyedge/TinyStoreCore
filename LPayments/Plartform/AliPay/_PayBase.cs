@@ -112,22 +112,22 @@ namespace LPayments.Plartform.AliPay
 
             //biz["settle_info"] ="分润信息";
 
-            var dic = PublicDic(m_trade_type, p_NotifyUrl, p_ReturnUrl);
+            var datas = PublicDic(m_trade_type, p_NotifyUrl, p_ReturnUrl);
 
-            dic["biz_content"] = Utils.Json.Serialize(biz);
-            dic["sign"] = Convert.ToBase64String(Utils.RSACrypto.SignData(m_AppPrivateProvider,
+            datas["biz_content"] = Utils.Json.Serialize(biz);
+            datas["sign"] = Convert.ToBase64String(Utils.RSACrypto.SignData(m_AppPrivateProvider,
                 Utils.HASHCrypto.CryptoEnum.SHA256,
-                Encoding.GetEncoding(Charset).GetBytes(Utils.Core.LinkStr(dic))));
+                Encoding.GetEncoding(Charset).GetBytes(Utils.Core.LinkStr(datas))));
 
 
             if (m_trade_type == "alipay.trade.precreate")
             {
                 var res = _HWU.Response(new Uri(GateWay + "?charset=utf-8"),
-                    Utils.HttpWebUtility.HttpMethod.Post, dic);
+                    Utils.HttpWebUtility.HttpMethod.Post, datas);
 
                 var json = Utils.Json.Deserialize<dynamic>(res);
 
-                var pt = new PayTicket();
+
                 if (res.Contains("\"sign\":") && res.Contains("\"alipay_trade_precreate_response\":"))
                 {
                     var resdic = new Dictionary<string, string>();
@@ -137,75 +137,82 @@ namespace LPayments.Plartform.AliPay
                     resdic["qr_code"] = json.alipay_trade_precreate_response.qr_code.ToString();
                     if (resdic["code"] == "10000" && p_OrderId == resdic["out_trade_no"])
                     {
-                        pt.Url = resdic["qr_code"];
-                        //var imgbase64 = Core.QR(pt.Url, Core.APIconBase64);
-                        //pt.FormHtml = Core.FormQR(imgbase64, p_OrderId, p_Amount, p_OrderName);
-                        //pt.Extra = imgbase64;
+                        return new PayTicket()
+                        {
+                            Action = EAction.QrCode,
+                            Uri = resdic["qr_code"]
+                        };
                     }
 
-                    string sign = json.sign.ToString();
+                    //string sign = json.sign.ToString();
                 }
 
-                return pt;
+                return new PayTicket(false)
+                {
+                    Message = res
+                };
             }
             else if (m_trade_type == "alipay.trade.app.pay")
             {
-                var pt = new PayTicket();
-                pt.Extra = Utils.Core.LinkStr(dic.Where(p => (p.Key != "method" && p.Key != "version"))
-                        .ToDictionary(p => p.Key, p => p.Value),
-                    true, true);
-                return pt;
+                return new PayTicket()
+                {
+                    Action = EAction.Token,
+                    Token = Utils.Core.LinkStr(datas.Where(p => (p.Key != "method" && p.Key != "version"))
+                            .ToDictionary(p => p.Key, p => p.Value),
+                        true, true)
+                };
             }
             else if (m_trade_type == "alipay.trade.wap.pay" && extend_params != null)
             {
-                var pt = new PayTicket();
-
                 Pay_Wap.Extend extend = Utils.Json.Deserialize<Pay_Wap.Extend>(Utils.Json.Serialize(extend_params));
                 if (extend != null)
                 {
                     string res = _HWU.Response(new Uri(GateWay + "?charset=utf-8"),
-                        Utils.HttpWebUtility.HttpMethod.Post, dic);
+                        Utils.HttpWebUtility.HttpMethod.Post, datas);
                     var match = System.Text.RegularExpressions.Regex.Match(res,
                         @"\{""requestType"":""SafePay"",""fromAppUrlScheme"":""alipays"",""dataString"":""[""=&\w\\]+""\}");
                     if (match.Success)
                     {
                         if (string.Equals(extend.Method, "IOS", StringComparison.OrdinalIgnoreCase))
                         {
-                            pt.Url = "alipay://alipayclient/?" + Utils.HttpWebUtility.UriDataEncode(match.Value);
+                            return new PayTicket()
+                            {
+                                Action = EAction.UrlScheme,
+                                Uri = "alipay://alipayclient/?" + Utils.HttpWebUtility.UriDataEncode(match.Value),
+                            };
                         }
-                        //else if (string.Equals(extend.Method, "Android", StringComparison.OrdinalIgnoreCase))
-                        //{
-                        //    var data = Utils.Json.Deserialize<dynamic>(match.Value);
-                        //    pt.Url = string.Format("alipays://platformapi/startApp?appId=20000125&orderSuffix={0}#Intent;scheme=alipays;package=com.eg.android.AlipayGphone;end", Core.UriDataEncode(data.dataString.ToString()));
-                        //}
                         else
                         {
                             var data = Utils.Json.Deserialize<dynamic>(match.Value);
-                            pt.Url = string.Format(
-                                "alipays://platformapi/startApp?appId=20000125&orderSuffix={0}#Intent;scheme=alipays;package=com.eg.android.AlipayGphone;end",
-                                Utils.HttpWebUtility.UriDataEncode(data.dataString.ToString()));
+                            return new PayTicket()
+                            {
+                                Action = EAction.UrlScheme,
+                                Uri = string.Format(
+                                    "alipays://platformapi/startApp?appId=20000125&orderSuffix={0}#Intent;scheme=alipays;package=com.eg.android.AlipayGphone;end",
+                                    Utils.HttpWebUtility.UriDataEncode(data.dataString.ToString())),
+                            };
                         }
                     }
+
+                    return new PayTicket(false)
+                    {
+                        Message = res
+                    };
                 }
 
-                return pt;
+                return new PayTicket(false)
+                {
+                    Message = "extend is not support !"
+                };
             }
             else
             {
-                StringBuilder formhtml = new StringBuilder();
-                formhtml.Append("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" + "' action='" +
-                                GateWay + "?charset=" + Charset + "' method='POST'>");
-                foreach (KeyValuePair<string, string> temp in dic)
+                return new PayTicket()
                 {
-                    formhtml.AppendFormat("<input type='hidden' name='{0}' value='{1}'/>", temp.Key, temp.Value);
-                }
-
-                formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
-                formhtml.Append("</form>");
-
-                var pt = new PayTicket();
-                pt.FormHtml = formhtml.ToString();
-                return pt;
+                    Action = EAction.UrlPost,
+                    Uri = GateWay + "?charset=" + Charset,
+                    Datas = datas,
+                };
             }
         }
 

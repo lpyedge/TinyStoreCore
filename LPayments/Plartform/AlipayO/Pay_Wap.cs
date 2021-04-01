@@ -113,35 +113,31 @@ namespace LPayments.Plartform.AliPayO
             if (p_OrderId.Length > 64) throw new ArgumentException("OrderName must less than 64!");
             if (p_OrderName.Length > 256) throw new ArgumentException("OrderName must less than 256!");
 
-            var sPara = new Dictionary<string, string>();
+            var datas = new Dictionary<string, string>();
             //构造签名参数数组
-            sPara.Add("service", "alipay.wap.create.direct.pay.by.user");
-            sPara.Add("partner", this[PID]);
-            sPara.Add("_input_charset", "utf-8");
-            sPara.Add("return_url", p_ReturnUrl);
-            sPara.Add("notify_url", p_NotifyUrl);
+            datas.Add("service", "alipay.wap.create.direct.pay.by.user");
+            datas.Add("partner", this[PID]);
+            datas.Add("_input_charset", "utf-8");
+            datas.Add("return_url", p_ReturnUrl);
+            datas.Add("notify_url", p_NotifyUrl);
 
-            sPara.Add("out_trade_no", p_OrderId);
-            sPara.Add("subject", p_OrderName);
-            sPara.Add("total_fee", p_Amount.ToString("0.##"));
-            sPara.Add("seller_id", this[PID]);
-            sPara.Add("payment_type", "1");
-            sPara.Add("show_url", p_ReturnUrl);
+            datas.Add("out_trade_no", p_OrderId);
+            datas.Add("subject", p_OrderName);
+            datas.Add("total_fee", p_Amount.ToString("0.##"));
+            datas.Add("seller_id", this[PID]);
+            datas.Add("payment_type", "1");
+            datas.Add("show_url", p_ReturnUrl);
 
-            var sign = Build_MD5Sign(sPara, this[Key]);
-            sPara.Add("sign_type", "MD5");
-            sPara.Add("sign", sign);
-            var formhtml =
-                new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +
-                                  "' action='https://mapi.alipay.com/gateway.do?_input_charset=utf-8' method='post' >");
-            foreach (var temp in sPara)
-                formhtml.Append("<input type='hidden' name='" + temp.Key + "' value='" + temp.Value + "'/>");
-            formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
-            formhtml.Append("</form>");
+            var sign = Build_MD5Sign(datas, this[Key]);
+            datas.Add("sign_type", "MD5");
+            datas.Add("sign", sign);
 
-            var pt = new PayTicket();
-            pt.FormHtml = formhtml.ToString();
-            return pt;
+            return new PayTicket()
+            {
+                Action = EAction.UrlPost,
+                Uri = "https://mapi.alipay.com/gateway.do?_input_charset=utf-8",
+                Datas = datas
+            };
         }
 
         #region 支付宝签名方法

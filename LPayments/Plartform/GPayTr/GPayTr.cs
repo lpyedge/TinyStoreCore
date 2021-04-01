@@ -238,15 +238,15 @@ namespace LPayments.Plartform.GPayTr
             if (string.IsNullOrEmpty(this[Key])) throw new ArgumentNullException("Key");
             if (!Currencies.Contains(p_Currency)) throw new ArgumentException("Currency is not allowed!");
 
-            var dic = new Dictionary<string, string>();
-            dic["username"] = this[Username]; // "demodemo";
-            dic["key"] = this[Key]; // "CoEf547YT";
-            dic["order_id"] = Convert.ToBase64String(Encoding.ASCII.GetBytes(p_OrderId));
-            dic["amount"] = p_Amount.ToString("0.00");
-            dic["currency"] = CurrencyCodes[p_Currency].ToString();
-            dic["return_url"] = p_ReturnUrl;
+            var datas = new Dictionary<string, string>();
+            datas["username"] = this[Username]; // "demodemo";
+            datas["key"] = this[Key]; // "CoEf547YT";
+            datas["order_id"] = Convert.ToBase64String(Encoding.ASCII.GetBytes(p_OrderId));
+            datas["amount"] = p_Amount.ToString("0.00");
+            datas["currency"] = CurrencyCodes[p_Currency].ToString();
+            datas["return_url"] = p_ReturnUrl;
             //dic["phone"] = "555xxxyyzz";  选填
-            dic["selected_payment"] =
+            datas["selected_payment"] =
                 "krediKarti"; //'havale' for bank transfer, 'gpay' for gpay wallet, 'krediKarti' for credit card, 'epin' for E-Pin
             //dic["selected_bank_id"] = //银行转账才设置此属性 'selected_payment' is 'havale' (bank transfer) you can select the bank id for transfer process.
 
@@ -267,26 +267,33 @@ namespace LPayments.Plartform.GPayTr
 #if DEBUG
                 "https://www.testgpay.com/ApiRequest"
 #else
-                    "https://gpay.com.tr/ApiRequest"
+                "https://gpay.com.tr/ApiRequest"
 #endif
             );
 
-            var res = _HWU.Response(uri, HttpWebUtility.HttpMethod.Post, dic);
+            var res = _HWU.Response(uri, HttpWebUtility.HttpMethod.Post, datas);
 
-            var pt = new PayTicket();
-
-            var json = Utils.Json.Deserialize<dynamic>(res);
             if (res.Contains("\"state\":1"))
             {
-                pt.Url = json.link;
-                pt.FormHtml = "<script>location.href='" + (string) json.redirect_url + "';</script>";
+                var json = Utils.Json.Deserialize<dynamic>(res);
+
+                // pt.Uri = json.link;
+                // pt.FormHtml = "<script>location.href='" + (string) json.redirect_url + "';</script>";
+                
+                return new PayTicket(false)
+                {
+                    Action = EAction.UrlGet,
+                    Uri = (string) json.redirect_url,
+                    Token = json
+                };
             }
             else
             {
-                pt.Message = string.Format("{0} - {1}", json.error_code, json.message);
+                return new PayTicket(false)
+                {
+                    Message = res
+                };
             }
-
-            return pt;
         }
     }
 }

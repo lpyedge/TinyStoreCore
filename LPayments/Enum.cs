@@ -86,6 +86,15 @@ namespace LPayments
         [Description("Other")] Other
     }
 
+    public enum EAction
+    {
+        QrCode,
+        UrlPost,
+        UrlGet,
+        UrlScheme,
+        Token,
+    }
+    
     /// <summary>
     /// 中国银行
     /// </summary>
@@ -264,8 +273,6 @@ namespace LPayments
         /// </summary>
         [Description("支付宝")] ALIPAY
     }
-    
-    
     
     /// <summary>
     /// http://www.xe.com/zh-CN/currency/
@@ -598,4 +605,5 @@ namespace LPayments
         //[Description("赞比亚克瓦查")] ZMW,
         //[Description("津巴布韦元")] ZWD
     }
+    
 }

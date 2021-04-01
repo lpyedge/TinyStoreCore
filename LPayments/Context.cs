@@ -20,7 +20,7 @@ namespace LPayments
 #if DEBUG
             true;
 #else
-                false;
+            false;
 #endif
 
         static Context()
@@ -44,7 +44,7 @@ namespace LPayments
 
         public static PayPlatformAttribute Type2PlatformAttribute(this Type p_Type)
         {
-            var cas = p_Type.GetCustomAttributes(typeof(PayPlatformAttribute), false) as PayPlatformAttribute[];
+            var cas = p_Type.GetCustomAttributes(typeof(PayPlatformAttribute), true) as PayPlatformAttribute[];
             return cas?.Length == 1 ? cas[0] : null;
         }
 

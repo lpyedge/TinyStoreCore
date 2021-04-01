@@ -9,14 +9,14 @@ namespace LPayments.Plartform.AliPayO
 {
     [PayPlatformAttribute("支付宝旧版", "", SiteUrl = "https://www.alipay.com")]
     [PayChannel(EChannel.CreditCard)]
-    public class AliPayO_CreditCard : IPayChannel,IPay
+    public class AliPayO_CreditCard : IPayChannel, IPay
     {
         public const string UserId = "UserId";
         public const string Password = "Password";
         public const string EntityId = "EntityId";
         public const string Brands = "Brands";
 
-        public AliPayO_CreditCard(): base()
+        public AliPayO_CreditCard() : base()
         {
         }
 
@@ -167,45 +167,53 @@ namespace LPayments.Plartform.AliPayO
             var json = Utils.Json.Deserialize<dynamic>(res);
             if (res.Contains("code\":\"000"))
                 checkoutId = json.id;
-            var formhtml = new StringBuilder("<div id=\"paydialog\">");
 
-            formhtml.AppendFormat("<form action=\"{1}\" class=\"paymentWidgets\">{0}</form>", this[Brands],
-                p_NotifyUrl);
-            formhtml.Append("</div>");
+            return new PayTicket()
+            {
+                Action = EAction.Token,
+                Token = checkoutId,
+                //Uri = "https://oppwa.com/v1/paymentWidgets.js?checkoutId="
+            };
 
-            formhtml.Append("<style>" +
-                            "#paydialog {position: absolute; top: 25%;width:100%;}" +
-                            "#paydialog div.wpwl-container {width: 400px;margin:0px auto;background:#ffffff;text-align:left;}" +
-                            "#paydialog form.wpwl-form-card { border-radius: 10px;background: none; background-image: none}" +
-                            "#paydialog div.wpwl-group {clear: both; overflow: hidden;width:100%;padding-right:0px;}" +
-                            "#paydialog div.wpwl-group div {float: left}" +
-                            "#paydialog div.wpwl-wrapper {width: 66.6667%}" +
-                            "#paydialog div.wpwl-label {width:33.3333%;}" +
-                            "#paydialog div.wpwl-control-brand {width: auto}" +
-                            "#paydialog .wpwl-group-expiry, #paydialog .wpwl-group-cvv {width:100%}" +
-                            "#paydialog form.wpwl-form-card div.wpwl-group div.wpwl-wrapper-submit {float: right}" +
-                            "#paydialog div.wpwl-group-cardNumber,#paydialog div.wpwl-group-cardHolder { padding-right: 0px;width: 100%;}" +
-                            "#paydialog div.wpwl-wrapper-brand, #paydialog  div.wpwl-brand-card { width: 33.3333%;}" +
-                            "#paydialog div.wpwl-wrapper-brand{width:110px;}" +
-                            "#paydialog div.wpwl-wrapper-cardHolder,#paydialog div.wpwl-wrapper-cvv{width: 100px;}" +
-                            "#paydialog div.wpwl-message{background:#fff;}" +
-                            "</style>");
-            formhtml.Append("<script>" +
-                            "var script_element = document.createElement('script');" +
-                            "script_element.type = 'text/javascript';" +
-#if DEBUG
-                            "script_element.src = 'https://test.oppwa.com/v1/paymentWidgets.js?checkoutId=" +
-                            checkoutId +
-                            "';" +
-#else
-                "script_element.src = 'https://oppwa.com/v1/paymentWidgets.js?checkoutId=" + checkoutId + "';" +
-#endif
-                            "document.body.appendChild(script_element);" +
-                            "</script>");
-
-            var pt = new PayTicket();
-            pt.FormHtml = formhtml.ToString();
-            return pt;
+//             var formhtml = new StringBuilder("<div id=\"paydialog\">");
+//
+//             formhtml.AppendFormat("<form action=\"{1}\" class=\"paymentWidgets\">{0}</form>", this[Brands],
+//                 p_NotifyUrl);
+//             formhtml.Append("</div>");
+//
+//             formhtml.Append("<style>" +
+//                             "#paydialog {position: absolute; top: 25%;width:100%;}" +
+//                             "#paydialog div.wpwl-container {width: 400px;margin:0px auto;background:#ffffff;text-align:left;}" +
+//                             "#paydialog form.wpwl-form-card { border-radius: 10px;background: none; background-image: none}" +
+//                             "#paydialog div.wpwl-group {clear: both; overflow: hidden;width:100%;padding-right:0px;}" +
+//                             "#paydialog div.wpwl-group div {float: left}" +
+//                             "#paydialog div.wpwl-wrapper {width: 66.6667%}" +
+//                             "#paydialog div.wpwl-label {width:33.3333%;}" +
+//                             "#paydialog div.wpwl-control-brand {width: auto}" +
+//                             "#paydialog .wpwl-group-expiry, #paydialog .wpwl-group-cvv {width:100%}" +
+//                             "#paydialog form.wpwl-form-card div.wpwl-group div.wpwl-wrapper-submit {float: right}" +
+//                             "#paydialog div.wpwl-group-cardNumber,#paydialog div.wpwl-group-cardHolder { padding-right: 0px;width: 100%;}" +
+//                             "#paydialog div.wpwl-wrapper-brand, #paydialog  div.wpwl-brand-card { width: 33.3333%;}" +
+//                             "#paydialog div.wpwl-wrapper-brand{width:110px;}" +
+//                             "#paydialog div.wpwl-wrapper-cardHolder,#paydialog div.wpwl-wrapper-cvv{width: 100px;}" +
+//                             "#paydialog div.wpwl-message{background:#fff;}" +
+//                             "</style>");
+//             formhtml.Append("<script>" +
+//                             "var script_element = document.createElement('script');" +
+//                             "script_element.type = 'text/javascript';" +
+// #if DEBUG
+//                             "script_element.src = 'https://test.oppwa.com/v1/paymentWidgets.js?checkoutId=" +
+//                             checkoutId +
+//                             "';" +
+// #else
+//                 "script_element.src = 'https://oppwa.com/v1/paymentWidgets.js?checkoutId=" + checkoutId + "';" +
+// #endif
+//                             "document.body.appendChild(script_element);" +
+//                             "</script>");
+//
+//             var pt = new PayTicket();
+//             pt.FormHtml = formhtml.ToString();
+//             return pt;
         }
 
         public class PayExtend

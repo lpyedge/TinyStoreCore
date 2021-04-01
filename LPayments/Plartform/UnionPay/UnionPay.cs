@@ -154,34 +154,34 @@ namespace LPayments.Plartform.UnionPay
             var privatecert =
                 Utils.RSACrypto.CertByte(Convert.FromBase64String(this[PrivateCert]), this[PrivateCertPwd]);
 
-            var sPara = new Dictionary<string, string>();
+            var datas = new Dictionary<string, string>();
             //以下信息非特殊情况不需要改动
-            sPara["version"] = "5.0.0"; //版本号
-            sPara["encoding"] = "UTF-8"; //编码方式
-            sPara["txnType"] = "01"; //交易类型
-            sPara["txnSubType"] = "01"; //交易子类
-            sPara["bizType"] = "000201"; //业务类型
-            sPara["signMethod"] = "01"; //签名方法
-            sPara["channelType"] = "08"; //渠道类型
-            sPara["accessType"] = "0"; //接入类型
-            sPara["frontUrl"] = p_ReturnUrl; //前台通知地址
+            datas["version"] = "5.0.0"; //版本号
+            datas["encoding"] = "UTF-8"; //编码方式
+            datas["txnType"] = "01"; //交易类型
+            datas["txnSubType"] = "01"; //交易子类
+            datas["bizType"] = "000201"; //业务类型
+            datas["signMethod"] = "01"; //签名方法
+            datas["channelType"] = "08"; //渠道类型
+            datas["accessType"] = "0"; //接入类型
+            datas["frontUrl"] = p_ReturnUrl; //前台通知地址
 
-            sPara["backUrl"] = p_NotifyUrl; //后台通知地址
-            sPara["currencyCode"] = "156"; //交易币种
+            datas["backUrl"] = p_NotifyUrl; //后台通知地址
+            datas["currencyCode"] = "156"; //交易币种
 
-            sPara["merId"] = this[MerId]; //商户号，请改自己的测试商户号，此处默认取demo演示页面传递的参数
-            sPara["orderId"] = p_OrderId; //商户订单号，8-32位数字字母，不能含“-”或“_”，此处默认取demo演示页面传递的参数，可以自行定制规则
-            sPara["txnTime"] =
+            datas["merId"] = this[MerId]; //商户号，请改自己的测试商户号，此处默认取demo演示页面传递的参数
+            datas["orderId"] = p_OrderId; //商户订单号，8-32位数字字母，不能含“-”或“_”，此处默认取demo演示页面传递的参数，可以自行定制规则
+            datas["txnTime"] =
                 DateTime.UtcNow.AddHours(8)
                     .ToString("yyyyMMddHHmmss"); //订单发送时间，格式为YYYYMMDDhhmmss，取北京时间，此处默认取demo演示页面传递的参数，参考取法： .ToString("yyyyMMddHHmmss")
-            sPara["txnAmt"] = (p_Amount * 100).ToString("0"); //交易金额，单位分，此处默认取demo演示页面传递的参数
+            datas["txnAmt"] = (p_Amount * 100).ToString("0"); //交易金额，单位分，此处默认取demo演示页面传递的参数
 
             //证书id
-            sPara["certId"] = Utils.RSACrypto.CertId(privatecert);
+            datas["certId"] = Utils.RSACrypto.CertId(privatecert);
 
             //生成欲签名字符串
             var stringSignDigest =
-                Utils.Core.SHA1(Utils.Core.LinkStr(sPara));
+                Utils.Core.SHA1(Utils.Core.LinkStr(datas));
 
             //得到签名内容
             var byteSign = Utils.RSACrypto.SignData(Utils.RSACrypto.Cert2Provider(privatecert, true),
@@ -190,21 +190,24 @@ namespace LPayments.Plartform.UnionPay
                     stringSignDigest)); //m_PrivateProvider.SignData(Utils.HASHCrypto.CryptoEnum.SHA1, Encoding.UTF8.GetBytes(stringSignDigest));
 
             //设置签名域值
-            sPara["signature"] = Convert.ToBase64String(byteSign);
+            datas["signature"] = Convert.ToBase64String(byteSign);
 
-            var formhtml =
-                new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +
-                                  "' action='" +
-                                  GATEWAY + "' method='post' >");
-            foreach (var temp in sPara)
-                formhtml.Append("<input type='hidden' id='" + temp.Key + "' name='" + temp.Key + "' value='" +
-                                temp.Value + "'/>");
-            formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
-            formhtml.Append("</form>");
+            // var formhtml =
+            //     new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +
+            //                       "' action='" +
+            //                       GATEWAY + "' method='post' >");
+            // foreach (var temp in datas)
+            //     formhtml.Append("<input type='hidden' id='" + temp.Key + "' name='" + temp.Key + "' value='" +
+            //                     temp.Value + "'/>");
+            // formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
+            // formhtml.Append("</form>");
 
-            var pt = new PayTicket();
-            pt.FormHtml = formhtml.ToString();
-            return pt;
+            return new PayTicket()
+            {
+                Action = EAction.UrlPost,
+                Uri = GATEWAY,
+                Datas = datas
+            };
         }
     }
 }

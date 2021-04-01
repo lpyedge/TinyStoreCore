@@ -108,18 +108,18 @@ namespace LPayments.Plartform.AliPayO
             if (!Currencies.Contains(p_Currency)) throw new ArgumentException("p_Currency is not allowed!");
             if (p_OrderName.Length > 128) throw new ArgumentException("OrderName must less than 128!");
 
-            var sPara = new Dictionary<string, string>();
+            var datas = new Dictionary<string, string>();
             //构造签名参数数组
-            sPara.Add("partner", this[PID]);
-            sPara.Add("seller_id", this[PID]);
-            sPara.Add("service", "create_direct_pay_by_user");
-            sPara.Add("_input_charset", "utf-8");
-            sPara.Add("payment_type", "1");
-            sPara.Add("return_url", p_ReturnUrl);
-            sPara.Add("notify_url", p_NotifyUrl);
-            sPara.Add("out_trade_no", p_OrderId);
-            sPara.Add("subject", p_OrderName);
-            sPara.Add("total_fee", p_Amount.ToString("0.##"));
+            datas.Add("partner", this[PID]);
+            datas.Add("seller_id", this[PID]);
+            datas.Add("service", "create_direct_pay_by_user");
+            datas.Add("_input_charset", "utf-8");
+            datas.Add("payment_type", "1");
+            datas.Add("return_url", p_ReturnUrl);
+            datas.Add("notify_url", p_NotifyUrl);
+            datas.Add("out_trade_no", p_OrderId);
+            datas.Add("subject", p_OrderName);
+            datas.Add("total_fee", p_Amount.ToString("0.##"));
 
             //sPara.Add("exter_invoke_ip", p_ClientIP.ToString());
 
@@ -127,12 +127,12 @@ namespace LPayments.Plartform.AliPayO
             if (pe != null)
             {
                 if (pe.QrMode)
-                    sPara.Add("qr_pay_mode", "0");
+                    datas.Add("qr_pay_mode", "0");
 
                 if (pe.PayDetails.Count > 0)
                 {
-                    sPara.Add("royalty_type", "10");
-                    sPara.Add("royalty_parameters",
+                    datas.Add("royalty_type", "10");
+                    datas.Add("royalty_parameters",
                         pe.PayDetails.Aggregate("",
                             (current, payDetail) =>
                                 current +
@@ -144,31 +144,38 @@ namespace LPayments.Plartform.AliPayO
                 }
 
                 if (!string.IsNullOrWhiteSpace(pe.Token))
-                    sPara.Add("token", pe.Token);
+                    datas.Add("token", pe.Token);
                 if (!string.IsNullOrWhiteSpace(pe.OpenId))
-                    sPara.Add("buyer_id", pe.OpenId);
+                    datas.Add("buyer_id", pe.OpenId);
                 if (!string.IsNullOrWhiteSpace(pe.Body))
-                    sPara.Add("body", pe.Body);
+                    datas.Add("body", pe.Body);
             }
 
-            var sign = Build_MD5Sign(sPara, this[Key]);
-            sPara.Add("sign_type", "MD5");
-            sPara.Add("sign", sign);
-            var formhtml =
-                new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +
-                                  "' action='https://mapi.alipay.com/gateway.do?_input_charset=utf-8' method='post' >");
-            foreach (var temp in sPara)
-                formhtml.Append("<input type='hidden' name='" + temp.Key + "' value='" + temp.Value + "'/>");
-            formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
-            formhtml.Append("</form>");
+            var sign = Build_MD5Sign(datas, this[Key]);
+            datas.Add("sign_type", "MD5");
+            datas.Add("sign", sign);
+            
+            // var formhtml =
+            //     new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +
+            //                       "' action='https://mapi.alipay.com/gateway.do?_input_charset=utf-8' method='post' >");
+            // foreach (var temp in sPara)
+            //     formhtml.Append("<input type='hidden' name='" + temp.Key + "' value='" + temp.Value + "'/>");
+            // formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
+            // formhtml.Append("</form>");
 
-            sPara.Remove("_input_charset");
-            var url = "https://mapi.alipay.com/gateway.do?_input_charset=utf-8" +
-                      sPara.Aggregate("", (o, p) => o += "&" + p.Key + "=" + Utils.HttpWebUtility.UriDataEncode(p.Value));
-            var pt = new PayTicket();
-            pt.FormHtml = formhtml.ToString();
-            pt.Url = url;
-            return pt;
+            // sPara.Remove("_input_charset");
+            // var url = "https://mapi.alipay.com/gateway.do?_input_charset=utf-8" +
+            //           sPara.Aggregate("", (o, p) => o += "&" + p.Key + "=" + Utils.HttpWebUtility.UriDataEncode(p.Value));
+            
+            
+            //datas.Add("sign", Build_MD5Sign(datas, this[Key]));
+
+            return new PayTicket()
+            {
+                Action = EAction.UrlPost,
+                Uri = "https://mapi.alipay.com/gateway.do?_input_charset=utf-8",
+                Datas = datas
+            };
         }
 
         public class PayExtend

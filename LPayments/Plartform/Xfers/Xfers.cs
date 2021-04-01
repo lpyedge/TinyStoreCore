@@ -83,27 +83,48 @@ namespace LPayments.Plartform.Xfers
             if (string.IsNullOrEmpty(this[ApiSecret])) throw new ArgumentNullException("ApiSecret");
             if (!Currencies.Contains(p_Currency)) throw new ArgumentException("Currency is not allowed!");
 
-            var formhtml =
-                new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +
-                                  "' action='https://www.xfers.io/api/v2/payments' method='post' >");
-            formhtml.AppendFormat("<input type='hidden' name='api_key' value='{0}' />", this[ApiKey]);
-            formhtml.AppendFormat("<input type='hidden' name='order_id' value='{0}' />", p_OrderId);
-            formhtml.AppendFormat("<input type='hidden' name='total_amount' value='{0}' />", p_Amount.ToString("0.##"));
-            formhtml.AppendFormat("<input type='hidden' name='currency' value='{0}' />", p_Currency);
-            formhtml.AppendFormat("<input type='hidden' name='item_name_1' value='{0}' />", p_OrderName);
-            formhtml.AppendFormat("<input type='hidden' name='item_price_1' value='{0}' />", p_Amount.ToString("0.##"));
-            formhtml.Append("<input type='hidden' name='item_quantity_1' value='1' />");
-            formhtml.Append("<input type='hidden' name='refundable' value='false' />");
-            formhtml.AppendFormat("<input type='hidden' name='cancel_url' value='{0}' />", p_CancelUrl);
-            formhtml.AppendFormat("<input type='hidden' name='return_url' value='{0}' />", p_ReturnUrl);
-            formhtml.AppendFormat("<input type='hidden' name='notify_url' value='{0}' />", p_NotifyUrl);
-            formhtml.AppendFormat("<input type='hidden' name='signature' value='{0}' />",
-                Utils.Core.SHA1(this[ApiKey] + this[ApiSecret] + p_OrderId + p_Amount.ToString("0.##") + p_Currency));
-            formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
-            formhtml.Append("</form>");
-
-            var pt = new PayTicket();
-            pt.FormHtml = formhtml.ToString();
+            // var formhtml =
+            //     new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +
+            //                       "' action='https://www.xfers.io/api/v2/payments' method='post' >");
+            // formhtml.AppendFormat("<input type='hidden' name='api_key' value='{0}' />", this[ApiKey]);
+            // formhtml.AppendFormat("<input type='hidden' name='order_id' value='{0}' />", p_OrderId);
+            // formhtml.AppendFormat("<input type='hidden' name='total_amount' value='{0}' />", p_Amount.ToString("0.##"));
+            // formhtml.AppendFormat("<input type='hidden' name='currency' value='{0}' />", p_Currency);
+            // formhtml.AppendFormat("<input type='hidden' name='item_name_1' value='{0}' />", p_OrderName);
+            // formhtml.AppendFormat("<input type='hidden' name='item_price_1' value='{0}' />", p_Amount.ToString("0.##"));
+            // formhtml.Append("<input type='hidden' name='item_quantity_1' value='1' />");
+            // formhtml.Append("<input type='hidden' name='refundable' value='false' />");
+            // formhtml.AppendFormat("<input type='hidden' name='cancel_url' value='{0}' />", p_CancelUrl);
+            // formhtml.AppendFormat("<input type='hidden' name='return_url' value='{0}' />", p_ReturnUrl);
+            // formhtml.AppendFormat("<input type='hidden' name='notify_url' value='{0}' />", p_NotifyUrl);
+            // formhtml.AppendFormat("<input type='hidden' name='signature' value='{0}' />",
+            //     Utils.Core.SHA1(this[ApiKey] + this[ApiSecret] + p_OrderId + p_Amount.ToString("0.##") + p_Currency));
+            // formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
+            // formhtml.Append("</form>");
+            
+            var datas = new Dictionary<string, string>()
+            {
+                ["api_key"] = this[ApiKey],
+                ["order_id"] = p_OrderId,
+                ["total_amount"] = p_Amount.ToString("0.##"),
+                ["currency"] = p_Currency.ToString(),
+                ["item_name_1"] = p_OrderName,
+                ["item_price_1"] = p_Amount.ToString("0.##"),
+                ["item_quantity_1"] = "1",
+                ["refundable"] = "false",
+                ["cancel_url"] = p_CancelUrl,
+                ["return_url"] = p_ReturnUrl,
+                ["notify_url"] = p_NotifyUrl,
+                ["signature"] = Utils.Core.SHA1(this[ApiKey] + this[ApiSecret] + p_OrderId + p_Amount.ToString("0.##") + p_Currency),
+            };
+            
+            var pt = new PayTicket()
+            {
+                Action = EAction.UrlPost,
+                Uri = "https://www.xfers.io/api/v2/payments",
+                Datas = datas,
+            };
+            
             return pt;
         }
 

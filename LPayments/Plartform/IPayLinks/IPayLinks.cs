@@ -185,8 +185,8 @@ namespace LPayments.Plartform.IPayLinks
 
             //var rl = Notify(null, null, null , res);
             var pt = new PayTicket();
-            pt.Url = p_ReturnUrl;
-            pt.Extra = Notify(new Dictionary<string, string>(), new Dictionary<string, string>(),
+            pt.Uri = p_ReturnUrl;
+            pt.Token = Notify(new Dictionary<string, string>(), new Dictionary<string, string>(),
                 new Dictionary<string, string>(), res, p_ClientIP.ToString());
             pt.Sync = false;
             return pt;
