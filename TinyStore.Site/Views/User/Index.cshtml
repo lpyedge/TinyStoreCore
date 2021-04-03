@@ -1,0 +1,105 @@
+﻿<div class="row align-items-center alert alert-primary">
+    <div class="order-md-1 text-center text-md-left pr-md-5">
+        <div class="main-top">
+            <h5 class="bd-text-purple-bright">尊敬的商户：<span id="useraccount"></span>，欢迎您！ 您的商户ID是：<span id="userid"></span></h5>
+        </div>
+    </div>
+</div>
+
+<p class="mb-1 alert alert-danger" id="userextraalert" style="display:none">
+    <i class="fa fa-bullhorn"></i>
+    掌柜的请留步，小二发现您的收款信息没有写哦，为确保您的收益准时收到，请您及时填写<a href="@Url.ActionLink("Login","User")">马上去填写</a>
+</p>
+
+@section Scripts{
+    <script>
+        
+        new Vue({
+            el: '#q-app',
+            data () {
+              return {
+                  leftDrawerOpen:true,
+                  userExtend : Store.UserExtend(),
+                  storeList : Store.StoreList(),
+                  links1: [
+                  { icon: 'home', text: 'Home' },
+                  { icon: 'whatshot', text: 'Trending' },
+                  { icon: 'subscriptions', text: 'Subscriptions' }
+                ],
+                links2: [
+                  { icon: 'folder', text: 'Library' },
+                  { icon: 'restore', text: 'History' },
+                  { icon: 'watch_later', text: 'Watch later' },
+                  { icon: 'thumb_up_alt', text: 'Liked videos' }
+                ],
+                links3: [
+                  { icon: 'user', text: 'YouTube Premium' },
+                  { icon: 'local_movies', text: 'Movies & Shows' },
+                  { icon: 'videogame_asset', text: 'Gaming' },
+                  { icon: 'live_tv', text: 'Live' }
+                ],
+                links4: [
+                  { icon: 'settings', text: 'Settings' },
+                  { icon: 'flag', text: 'Report history' },
+                  { icon: 'help', text: 'Help' },
+                  { icon: 'feedback', text: 'Send feedback' }
+                ],
+                buttons1: [
+                  { text: 'About' },
+                  { text: 'Press' },
+                  { text: 'Copyright' },
+                  { text: 'Contact us' },
+                  { text: 'Creators' },
+                  { text: 'Advertise' },
+                  { text: 'Developers' }
+                ],
+                buttons2: [
+                  { text: 'Terms' },
+                  { text: 'Privacy' },
+                  { text: 'Policy & Safety' },
+                  { text: 'Test new features' }
+                ]
+              }
+            },
+            beforeMount(){
+                if(!Store.Token()){
+                    location.href = '@Url.ActionLink("Login", "User")';
+                }
+            },
+            methods: {
+                login (){
+                    // if (this.loginForm.account && this.loginForm.password){
+                    //     this.loginForm.loading = true;
+                    //     UserApi('login', {
+                    //         account: this.loginForm.account,
+                    //         password: this.loginForm.password
+                    //     })
+                    //     .then((response)=> {
+                    //         console.log(response.headers.token)
+                    //         if (response.data.code === 1){
+                    //             Store.Token(response.headers.token);
+                    //             Store.User(response.data.data.user);
+                    //             Store.UserExtend(response.data.data.userExtend);
+                    //             Store.StoreList(response.data.data.storeList);
+                    //             location.href = '@Url.ActionLink("Index", "User")';
+                    //         }
+                    //         else{
+                    //             Warning('帐号密码不匹配');
+                    //         }
+                    //         this.loginForm.loading = false;
+                    //     })
+                    //     .catch( (error)=> {
+                    //         this.loginForm.loading = false;
+                    //         Warning('接口通信错误');
+                    //         console.error(error);
+                    //     });
+                    // }else{
+                    //     Warning('请输入帐号&密码');
+                    // }
+                }
+            },
+            // ...etc
+          })
+    </script>
+}
+
