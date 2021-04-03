@@ -35,7 +35,7 @@ namespace TinyStore.Site
                 .AddJsonOptions(options =>
                 {
                     //序列化输出内容不更改属性大小写
-                    options.JsonSerializerOptions.PropertyNamingPolicy = null;
+                    //options.JsonSerializerOptions.PropertyNamingPolicy = null;
                 })
                 .AddRazorRuntimeCompilation();
 

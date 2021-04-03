@@ -44,41 +44,41 @@ namespace TinyStore.Site
 
         public ApiResult()
         {
-            Code = ECode.Success;
+            code = ECode.Success;
         }
 
-        public ApiResult(ECode code)
+        public ApiResult(ECode p_code)
         {
-            Code = code;
+            code = p_code;
         }
 
-        public ApiResult(string message, ECode code = ECode.Fail)
+        public ApiResult(string p_message, ECode p_code = ECode.Fail)
         {
-            Code = code;
-            Message = message;
+            code = p_code;
+            this.message = p_message;
         }
 
-        public ECode Code { get; set; }
+        public ECode code { get; set; }
 
-        public bool Result => Code == ECode.Success;
+        public bool Result => code == ECode.Success;
 
-        public string Message { get; private set; }
+        public string message { get; private set; }
 
-        public static JsonResult RCode(ECode? code = null)
+        public static JsonResult RCode(ECode? p_code = null)
         {
-            var result = code != null ? new ApiResult((ECode) code) : new ApiResult();
+            var result = p_code != null ? new ApiResult((ECode) p_code) : new ApiResult();
             return new JsonResult(result);
         }
 
-        public static JsonResult RCode(string message = null, ECode code = ECode.Fail)
+        public static JsonResult RCode(string p_message = null, ECode p_code = ECode.Fail)
         {
-            var result = message != null ? new ApiResult(message, code) : new ApiResult();
+            var result = p_message != null ? new ApiResult(p_message, p_code) : new ApiResult();
             return new JsonResult(result);
         }
 
-        public static JsonResult RData<T>(T data)
+        public static JsonResult RData<T>(T p_data)
         {
-            var result = new ApiResult<T>(data);
+            var result = new ApiResult<T>(p_data);
             return new JsonResult(result);
         }
     }
@@ -87,16 +87,16 @@ namespace TinyStore.Site
     {
         public ApiResult()
         {
-            Code = ECode.Success;
+            code = ECode.Success;
         }
 
-        public ApiResult(T data)
+        public ApiResult(T p_data)
         {
-            Code = ECode.Success;
-            Data = data;
+            code = ECode.Success;
+            data = p_data;
         }
 
-        public T Data { get; set; }
+        public T data { get; set; }
     }
     
     

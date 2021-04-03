@@ -7,13 +7,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TinyStore.Model.Extend;
 
-namespace TinyStore.Site.Controllers
+namespace TinyStore.Site.Controllers.Api
 {
     [ApiController]
     [MultipleSubmit]
     [Produces("application/json")]
     [Route("api/[action]")]
-    public class ApiHomeController : ControllerBase
+    public class HomeController : ControllerBase
     {
         public IActionResult OrderInsert([FromForm] string Productid, [FromForm] int Quantity,
             [FromForm] string Contact, [FromForm] string NoticeAccount, [FromForm] string PaymentType)

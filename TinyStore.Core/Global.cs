@@ -162,20 +162,20 @@ namespace TinyStore
 
             public static string Serialize<T>(T model)
             {
-                return System.Text.Json.JsonSerializer.Serialize(model,DefaultSettings);
+                return System.Text.Json.JsonSerializer.Serialize(model, DefaultSettings);
             }
 
             public static string SerializePretty<T>(T model)
             {
-                var options =  Settings.JsonSerializerSettingsFunc();
+                var options = Settings.JsonSerializerSettingsFunc();
                 options.WriteIndented = true;
-                
+
                 return System.Text.Json.JsonSerializer.Serialize(model, options);
             }
 
             public static T Deserialize<T>(string json)
             {
-                return System.Text.Json.JsonSerializer.Deserialize<T>(json,DefaultSettings);
+                return System.Text.Json.JsonSerializer.Deserialize<T>(json, DefaultSettings);
             }
 
             public static class Settings
@@ -214,7 +214,7 @@ namespace TinyStore
             }
         }
 
-        private static HashAlgorithm HashSHA1Provider = Utils.HASHCrypto.Generate(Utils.HASHCrypto.CryptoEnum.SHA1);
+        private static HashAlgorithm HashSHA1Provider => Utils.HASHCrypto.Generate(Utils.HASHCrypto.CryptoEnum.SHA1);
 
         public static string Hash(params string[] strs)
         {

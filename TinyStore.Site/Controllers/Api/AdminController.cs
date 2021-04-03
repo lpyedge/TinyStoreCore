@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TinyStore.Model;
 
-namespace TinyStore.Site.Controllers
+namespace TinyStore.Site.Controllers.Api
 {
     [ApiController]
     [MultipleSubmit]

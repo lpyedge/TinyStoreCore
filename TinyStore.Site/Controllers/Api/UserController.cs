@@ -6,14 +6,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TinyStore.Model.Extend;
 
-namespace TinyStore.Site.Controllers
+namespace TinyStore.Site.Controllers.Api
 {
     [ApiController]
     [MultipleSubmit]
     [UserHeaderToken("Login", "Register")]
     [Produces("application/json")]
     [Route("userapi/[action]")]
-    public class ApiUserController : ControllerBase
+    public class UserController : ControllerBase
     {
         private Model.UserModel UserCurrent(string storeid, out Model.StoreModel store)
         {
@@ -55,23 +55,20 @@ namespace TinyStore.Site.Controllers
             });
         }
 
-        public IActionResult Login([FromForm] string Account, [FromForm] string Password)
-        {
-            if (string.IsNullOrWhiteSpace(Account) || string.IsNullOrWhiteSpace(Password))
-                return ApiResult.RCode("传参错误");
 
-            var user = BLL.UserBLL.QueryModelByAccount(Account);
-            if (user != null && string.Equals(user.Password, Global.Hash(Password, user.Salt)))
+        [HttpPost]
+        public IActionResult Login([FromForm] string account, [FromForm] string password)
+        {
+            if (string.IsNullOrWhiteSpace(account) || string.IsNullOrWhiteSpace(password))
+                return ApiResult.RCode("传参错误");
+            var user = BLL.UserBLL.QueryModelByAccount(account);
+            if (user != null && string.Equals(user.Password, Global.Hash(password, user.Salt)))
             {
                 user.ClientKey = Global.Generator.Guid();
                 BLL.UserBLL.Update(user);
-                //Response.Headers.Add("Access-Control-Allow-Headers", "Token");
-                //Response.Headers.Add("Access-Control-Expose-Headers", "Token");
-                //Response.Headers.Add("Token", HeaderToken.ToToken(new { UserId = user.UserId, ClientKey = user.ClientKey }));
-                //HttpContext.Items[UserHeaderToken.ItemKey] = new {UserId = user.UserId, ClientKey = user.ClientKey};
-                
+
                 HeaderToken.SetHeaderToken(HttpContext, user.UserId.ToString(), user.ClientKey);
-                
+
                 user.ClientKey = "";
                 user.Salt = "";
                 user.Password = "";
@@ -81,7 +78,7 @@ namespace TinyStore.Site.Controllers
 
                 UserLog(user.UserId, EUserLogType.登录, Request);
 
-                return ApiResult.RData(new {User = user, StoreList = storelist, UserExtend = userextra});
+                return ApiResult.RData(new {user = user, storeList = storelist, userExtend = userextra});
             }
             else
             {

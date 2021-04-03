@@ -24,7 +24,7 @@ namespace TinyStore.Site
 
         public abstract void OnTokenGet(ActionExecutingContext context, string token);
 
-        private static readonly System.Security.Cryptography.SymmetricAlgorithm Provider =
+        static System.Security.Cryptography.SymmetricAlgorithm Provider =>
             Utils.DESCrypto.Generate(nameof(HeaderToken), Utils.DESCrypto.CryptoEnum.Rijndael);
 
         protected class TokenModel
@@ -93,9 +93,23 @@ namespace TinyStore.Site
                 Id = Id,
                 Key = Key
             };
-            httpContext.Response.Headers.Add("Access-Control-Allow-Headers", HeaderKey);
-            httpContext.Response.Headers.Add("Access-Control-Expose-Headers", HeaderKey);
-            httpContext.Response.Headers.Add(HeaderKey, HeaderToken.ToToken(tokendata));
+            if (!httpContext.Response.Headers.ContainsKey("Access-Control-Allow-Headers"))
+            {
+                httpContext.Response.Headers["Access-Control-Allow-Headers"] = HeaderKey;
+            }
+            else if(!httpContext.Response.Headers["Access-Control-Allow-Headers"].Contains(HeaderKey))
+            {
+                httpContext.Response.Headers["Access-Control-Allow-Headers"] += "," + HeaderKey;
+            }
+            if (!httpContext.Response.Headers.ContainsKey("Access-Control-Expose-Headers"))
+            {
+                httpContext.Response.Headers["Access-Control-Expose-Headers"] = HeaderKey;
+            }
+            else if(!httpContext.Response.Headers["Access-Control-Expose-Headers"].Contains(HeaderKey))
+            {
+                httpContext.Response.Headers["Access-Control-Expose-Headers"] += "," + HeaderKey;
+            }
+            httpContext.Response.Headers[HeaderKey] = HeaderToken.ToToken(tokendata);
         }
     }
 }
