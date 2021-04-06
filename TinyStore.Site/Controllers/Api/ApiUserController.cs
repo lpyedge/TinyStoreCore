@@ -158,25 +158,21 @@ namespace TinyStore.Site.Controllers
             return ApiResult.RCode("");
         }
 
-        public IActionResult Loginout()
-        {
-            var user = UserCurrent();
-            user.ClientKey = "";
-            BLL.UserBLL.Update(user);
-            return ApiResult.RCode("");
-        }
+        
 
-        public IActionResult UserBasicSave([FromForm] string Name, [FromForm] string QQ, [FromForm] string Email,
-            [FromForm] string Telphone, [FromForm] string Idcard, [FromForm] int Banktype,
-            [FromForm] string Bankaccount, [FromForm] string BankPersonName)
+        [HttpPost]
+        public IActionResult UserExtendSave(Model.UserExtendModel userExtend)
         {
             var user = UserCurrent();
 
-            if (!string.IsNullOrEmpty(Idcard) && !Utils.IDCard.IsIDCard(Idcard))
-                return ApiResult.RCode("身份证号格式不正确");
+            if (!string.IsNullOrEmpty(userExtend.IdCard) && !Utils.IDCard.IsIDCard(userExtend.IdCard))
+                return ApiResult.RCode(ApiResult.ECode.DataFormatError);
+            
+            if (!string.IsNullOrEmpty(userExtend.Email) && !userExtend.Email.Contains("@"))
+                return ApiResult.RCode(ApiResult.ECode.DataFormatError);
 
 
-            var userextend = BLL.UserExtendBLL.QueryModelByUserId(user.UserId);
+            var userExtendOrigin = BLL.UserExtendBLL.QueryModelByUserId(user.UserId);
 
             // if (!string.IsNullOrEmpty(Email))
             // {
@@ -197,18 +193,18 @@ namespace TinyStore.Site.Controllers
             //         return ApiResult.RCode("身份证号已存在");
             // }
 
-            userextend.Name = Name;
-            userextend.QQ = QQ;
-            userextend.TelPhone = Telphone;
-            userextend.Email = Email;
-            userextend.IdCard = Idcard;
-            userextend.BankAccount = Bankaccount;
-            userextend.BankPersonName = BankPersonName;
-            userextend.BankType = (EBankType) Banktype;
-            BLL.UserExtendBLL.Update(userextend);
-            UserLog(userextend.UserId, EUserLogType.修改商户信息, Request, "", "个人信息修改");
+            userExtendOrigin.Name = userExtend.Name;
+            userExtendOrigin.QQ = userExtend.QQ;
+            userExtendOrigin.TelPhone = userExtend.TelPhone;
+            userExtendOrigin.Email = userExtend.Email;
+            userExtendOrigin.IdCard = userExtend.IdCard;
+            // userextend.BankAccount = Bankaccount;
+            // userextend.BankPersonName = BankPersonName;
+            // userextend.BankType = (EBankType) Banktype;
+            BLL.UserExtendBLL.Update(userExtendOrigin);
+            UserLog(userExtendOrigin.UserId, EUserLogType.修改商户信息, Request, "", "个人信息修改");
 
-            return ApiResult.RData(userextend);
+            return ApiResult.RData(userExtendOrigin);
         }
 
         public IActionResult OrderPageList([FromForm] string StoreId, [FromForm] DateTime Begin,

@@ -23,7 +23,7 @@ namespace TinyStore.Site.Controllers
             return View();
         }
 
-        public IActionResult Basicinfo()
+        public IActionResult Profile()
         {
             return View();
         }

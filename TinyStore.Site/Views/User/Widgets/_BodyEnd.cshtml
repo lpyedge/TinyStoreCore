@@ -24,12 +24,22 @@
 
 <script>
 
-    function UserApi(action,data){
-        var formData = new  FormData();
-        for(name in data){
-            formData.append(name,data[name]);
+    function UserApi(action,data,postForm){
+        if (postForm){            
+            var formData = new  FormData();
+            for(name in data){
+                formData.append(name,data[name]);
+            }
+            data = formData;
         }
-        return axios.post('/ApiUser/'+action, formData);
+        return axios({
+            'method':'post',            
+            'headers':{
+                'Token':Store.Token()
+            },
+            'url':'/ApiUser/'+action,
+            'data':data}
+        );
     }
     
     function Warning(message){
@@ -40,15 +50,37 @@
               message
           });
     }
+    var Notify = {};
+    Notify.Warning=function (message){
+       Quasar.Notify.create({
+             type:'warning',
+             position:'center',
+             icon:'warning',
+             timeout:2500,
+             message
+         });
+   }
+    Notify.Info=function (message){
+       Quasar.Notify.create({
+             type:'positive',
+             position:'center',
+             icon:'check_circle',
+             timeout:1200,
+             message
+         });
+   }
     
-     function DeepClone(source){
-        if (Object.prototype.toString.call(source) === "[object Date]") {
-            return  new Date(source.valueOf());
-        } else {
-            return source;
-        }
-     }
+     
+     
     function DeepMerge(target, source) {
+        function DeepClone(source){
+            if (Object.prototype.toString.call(source) === "[object Date]") {
+                return  new Date(source.valueOf());
+            } else {
+                return source;
+            }
+         }
+         
         //console.log("Clone", initalObj, typeof (initalObj), Object.prototype.toString.call(initalObj), Array.isArray(initalObj));
         if (Object.prototype.toString.call(target) === "[object Object]"
          && Object.prototype.toString.call(source) === "[object Object]") {

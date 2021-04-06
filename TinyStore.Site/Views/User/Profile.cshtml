@@ -1,0 +1,71 @@
+﻿<q-page padding>
+    <q-form class="q-gutter-md">
+        <div class="text-h5 text-weight-bold text-grey-8">
+            <q-icon :name="userlinks[0].icon" size="md" class="on-left"></q-icon>{{userlinks[0].text}}
+        </div>
+
+        <q-separator class="q-my-md"></q-separator>
+
+        <q-input outlined dense stack-labelbg-color="white"
+                 label="姓名"
+                 v-model="userExtend.name">
+        </q-input>
+        <q-input outlined dense stack-label bg-color="white"
+                 label="身份证"
+                 v-model="userExtend.idCard"
+                 mask="##################"
+                 fill-mask>
+        </q-input>
+        <q-input outlined dense stack-label bg-color="white"
+                 label="联系邮箱"
+                 v-model="userExtend.email"
+                 placeholder="@@">
+        </q-input>
+        <q-input outlined dense stack-label bg-color="white"
+                 label="联系电话"
+                 v-model="userExtend.telPhone">
+        </q-input>
+        <q-input outlined dense stack-label bg-color="white"
+                 label="联系QQ"
+                 v-model="userExtend.qQ"
+                 maxlength="16">
+        </q-input>
+        
+        <q-btn class="float-right" color="primary" icon="save"  label="保存" @@click="userExtendSave"/>
+    </q-form>
+</q-page>
+
+@section Scripts{
+    <script>
+   var _page = {
+       data:{
+           
+       },
+       beforeMount(){
+           
+       },
+       methods: {
+           userExtendSave(){
+               UserApi("UserExtendSave",this.userExtend)
+               .then((response)=> {
+                   if (response.data.code === 1){
+                       Store.UserExtend(response.data.data);                       
+                       Notify.Info('保存成功！');
+                   }
+                   else{
+                       Notify.Warning('保存失败，数据格式错误！');
+                   }
+                   this.loginForm.loading = false;
+               })
+               .catch( (error)=> {
+                   this.loginForm.loading = false;
+                   Notify.Warning('接口通信错误');
+                   console.error(error);
+               });
+           }
+       }
+   };
+   DeepMerge(_layout,_page);
+   new Vue(_layout);
+    </script>
+}

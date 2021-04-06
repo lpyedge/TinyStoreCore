@@ -44,7 +44,7 @@
                             {{ storeCurrent.name }}
                           </template>
                           <q-list>
-                            <q-item clickable v-close-popup @@click="test" v-for="store in storeList">
+                            <q-item clickable v-close-popup @@click="setStoreCurrent(i)" v-for="(store,i) in storeList">
                               <q-item-section>
                                 <q-item-label>{{store.name}}</q-item-label>
                               </q-item-section>
@@ -108,7 +108,7 @@
 
                     <q-separator class="q-mt-md q-mb-lg"></q-separator>
 
-                    <div class="q-px-md text-grey-9">
+                    <div class="q-py-md q-px-md text-grey-9">
                         <div class="row items-center q-gutter-x-sm q-gutter-y-xs">
                             <a
                                 v-for="button in buttons1"
@@ -119,17 +119,7 @@
                             </a>
                         </div>
                     </div>
-                    <div class="q-py-md q-px-md text-grey-9">
-                        <div class="row items-center q-gutter-x-sm q-gutter-y-xs">
-                            <a
-                                v-for="button in buttons2"
-                                :key="button.text"
-                                class="YL__drawer-footer-link"
-                                href="javascript:void(0)">
-                                {{ button.text }}
-                            </a>
-                        </div>
-                    </div>
+                    
                 </q-list>
             </q-scroll-area>
         </q-drawer>
@@ -141,10 +131,11 @@
 </div>
 <partial name="Widgets/_BodyEnd"/>
 <script>
+
     var _layout ={
      el: '#q-app',
      data : {
-       leftDrawerOpen:true,
+       leftDrawerOpen: false,
        user : Store.User(),
        userExtend : Store.UserExtend(),
        storeList : Store.StoreList(),
@@ -154,7 +145,7 @@
            { icon: 'vpn_key', text: '卡密管理',url:''  },      
          ],
        userlinks: [
-           { icon: 'person', text: '商户资料',url:'' },
+           { icon: 'person', text: '商户资料',url:'@Url.ActionLink("Profile", "User")' },
            { icon: 'lock', text: '密码安全',url:'' },
            { icon: 'local_atm', text: '账目管理',url:'' },
            //{ icon: 'monetization_on', text: '提现管理' },     
@@ -166,60 +157,24 @@
            { icon: 'local_grocery_store', text: '订单管理',url:''  },
          ],
          buttons1: [
-           { text: 'About' },
-           { text: 'Press' },
-           { text: 'Copyright' },
-           { text: 'Contact us' },
-           { text: 'Creators' },
-           { text: 'Advertise' },
-           { text: 'Developers' }
-         ],
-         buttons2: [
            { text: 'Terms' },
            { text: 'Privacy' },
            { text: 'Policy & Safety' },
            { text: 'Test new features' }
          ]
      },
-     beforeMount(){
+     beforeCreate(){
          if(!Store.Token()){
              location.href = '@Url.ActionLink("Login", "User")';
          }
+        //桌面下为 true，手机端为 undefined
+         this.leftDrawerOpen=!!this.$q.platform.is.desktop;
      },
      methods: {
-         login (){
-             console.log('login');
-             // if (this.loginForm.account && this.loginForm.password){
-             //     this.loginForm.loading = true;
-             //     UserApi('login', {
-             //         account: this.loginForm.account,
-             //         password: this.loginForm.password
-             //     })
-             //     .then((response)=> {
-             //         console.log(response.headers.token)
-             //         if (response.data.code === 1){
-             //             Store.Token(response.headers.token);
-             //             Store.User(response.data.data.user);
-             //             Store.UserExtend(response.data.data.userExtend);
-             //             Store.StoreList(response.data.data.storeList);
-             //             location.href = '@Url.ActionLink("Index", "User")';
-             //         }
-             //         else{
-             //             Warning('帐号密码不匹配');
-             //         }
-             //         this.loginForm.loading = false;
-             //     })
-             //     .catch( (error)=> {
-             //         this.loginForm.loading = false;
-             //         Warning('接口通信错误');
-             //         console.error(error);
-             //     });
-             // }else{
-             //     Warning('请输入帐号&密码');
-             // }
+         setStoreCurrent(index){
+             Store.StoreCurrent(index);
          }
-     },
-     // ...etc
+     }
    };
 </script>
 @RenderSection("Scripts", required: false)

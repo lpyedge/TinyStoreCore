@@ -103,7 +103,16 @@ namespace TinyStore.Site
                 Email = "test@test.com",
                 Name = "姓名",
                 RegisterDate = DateTime.Now,
-                RegisterIP = "127.0.0.1"
+                RegisterIP = "127.0.0.1",
+                UserAgent = "",
+                AcceptLanguage = "",
+                
+                BankAccount = "",
+                BankType =  EBankType.支付宝,
+                BankPersonName = "",
+                IdCard = "",
+                QQ = "",
+                TelPhone = "",
             });
             var storeId = Global.Generator.DateId(2);
             storeId = "StoreId";

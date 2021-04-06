@@ -1,26 +1,28 @@
-﻿<div class="row align-items-center alert alert-primary">
-    <div class="order-md-1 text-center text-md-left pr-md-5">
-        <div class="main-top">
-            <h5 class="bd-text-purple-bright" @@click="test">尊敬的商户，欢迎您！ </h5>
-            <h6 @@click="login">您的商户ID是：{{testData}}</h6>
+﻿<q-page padding>
+    <div class="row align-items-center alert alert-primary">
+        <div class="order-md-1 text-center text-md-left pr-md-5">
+            <div class="main-top">
+                <h5 class="bd-text-purple-bright" @@click="testA">尊敬的商户，欢迎您！ </h5>
+                <h6>您的商户ID是：test</h6>
+            </div>
         </div>
     </div>
-</div>
 
-<p class="mb-1 alert alert-danger" id="userextraalert" style="display:none">
-    <i class="fa fa-bullhorn"></i>
-    掌柜的请留步，小二发现您的收款信息没有写哦，为确保您的收益准时收到，请您及时填写<a href="@Url.ActionLink("Login","User")">马上去填写</a>
-</p>
+    <p class="mb-1 alert alert-danger" id="userextraalert" style="display:none">
+        <i class="fa fa-bullhorn"></i>
+        掌柜的请留步，小二发现您的收款信息没有写哦，为确保您的收益准时收到，请您及时填写<a href="@Url.ActionLink("Login","User")">马上去填写</a>
+    </p>
+</q-page>
 
 @section Scripts{
     <script>
    var _page = {
        data:{
-           testData:'342342423'
+           
        },
        methods: {
-           test(){
-               console.log('test');
+           testA(){
+               console.log('bbbbbbb');
            }
        }
    };
