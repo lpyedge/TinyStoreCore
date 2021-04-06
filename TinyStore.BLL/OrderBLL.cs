@@ -98,7 +98,7 @@ namespace TinyStore.BLL
             if (state > 0)
             {
                 var estate = (EState) state;
-                if (estate == EState.用户下单)
+                if (estate == EState.客户下单)
                     expr = expr.And(p => p.IsPay == false);
                 else if (estate == EState.等待发货)
                     expr = expr.And(p => p.IsPay == true && p.IsDelivery == false);
@@ -227,7 +227,7 @@ namespace TinyStore.BLL
             if (state > 0)
             {
                 var estate = (EState) state;
-                if (estate == EState.用户下单)
+                if (estate == EState.客户下单)
                     expr = expr.And(p => p.IsPay == false);
                 else if (estate == EState.等待发货)
                     expr = expr.And(p => p.IsPay == true && p.IsDelivery == false);

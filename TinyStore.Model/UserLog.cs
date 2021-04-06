@@ -13,7 +13,7 @@ namespace TinyStore.Model
         public string UserLogId { get; set; }
 
         /// <summary>
-        ///用户编号
+        ///商户编号
         /// </summary>
         public int UserId { get; set; }
 
@@ -48,7 +48,7 @@ namespace TinyStore.Model
         public string AcceptLanguage { get; set; }
 
         /// <summary>
-        ///用户日志类型
+        ///商户日志类型
         /// </summary>
         [SqlSugar.SugarColumn(IndexGroupNameList = new []{"UserLogType"})]
         public EUserLogType UserLogType { get; set; }

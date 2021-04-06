@@ -12,7 +12,7 @@ Store.TokenRemove = function () {
     localStorage.removeItem("UserToken");
 };
 
-//用户
+//商户
 Store.User = function (user) {
     if (user) {
         localStorage.setItem("User", JSON.stringify(user));
@@ -24,7 +24,7 @@ Store.UserRemove = function () {
     localStorage.removeItem("User");
 };
 
-//用户信息
+//商户信息
 Store.UserExtend = function (userextra) {
     if (userextra) {
         localStorage.setItem("UserExtend", JSON.stringify(userextra));
@@ -38,7 +38,7 @@ Store.UserExtendRemove = function () {
 };
 
 
-//用户店铺列表
+//商户店铺列表
 Store.StoreList = function (storelist) {
     if (storelist) {
         localStorage.setItem("StoreList", JSON.stringify(storelist));
@@ -51,7 +51,7 @@ Store.StoreListRemove = function () {
     localStorage.removeItem("StoreList");
 };
 
-//用户店铺信息
+//商户当前店铺
 Store.StoreCurrent = function (index) {
     if (index!==undefined) {     
         if (index<0 || Store.StoreList().length <= index){

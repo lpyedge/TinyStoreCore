@@ -14,7 +14,7 @@ namespace TinyStore.Model
         public string StoreId { get; set; }
 
         /// <summary>
-        /// 用户编号
+        /// 商户编号
         /// </summary>
         [SqlSugar.SugarColumn(IndexGroupNameList = new []{"UserId"})]
         public int UserId { get; set; }
@@ -77,12 +77,6 @@ namespace TinyStore.Model
         public string DomainTop { get; set; } = "";
 
         /// <summary>
-        /// 店铺等级
-        /// </summary>
-        public EStoreLevel Level { get; set; } = EStoreLevel.无;
-
-
-        /// <summary>
         /// 店铺自定义收款方式
         /// </summary>
         [SqlSugar.SugarColumn(IsJson = true,ColumnDataType = "text")]
@@ -93,6 +87,12 @@ namespace TinyStore.Model
         /// </summary>
         [SqlSugar.SugarColumn(Length = 25,IndexGroupNameList = new []{"CreateDate"})]
         public string UniqueId { get; set; }
+
+
+        /// <summary>
+        /// 热门排序 默认值0，越大越靠前
+        /// </summary>
+        public int Sort { get; set; } = 0;
 
     }
 }

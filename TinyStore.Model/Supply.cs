@@ -54,7 +54,7 @@ namespace TinyStore.Model
         public EDeliveryType DeliveryType { get; set; }
 
         /// <summary>
-        /// 用户编号 (0 表示系统货源)
+        /// 商户编号 (0 表示系统货源)
         /// </summary>
         [SqlSugar.SugarColumn(IndexGroupNameList = new []{"UserId"})]
         public int UserId { get; set; }

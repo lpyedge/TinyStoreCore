@@ -28,7 +28,7 @@
 
             <a class="btn btn-bd-yellow d-lg-inline-block ml-2 visible-lg-inline hidden-md" href="/user/index">
                 <i class="fa fa-user" aria-hidden="true"></i>
-                <span>用户中心</span>
+                <span>商户中心</span>
             </a>
             <a class="btn btn-bd-yellow d-lg-inline-block ml-2 visible-lg-inline hidden-md" id="aUserLogout" href="javascript:;">
                 <i class="fa fa-sign-out" aria-hidden="true"></i>
@@ -202,7 +202,7 @@
         var storelist = Store.StoreList();
         var storecurrent = Store.StoreCurrent();
 
-        var storeid = storecurrent.StoreId;//用户登录时 获取storelist 设置到 Store.StoreList(); 同时把索引0的对象赋值给  Store.StoreCurrent()
+        var storeid = storecurrent.StoreId;//商户登录时 获取storelist 设置到 Store.StoreList(); 同时把索引0的对象赋值给  Store.StoreCurrent()
 
         $(function () {
             if (user && storelist) {

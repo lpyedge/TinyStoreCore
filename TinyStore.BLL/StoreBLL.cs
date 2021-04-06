@@ -9,15 +9,14 @@ namespace TinyStore.BLL
         private static SortDic<Model.StoreModel> SortInitialAsc = new SortDic<Model.StoreModel>()
         {
             [p => p.Initial] = SqlSugar.OrderByType.Asc
-        };
-        private static SortDic<Model.StoreModel> SortLevelDesc = new SortDic<Model.StoreModel>()
+        }; 
+        
+        
+        private static SortDic<Model.StoreModel> SortHotDesc = new SortDic<Model.StoreModel>()
         {
-            [p => p.Level] = SqlSugar.OrderByType.Desc
+            [p => p.Sort] = SqlSugar.OrderByType.Desc
         };
-        public static void ModifyLevel(string storeId, EStoreLevel level)
-        {
-            Update(p => p.StoreId == storeId, p => p.Level == level);
-        }
+        
         public static Model.StoreModel QueryModelByStoreId(string storeid)
         {
             return QueryModel(p => p.StoreId == storeid);
@@ -90,7 +89,7 @@ namespace TinyStore.BLL
 
         public static List<Model.StoreModel> QueryHotList(int top)
         {
-            return BaseBLL<Model.StoreModel>.QueryList(top, null, SortLevelDesc);
+            return BaseBLL<Model.StoreModel>.QueryList(top, null, SortHotDesc);
         }
     }
 }

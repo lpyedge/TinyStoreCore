@@ -37,6 +37,9 @@ namespace TinyStore.Site.Controllers.Api
                     var store = BLL.StoreBLL.QueryModelByStoreId(product.StoreId);
                     if (store == null)
                         return ApiResult.RCode("店铺不存在");
+                    var user = BLL.UserBLL.QueryModelById(product.UserId);
+                    if (user == null)
+                        return ApiResult.RCode("商户不存在");
 
                     if (product.DeliveryType == EDeliveryType.卡密)
                     {
@@ -79,6 +82,7 @@ namespace TinyStore.Site.Controllers.Api
                         DeliveryDate = DateTime.Now,
                         StockList = new List<StockOrder>(),
                         StoreId = store.StoreId,
+                        UserId = user.UserId,
                         TranId = string.Empty,
                         UserAgent = Request.Headers["User-Agent"].ToString(),
                         AcceptLanguage = Request.Headers["Accept-Language"].ToString(),
@@ -99,7 +103,7 @@ namespace TinyStore.Site.Controllers.Api
                         // if (order.IsPay)
                         //     return ApiResult.RCode( "订单不存在或已付款");
 
-                        Model.Extend.Payment payment = SiteContext.Store.GetPaymentList(store)
+                        Model.Extend.Payment payment = SiteContext.Store.GetPaymentList(user)
                             .FirstOrDefault(p => p.PaymentType == PaymentType);
 
                         if (payment == null)
@@ -134,11 +138,11 @@ namespace TinyStore.Site.Controllers.Api
             if (order == null || order.IsPay)
                 return ApiResult.RCode("订单不存在或已付款");
 
-            var store = BLL.StoreBLL.QueryModelById(order.StoreId);
-            if (store == null)
-                return ApiResult.RCode("店铺已关闭");
+            var user = BLL.UserBLL.QueryModelById(order.UserId);
+            if (user == null)
+                return ApiResult.RCode("商户已关闭");
 
-            Model.Extend.Payment payment = SiteContext.Store.GetPaymentList(store)
+            Model.Extend.Payment payment = SiteContext.Store.GetPaymentList(user)
                 .FirstOrDefault(p => p.PaymentType == PaymentType);
 
             if (payment == null)

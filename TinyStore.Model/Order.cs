@@ -20,7 +20,7 @@ namespace TinyStore.Model
         public string StoreId { get; set; }
 
         /// <summary>
-        /// 用户编号
+        /// 商户编号
         /// </summary>
         [SqlSugar.SugarColumn(IndexGroupNameList = new []{"UserId"})]
         public int UserId { get; set; }
@@ -121,7 +121,7 @@ namespace TinyStore.Model
         public string Contact { get; set; }
 
         /// <summary>
-        ///通知账户 电话或邮箱，用来给用户发卡密
+        ///通知账户 电话或邮箱，用来给客户发卡密
         /// </summary>
         [SqlSugar.SugarColumn(Length = 100)]
         public string NoticeAccount { get; set; }
@@ -191,12 +191,12 @@ namespace TinyStore.Model
             get
             {
                 if (!IsPay)
-                    return EState.用户下单;
+                    return EState.客户下单;
                 if (IsPay && !IsDelivery)
                     return EState.等待发货;
                 if (IsPay && IsDelivery)
                     return EState.完成订单;
-                return EState.用户下单;
+                return EState.客户下单;
             }
         }
     }

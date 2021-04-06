@@ -82,7 +82,7 @@ namespace TinyStore.Site.Controllers
             }
             else
             {
-                return ApiResult.RCode("用户账号或密码不正确");
+                return ApiResult.RCode("商户账号或密码不正确");
             }
         }
 
@@ -96,7 +96,7 @@ namespace TinyStore.Site.Controllers
             }
 
             if (BLL.UserBLL.QueryModelByAccount(Account) != null)
-                return ApiResult.RCode("用户账号已存在");
+                return ApiResult.RCode("商户账号已存在");
             if (BLL.UserExtendBLL.QueryModelByEmail(Email) != null)
                 return ApiResult.RCode("保密邮箱已存在");
             if (BLL.UserExtendBLL.QueryModelByTelPhone(Telphone) != null)
@@ -206,7 +206,7 @@ namespace TinyStore.Site.Controllers
             userextend.BankPersonName = BankPersonName;
             userextend.BankType = (EBankType) Banktype;
             BLL.UserExtendBLL.Update(userextend);
-            UserLog(userextend.UserId, EUserLogType.修改个人信息, Request, "", "个人信息修改");
+            UserLog(userextend.UserId, EUserLogType.修改商户信息, Request, "", "个人信息修改");
 
             return ApiResult.RData(userextend);
         }
@@ -221,7 +221,7 @@ namespace TinyStore.Site.Controllers
             Begin = Begin.Date;
             End = End.Date.AddDays(1).AddSeconds(-1);
 
-            if (State == (int) EState.用户下单 && Timetype == (int) EOrderTimeType.付款日期)
+            if (State == (int) EState.客户下单 && Timetype == (int) EOrderTimeType.付款日期)
             {
                 return ApiResult.RData(new GridData<Model.OrderModel>(new List<Model.OrderModel>(), 0, new
                 {
@@ -342,7 +342,7 @@ namespace TinyStore.Site.Controllers
             if (string.IsNullOrEmpty(order.NoticeAccount))
                 return ApiResult.RCode("手机号或电子邮箱不能为空");
 
-            Model.Extend.Payment payment = SiteContext.Store.GetPaymentList(store)
+            Model.Extend.Payment payment = SiteContext.Store.GetPaymentList(user)
                 .FirstOrDefault(p => p.PaymentType == order.PaymentType);
 
             if (payment == null)
@@ -512,7 +512,7 @@ namespace TinyStore.Site.Controllers
                 return ApiResult.RCode("旧密码不正确");
             user.Password = Global.Hash(PwdNew, user.Salt);
             BLL.UserBLL.Update(user);
-            UserLog(user.UserId, EUserLogType.修改个人信息, Request, "", "密码修改");
+            UserLog(user.UserId, EUserLogType.修改商户信息, Request, "", "密码修改");
             return ApiResult.RCode("");
         }
 
@@ -586,7 +586,7 @@ namespace TinyStore.Site.Controllers
                 {
                     Amount = item.FaceValue,
                     Category = Category,
-                    Cost = (item.Cost * SiteContext.Config.SupplyRates[store.Level]),
+                    Cost = (item.Cost * SiteContext.Config.SupplyRates[user.Level]),
                     IsShow = false,
                     Memo = item.Name,
                     Name = item.Name,
@@ -737,7 +737,6 @@ namespace TinyStore.Site.Controllers
 
             store.StoreId = storeOrgin.StoreId;
             store.UserId = storeOrgin.UserId;
-            store.Level = storeOrgin.Level;
             store.PaymentList = storeOrgin.PaymentList;
             store.Logo = SiteContext.Resource.MoveTempFile(store.Logo);
             BLL.StoreBLL.Update(store);

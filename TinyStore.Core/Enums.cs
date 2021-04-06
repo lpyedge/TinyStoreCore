@@ -26,7 +26,7 @@ namespace TinyStore
         // 渤海银行 = 61,
     }
 
-    public enum EStoreLevel : int
+    public enum EUserLevel : int
     {
         无 = 0,
         一星 = 1,
@@ -56,7 +56,7 @@ namespace TinyStore
 
     public enum EState : int
     {
-        用户下单 = 1,
+        客户下单 = 1,
         等待发货 = 3,
         完成订单 = 5,
     }
@@ -90,7 +90,7 @@ namespace TinyStore
     {
         注册 = 1,
         登录 = 2,
-        修改个人信息 = 3,
+        修改商户信息 = 3,
         修改店铺信息 = 4,
         分类管理 = 5,
         产品管理 = 6,
@@ -98,7 +98,7 @@ namespace TinyStore
         优惠码管理 = 8,
         库存管理 = 9,
         提现 = 10,
-        供货商管理 = 11,
+        货源管理 = 11,
         结算记录 = 12
     }
 
@@ -108,7 +108,7 @@ namespace TinyStore
         管理员管理 = 2,
         订单管理 = 3,
         提现管理 = 4,
-        用户管理 = 5,
+        商户管理 = 5,
         店铺管理 = 6
     }
 

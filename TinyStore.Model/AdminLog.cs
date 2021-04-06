@@ -42,7 +42,7 @@ namespace TinyStore.Model
         public string AcceptLanguage { get; set; }
         
         /// <summary>
-        ///用户日志类型
+        ///商户日志类型
         /// </summary>
         [SqlSugar.SugarColumn(IndexGroupNameList = new []{"AdminLogType"})]
         public EAdminLogType AdminLogType { get; set; }

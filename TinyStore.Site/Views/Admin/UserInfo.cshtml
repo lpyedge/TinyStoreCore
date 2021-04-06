@@ -1,6 +1,6 @@
 ﻿<div class="col">
     <p class="mb-3  bd-text-purple-bright">
-        用户列表
+        商户列表
     </p>
     <div class="form-inline">
         <div class="col-2 ">
@@ -46,7 +46,7 @@
                 <label class="col-4 control-label">店铺等级</label>
                 <div class="col-5">
                     <select class="form-control" name="Level">
-                        @foreach (TinyStore.EStoreLevel level in Enum.GetValues(typeof(TinyStore.EStoreLevel)))
+                        @foreach (TinyStore.EUserLevel level in Enum.GetValues(typeof(TinyStore.EUserLevel)))
                         {
                             <option value="@((int)level)">@level</option>
                         }
@@ -236,12 +236,12 @@
                         //}
                     }
                 }, {
-                    title: '用户管理', formatter: function (value, row, index) {
+                    title: '商户管理', formatter: function (value, row, index) {
                         if (row) {
                             var btn = "<div class=\"btn-group mt-1 mb-1\">";
                             btn += "<button type=\"button\" class=\"btn btn-success dropdown-toggle\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\">管理</button>";
                             btn += "<div class=\"dropdown-menu\">";
-                            btn += "<button onclick=\"Extend('" + row.UserId + "')\" class=\"dropdown-item fa fa-user-circle-o\"> 用户详细</button>";
+                            btn += "<button onclick=\"Extend('" + row.UserId + "')\" class=\"dropdown-item fa fa-user-circle-o\"> 商户详细</button>";
                             //btn += "<a href=\"" + row.Store.Url + "\" target=\"_blank\" class=\"dropdown-item fa fa-university\"> 店铺详细</a>";
                             btn += "<button onclick=\"Info('" + row.UserId + "')\" class=\"dropdown-item fa fa-user-circle-o\"> 店铺详细</button>";
                             btn += "<button onclick=\"LevelUpdateShow('" + row.StoreId + "')\" class=\"dropdown-item fa fa-diamond\"> 店铺等级</button>";
@@ -305,7 +305,7 @@
             if (data != null) {
                 dialog = bootbox.dialog({
                     show: false,
-                    title: "用户详细",
+                    title: "商户详细",
                     message: $("#dialogextend").html()
                 });
 

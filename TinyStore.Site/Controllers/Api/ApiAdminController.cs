@@ -66,7 +66,7 @@ namespace TinyStore.Site.Controllers.Api
             }
             else
             {
-                return ApiResult.RCode("用户账号或密码不正确");
+                return ApiResult.RCode("账号或密码不正确");
             }
         }
 
@@ -152,7 +152,7 @@ namespace TinyStore.Site.Controllers.Api
         {
             var current = AdminCurrent();
 
-            if (State == (int) EState.用户下单 && TimeType == (int) EOrderTimeType.付款日期)
+            if (State == (int) EState.客户下单 && TimeType == (int) EOrderTimeType.付款日期)
             {
                 return ApiResult.RData(
                     new GridData<Model.OrderModel>(new List<Model.OrderModel>(), 0));
@@ -360,23 +360,24 @@ namespace TinyStore.Site.Controllers.Api
 
             var user = Id == 0 ? null : BLL.UserBLL.QueryModelById(Id);
             if (user == null)
-                return ApiResult.RCode("用户不存在");
+                return ApiResult.RCode("商户不存在");
+            
             user.Password = Global.Hash(Pwd, user.Salt);
             BLL.UserBLL.Update(user);
-            AdminLog(current.AdminId, EAdminLogType.用户管理, Request, "密码修改" + Id);
+            AdminLog(current.AdminId, EAdminLogType.商户管理, Request, "密码修改" + Id);
             return ApiResult.RCode("");
         }
 
-        public IActionResult UserStoreLevelModify([FromForm] string Id, [FromForm] int Level)
+        public IActionResult UserLevelModify([FromForm] int Id, [FromForm] int Level)
         {
             var current = AdminCurrent();
 
-            var store = BLL.StoreBLL.QueryModelByStoreId(Id);
-            if (store == null)
-                return ApiResult.RCode("店铺不存在");
+            var user = BLL.UserBLL.QueryModelById(Id);
+            if (user == null)
+                return ApiResult.RCode("商户不存在");
 
-            BLL.StoreBLL.ModifyLevel(store.StoreId, (EStoreLevel) Level);
-            AdminLog(current.AdminId, EAdminLogType.店铺管理, Request, "店铺级别修改" + Id);
+            BLL.UserBLL.ModifyLevel(user.UserId, (EUserLevel) Level);
+            AdminLog(current.AdminId, EAdminLogType.店铺管理, Request, "商户级别修改" + Id);
             return ApiResult.RCode("");
         }
 
@@ -384,7 +385,7 @@ namespace TinyStore.Site.Controllers.Api
         {
             var user = Id == 0 ? null : BLL.UserBLL.QueryModelById(Id);
             if (user == null)
-                return ApiResult.RCode("用户不存在");
+                return ApiResult.RCode("商户不存在");
             //todo UserContext.Login(user, false);
             return ApiResult.RCode("");
         }

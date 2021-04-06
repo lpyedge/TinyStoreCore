@@ -13,10 +13,12 @@ namespace TinyStore.BLL
         {
             return QueryModel(p => p.Account == account);
         }
+
         public static Model.UserModel QueryModelById(int userid)
         {
             return QueryModel(p => p.UserId == userid);
         }
+
         public static PageList<Model.UserModel> QueryPageListByKey(string key, int pageindex, int pagesize)
         {
             using (var db = DbClient)
@@ -24,7 +26,7 @@ namespace TinyStore.BLL
                 if (string.IsNullOrWhiteSpace(key))
                 {
                     var data = db.Queryable<Model.UserModel>()
-                        .Select(p => new Model.UserModel { Account = p.Account, UserId = p.UserId })
+                        .Select(p => new Model.UserModel {Account = p.Account, UserId = p.UserId})
                         .OrderBy(SortCreateDateDesc.First().Key, SortCreateDateDesc.First().Value)
                         .ToPageList(pageindex, pagesize);
                     return new PageList<Model.UserModel>(data);
@@ -35,7 +37,7 @@ namespace TinyStore.BLL
                     userids.AddRange(StoreBLL.QueryUseridsByKey(key));
 
                     var data = db.Queryable<Model.UserModel>()
-                        .Select(p => new Model.UserModel { Account = p.Account, UserId = p.UserId })
+                        .Select(p => new Model.UserModel {Account = p.Account, UserId = p.UserId})
                         .Where(p => p.Account.Contains(key) || userids.Contains(p.UserId))
                         .OrderBy(SortCreateDateDesc.First().Key, SortCreateDateDesc.First().Value)
                         .ToPageList(pageindex, pagesize);
@@ -44,10 +46,15 @@ namespace TinyStore.BLL
             }
         }
 
-        
+
         public static void ChangeAmount(int userId, double amount)
         {
             Update(p => p.UserId == userId, p => p.Amount == p.Amount + amount);
+        }
+
+        public static void ModifyLevel(int userId, EUserLevel p_level)
+        {
+            Update(p => p.UserId == userId, p => p.Level == p_level);
         }
     }
 }

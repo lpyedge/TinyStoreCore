@@ -95,6 +95,7 @@ namespace TinyStore.Site
                 ClientKey = "test",
                 Amount = 0,
                 AmountCharge = 1000,
+                Level = EUserLevel.一星,
             });
             TinyStore.BLL.UserExtendBLL.InsertAsync(new UserExtendModel()
             {
@@ -112,7 +113,6 @@ namespace TinyStore.Site
                 Email = "test@test.com",
                 Name = "小网店",
                 Initial = Global.Initial("小网店"),
-                Level = EStoreLevel.一星,
                 Logo = "#",
                 Memo = "自家供货，自家销售",
                 Template = EStoreTemplate.模板一,
@@ -189,7 +189,6 @@ namespace TinyStore.Site
                 PaymentType = "alipay",
                 TranId = "123456",
 
-
                 ReturnAmount = 0,
                 ReturnDate = DateTime.Now,
 
@@ -197,7 +196,8 @@ namespace TinyStore.Site
                 IsSettle = false,
                 SettleDate = DateTime.Now,
                 ClientIP = "127.0.0.1",
-                //用户输入数据
+                
+                //客户输入数据
                 NoticeAccount = "test@qq.com",
                 Contact = "110110",
 
@@ -232,9 +232,9 @@ namespace TinyStore.Site
 
             public string FormatDateTime { get; set; } = "yyyy-MM-dd HH:mm";
 
-            public Dictionary<EStoreLevel, double> TaxConfigList { get; set; }
+            public Dictionary<EUserLevel, double> TaxConfigList { get; set; }
 
-            public Dictionary<EStoreLevel, double> SupplyRates { get; set; }
+            public Dictionary<EUserLevel, double> SupplyRates { get; set; }
 
             public List<KeyValuePair<string, string>> WechatPaySettings { get; set; }
 
@@ -795,9 +795,9 @@ namespace TinyStore.Site
 
         public static class Store
         {
-            public static List<Model.Extend.Payment> GetPaymentList(Model.StoreModel store)
+            public static List<Model.Extend.Payment> GetPaymentList(Model.UserModel user)
             {
-                var rate = Config.TaxConfigList[store.Level];
+                var rate = Config.TaxConfigList[user.Level];
                 var list = new List<Model.Extend.Payment>();
 
                 foreach (EPaymentType item in Enum.GetValues(typeof(EPaymentType)))

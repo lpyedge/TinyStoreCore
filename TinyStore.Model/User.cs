@@ -21,6 +21,11 @@ namespace TinyStore.Model
         
         [SqlSugar.SugarColumn(Length = 32)]
         public string ClientKey { get; set; }
+        
+        /// <summary>
+        /// 商户等级
+        /// </summary>
+        public EUserLevel Level { get; set; } = EUserLevel.无;
 
         /// <summary>
         /// 金额 可以提现
