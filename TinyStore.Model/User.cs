@@ -21,5 +21,15 @@ namespace TinyStore.Model
         
         [SqlSugar.SugarColumn(Length = 32)]
         public string ClientKey { get; set; }
+
+        /// <summary>
+        /// 金额 可以提现
+        /// </summary>
+        public double Amount { get; set; }
+        
+        /// <summary>
+        /// 签帐额度 仅可抵扣商品成本
+        /// </summary>
+        public double AmountCharge { get; set; }
     }
 }

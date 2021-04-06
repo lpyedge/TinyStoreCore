@@ -44,5 +44,10 @@ namespace TinyStore.BLL
             }
         }
 
+        
+        public static void ChangeAmount(int userId, double amount)
+        {
+            Update(p => p.UserId == userId, p => p.Amount == p.Amount + amount);
+        }
     }
 }

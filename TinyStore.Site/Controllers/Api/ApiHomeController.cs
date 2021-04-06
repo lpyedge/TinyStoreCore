@@ -12,8 +12,8 @@ namespace TinyStore.Site.Controllers.Api
     [ApiController]
     [MultipleSubmit]
     [Produces("application/json")]
-    [Route("api/[action]")]
-    public class HomeController : ControllerBase
+    [Route("Api/[action]")]
+    public class ApiHomeController : ControllerBase
     {
         public IActionResult OrderInsert([FromForm] string Productid, [FromForm] int Quantity,
             [FromForm] string Contact, [FromForm] string NoticeAccount, [FromForm] string PaymentType)

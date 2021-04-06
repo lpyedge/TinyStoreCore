@@ -1,264 +1,227 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <partial name="Widgets/_Header" />
+    <title>@TinyStore.Site.SiteContext.Config.SiteName</title>
+    <partial name="Widgets/_Header"/>
 </head>
 <body class="bd-home">
-    <header class="navbar navbar-expand navbar-dark flex-md-row bd-navbar" style="min-height:3rem;">
-        <div class="navbar-nav flex-row ml-md-auto d-none d-md-flex">
-            <select class="form-control" id="slStore">
-            </select>
-        </div>
-        <div class="navbar-nav-scroll">
-            <ul class="navbar-nav bd-navbar-nav flex-row">
-                <li class="nav-item">
-                    <a class="nav-link active" href="/">首页</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link">帮助中心</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link">联系我们</a>
-                </li>
-            </ul>
-        </div>
-        <div class="btns">
-            @*<a class="btn btn-bd-yellow d-none d-lg-inline-block mb-3 mb-md-0 ml-md-3" href="">商户注册</a>*@
-            @*<a class="btn btn-bd-yellow d-none d-lg-inline-block mb-3 mb-md-0 ml-md-3" href="/order/search">订单查询</a>*@
+<div id="q-app">
+    <q-layout view="hHh lpR fFf" class="bg-grey-1">
+        <q-header elevated class="bg-primary q-py-xs" style="height: 65px;line-height: 65px;">
+            <q-toolbar class="fit">
+                <q-btn
+                    flat
+                    dense
+                    round
+                    @@click="leftDrawerOpen = !leftDrawerOpen"
+                    aria-label="菜单栏"
+                    size="lg"
+                    icon="menu">
+                </q-btn>
 
-            <a class="btn btn-bd-yellow d-lg-inline-block ml-2 visible-lg-inline hidden-md" href="/user/index">
-                <i class="fa fa-user" aria-hidden="true"></i>
-                <span>用户中心</span>
-            </a>
-            <a class="btn btn-bd-yellow d-lg-inline-block ml-2 visible-lg-inline hidden-md" id="aUserLogout" href="javascript:;">
-                <i class="fa fa-sign-out" aria-hidden="true"></i>
-                <span>退出登录</span>
-            </a>
-            <a class="mobile-toggle btn btn-info fa fa-bars" id="btn-menu"></a>
-        </div>
-    </header>
+                <img src="~/images/logo.png" alt="SiteContext.Config.SiteName" class="full-height"/>
+                <q-toolbar-title shrink class="desktop-only">
+                    @SiteContext.Config.SiteName
+                </q-toolbar-title>
 
-    <main class="main" role="main">
-        <div class="row">
-            <div class="menu col-12 col-md-2">
-                <div class="panel-group table-responsive" role="tablist">
-                    <div class="panel panel-primary leftMenu">
-                        <div class="panel-heading" id="collapseListGroupHeading1" data-toggle="collapse" data-target="#collapseListGroup1" role="tab">
-                            <h6 class="bd-text-purple">
-                                <i class="fa fa-home"></i>
-                                综合信息
-                                <i class="fa fa-caret-down"></i>
-                            </h6>
-                        </div>
-                        <div id="collapseListGroup1" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="collapseListGroupHeading1">
-                            <ul class="list-group">
-                                <li class="list-group-item">
-                                    <a class="menu-item-left" href="/user/index">
-                                        管理中心
-                                    </a>
-                                </li>
-                                <li class="list-group-item">
-                                    <a class="menu-item-left" href="/user/basicinfo">
-                                        基本设置
-                                    </a>
-                                </li>
-                                <li class="list-group-item">
-                                    <a class="menu-item-left" href="/user/pwdmodify">
-                                        修改密码
-                                    </a>
-                                </li>
-                                <li class="list-group-item">
-                                    <a class="menu-item-left" href="/user/userlog">
-                                        操作记录
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="panel panel-primary leftMenu" data-store>
-                        <div class="panel-heading" id="collapseListGroupHeading2" data-toggle="collapse" data-target="#collapseListGroup2" role="tab">
-                            <h6 class="bd-text-purple">
-                                <i class="fa fa-credit-card"></i>
-                                商品管理
-                                <i class="fa fa-caret-down"></i>
-                            </h6>
-                        </div>
-                        <div id="collapseListGroup2" class="panel-collapse collapse" role="tabpanel" aria-labelledby="collapseListGroupHeading2">
-                            <ul class="list-group">
-                                <li class="list-group-item">
-                                    <a class="menu-item-left" href="/user/product">
-                                        商品管理
-                                    </a>
-                                </li>
-                                <li class="list-group-item">
-                                    <a class="menu-item-left" href="/user/stock">
-                                        库存卡密
-                                    </a>
-                                </li>
-                                <li class="list-group-item">
-                                    <a class="menu-item-left" href="/user/stockrecycle">
-                                        卡密回收站
-                                    </a>
-                                </li>
-                                <li class="list-group-item">
-                                    <a class="menu-item-left" href="/user/supplier">
-                                        供货商管理
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="panel panel-primary leftMenu" data-store>
-                        <div class="panel-heading" id="collapseListGroupHeading3" data-toggle="collapse" data-target="#collapseListGroup3" role="tab">
-                            <h6 class="bd-text-purple">
-                                <i class="fa fa-shopping-cart"></i>
-                                交易管理
-                                <i class="fa fa-caret-down"></i>
-                            </h6>
-                        </div>
-                        <div id="collapseListGroup3" class="panel-collapse collapse" role="tabpanel" aria-labelledby="collapseListGroupHeading3">
-                            <ul class="list-group">
-                                <li class="list-group-item">
-                                    <a class="menu-item-left" href="/user/order">
-                                        订单记录
-                                    </a>
-                                </li>
-                                <li class="list-group-item">
-                                    <a class="menu-item-left" href="/user/benifit">
-                                        收益统计
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="panel panel-primary leftMenu" data-store>
-                        <div class="panel-heading" id="collapseListGroupHeading4" data-toggle="collapse" data-target="#collapseListGroup4" role="tab">
-                            <h6 class="bd-text-purple">
-                                <i class="fa fa-university"></i>
-                                店铺管理
-                                <i class="fa fa-caret-down"></i>
-                            </h6>
-                        </div>
-                        <div id="collapseListGroup4" class="panel-collapse collapse" role="tabpanel" aria-labelledby="collapseListGroupHeading4">
-                            <ul class="list-group">
-                                <li class="list-group-item">
-                                    <a class="menu-item-left" href="/user/store">
-                                        基本信息
-                                    </a>
-                                </li>
+                <q-space></q-space>
 
-                                @*<li class="list-group-item">
-                                        <a class="menu-item-left" href="/store/storelink">
-                                            店铺链接
-                                        </a>
-                                    </li>*@
-
-                                @*<li class="list-group-item">
-                                        <a class="menu-item-left" href="/store/payments">
-                                            支付方式
-                                        </a>
-                                    </li>*@
-                                @*<li class="list-group-item">
-                                    <a class="menu-item-left" href="/store/promocode">
-                                        管理优惠券
-                                    </a>
-                                </li>*@
-                                <li class="list-group-item">
-                                    <a class="menu-item-left" href="/user/withdraw">
-                                        申请提现
-                                    </a>
-                                </li>
-                                @*<li class="list-group-item">
-                                        <button class="menu-item-left">
-                                            投诉管理
-                                        </button>
-                                    </li>
-                                    <li class="list-group-item">
-                                        <button class="menu-item-left">
-                                            商家百科
-                                        </button>
-                                    </li>
-                                    <li class="list-group-item">
-                                        <button class="menu-item-left">
-                                            站内消息
-                                        </button>
-                                    </li>*@
-                            </ul>
-                        </div>
-                    </div>
+                <div class="q-gutter-sm row items-center no-wrap">
+                    <q-btn round dense flat color="grey-8" icon="apps" v-if="$q.screen.gt.sm">
+                        <q-tooltip>Apps</q-tooltip>
+                    </q-btn>
+                    <q-btn round dense flat color="grey-8" icon="message" v-if="$q.screen.gt.sm">
+                        <q-tooltip>Messages</q-tooltip>
+                    </q-btn>
+                    <q-btn round dense flat  icon="list">
+                        <q-badge color="red" text-color="white" floating>
+                            2
+                        </q-badge>
+                        <q-tooltip>订单</q-tooltip>
+                    </q-btn>
+                    <q-btn-dropdown split>
+                          <template v-slot:label>
+                            {{ storeCurrent.name }}
+                          </template>
+                          <q-list>
+                            <q-item clickable v-close-popup @@click="test" v-for="store in storeList">
+                              <q-item-section>
+                                <q-item-label>{{store.name}}</q-item-label>
+                              </q-item-section>
+                            </q-item>
+                          </q-list>
+                    </q-btn-dropdown>
                 </div>
-            </div>
-            <div class="col-md-10">
-                <div class="container">
-                    @RenderBody()
-                </div>
-            </div>
-        </div>
-    </main>
+            </q-toolbar>
+        </q-header>
 
-    <script type="text/javascript">
+        <q-drawer
+            v-model="leftDrawerOpen"
+            show-if-above
+            bordered
+            content-class="bg-grey-2"
+            :width="240">
+            <q-scroll-area class="fit">
+                <q-list padding>
+                    <q-item-label header class="text-weight-bold text-uppercase">
+                        货源
+                    </q-item-label>
+                                        
+                    <q-item v-ripple clickable v-for="link in supplylinks" :key="link.text" @@click="Goto(link.url)" >
+                        <q-item-section avatar>
+                            <q-icon  color="grey-8" :name="link.icon"/>
+                        </q-item-section>
+                        <q-item-section>
+                            <q-item-label class="text-h6 text-grey-8">{{ link.text }}</q-item-label>
+                        </q-item-section>
+                    </q-item>
+                    
+                    <q-separator class="q-my-md"></q-separator>
+                    
+                    <q-item-label header class="text-weight-bold text-uppercase">
+                        用户
+                    </q-item-label>
+                    
+                    <q-item v-ripple clickable v-for="link in userlinks" :key="link.text" @@click="Goto(link.url)" >
+                        <q-item-section avatar>
+                            <q-icon color="grey-8" :name="link.icon"/>
+                        </q-item-section>
+                        <q-item-section>
+                            <q-item-label class="text-h6 text-grey-8">{{ link.text }}</q-item-label>
+                        </q-item-section>
+                    </q-item>
 
-        var user = Store.User();
-        var storelist = Store.StoreList();
-        var storecurrent = Store.StoreCurrent();
+                    <q-separator class="q-my-md"></q-separator>
+                    
+                    <q-item-label header class="text-weight-bold text-uppercase">
+                        店铺
+                    </q-item-label>
 
-        var storeid = storecurrent.StoreId;//用户登录时 获取storelist 设置到 Store.StoreList(); 同时把索引0的对象赋值给  Store.StoreCurrent()
+                    <q-item v-ripple clickable v-for="link in storelinks" :key="link.text" @@click="Goto(link.url)">
+                        <q-item-section avatar>
+                            <q-icon color="grey-8" :name="link.icon"/>
+                        </q-item-section>
+                        <q-item-section>
+                            <q-item-label class="text-h6 text-grey-8">{{ link.text }}</q-item-label>
+                        </q-item-section>
+                    </q-item>
 
-        $(function () {
-            if (user && storelist) {
-                var $slStore = $("#slStore");
-                var options = '';
-                for (var key in storelist) {
-                    options += '<option value= "' + storelist[key].StoreId + '">' + storelist[key].Name + '</option>';
-                }
-                $slStore.html(options);
-                $slStore.val(storeid);
-            }
-            else {
-                location.href = "/user/login";
-            }
+                    <q-separator class="q-mt-md q-mb-lg"></q-separator>
 
-            if (storelist.length == 0) {
-                $("[data-store]").hide();
-            }
+                    <div class="q-px-md text-grey-9">
+                        <div class="row items-center q-gutter-x-sm q-gutter-y-xs">
+                            <a
+                                v-for="button in buttons1"
+                                :key="button.text"
+                                class="YL__drawer-footer-link"
+                                href="javascript:void(0)">
+                                {{ button.text }}
+                            </a>
+                        </div>
+                    </div>
+                    <div class="q-py-md q-px-md text-grey-9">
+                        <div class="row items-center q-gutter-x-sm q-gutter-y-xs">
+                            <a
+                                v-for="button in buttons2"
+                                :key="button.text"
+                                class="YL__drawer-footer-link"
+                                href="javascript:void(0)">
+                                {{ button.text }}
+                            </a>
+                        </div>
+                    </div>
+                </q-list>
+            </q-scroll-area>
+        </q-drawer>
 
-            $("#aUserLogout").on("click", function () {
-                Store.UserRemove();
-                Store.TokenRemove();
-                Store.StoreListRemove()
-                Store.StoreCurrentRemove();
-                Store.UserExtendRemove();
-                setTimeout(function () { location.href = "/user/login" }, 1000);
-            });
-
-            $("#slStore").on("change", function () {
-                storeid = $("#slStore").val();
-                Store.StoreCurrent(storelist[$("#slStore").get(0).selectedIndex])
-                location.href = location.href;
-            });
-        });
-
-
-        function GetEnumName(id, checkValue) {
-            var select = document.getElementById(id);
-            for (var i = 0; i < select.options.length; i++) {
-                if (select.options[i].value == checkValue) {
-                    return select.options[i].text;
-                }
-            }
-        }
-        function UrlShortShow(m_id) {
-            var url = "@TinyStore.Site.SiteContext.Config.SiteDomain"+ "/order_" + m_id;
-            grid.find("[name='shortlink']").popover('hide');
-            grid.find("[orderid='" + m_id + "']").attr("data-content", url);
-            grid.find("[orderid='" + m_id + "']").popover('show');
-            $(".popover-body").on("click", function (event) {
-                event = CY.EventFix(event);
-                CY.StopPropagation(event);
-                window.open($(event.target).html());
-            });
-        }
-    </script>
-    @RenderSection("Scripts", required: false)
+        <q-page-container>
+            @RenderBody()
+        </q-page-container>
+    </q-layout>
+</div>
+<partial name="Widgets/_BodyEnd"/>
+<script>
+    var _layout ={
+     el: '#q-app',
+     data : {
+       leftDrawerOpen:true,
+       user : Store.User(),
+       userExtend : Store.UserExtend(),
+       storeList : Store.StoreList(),
+       storeCurrent : Store.StoreCurrent(),
+       supplylinks: [
+           { icon: 'person', text: '货源管理',url:'' },
+           { icon: 'vpn_key', text: '卡密管理',url:''  },      
+         ],
+       userlinks: [
+           { icon: 'person', text: '用户资料',url:'' },
+           { icon: 'lock', text: '密码安全',url:'' },
+           { icon: 'local_atm', text: '账目管理',url:'' },
+           //{ icon: 'monetization_on', text: '提现管理' },     
+           { icon: 'history', text: '操作日志',url:'' }
+         ],
+       storelinks: [
+           { icon: 'store_mall_directory', text: '店铺资料',url:''  },
+           { icon: 'card_travel', text: '商品管理',url:''  },
+           { icon: 'local_grocery_store', text: '订单管理',url:''  },
+         ],
+         buttons1: [
+           { text: 'About' },
+           { text: 'Press' },
+           { text: 'Copyright' },
+           { text: 'Contact us' },
+           { text: 'Creators' },
+           { text: 'Advertise' },
+           { text: 'Developers' }
+         ],
+         buttons2: [
+           { text: 'Terms' },
+           { text: 'Privacy' },
+           { text: 'Policy & Safety' },
+           { text: 'Test new features' }
+         ]
+     },
+     beforeMount(){
+         if(!Store.Token()){
+             location.href = '@Url.ActionLink("Login", "User")';
+         }
+     },
+     methods: {
+         login (){
+             console.log('login');
+             // if (this.loginForm.account && this.loginForm.password){
+             //     this.loginForm.loading = true;
+             //     UserApi('login', {
+             //         account: this.loginForm.account,
+             //         password: this.loginForm.password
+             //     })
+             //     .then((response)=> {
+             //         console.log(response.headers.token)
+             //         if (response.data.code === 1){
+             //             Store.Token(response.headers.token);
+             //             Store.User(response.data.data.user);
+             //             Store.UserExtend(response.data.data.userExtend);
+             //             Store.StoreList(response.data.data.storeList);
+             //             location.href = '@Url.ActionLink("Index", "User")';
+             //         }
+             //         else{
+             //             Warning('帐号密码不匹配');
+             //         }
+             //         this.loginForm.loading = false;
+             //     })
+             //     .catch( (error)=> {
+             //         this.loginForm.loading = false;
+             //         Warning('接口通信错误');
+             //         console.error(error);
+             //     });
+             // }else{
+             //     Warning('请输入帐号&密码');
+             // }
+         }
+     },
+     // ...etc
+   };
+</script>
+@RenderSection("Scripts", required: false)
 </body>
 </html>

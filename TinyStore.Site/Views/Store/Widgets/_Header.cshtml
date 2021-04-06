@@ -1,0 +1,98 @@
+﻿<!--文档编码格式-->
+<meta charset="utf-8">
+<!--让 IE 浏览器运行最新的渲染模式下-->
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<!--多内核浏览器默认采用webkit高速模式渲染页面-->
+<meta name="renderer" content="webkit">
+<!--页面显示宽度,默认为设备宽度,默认缩放比例为1-->
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+
+<script src="https://cdn.staticfile.org/dayjs/1.8.34/dayjs.min.js"></script>
+<link href="https://cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+
+<script src="https://cdn.staticfile.org/jquery/3.5.1/jquery.min.js"></script>
+
+
+<link href="https://cdn.staticfile.org/twitter-bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+<script src="https://cdn.staticfile.org/twitter-bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
+<!--弹出层插件-->
+<script src="https://cdn.staticfile.org/bootbox.js/5.4.0/bootbox.min.js"></script>
+
+<!--验证插件-->
+<script src="https://cdn.staticfile.org/jquery-validate/1.19.2/jquery.validate.js"></script>
+<script src="https://cdn.staticfile.org/jquery-validate/1.19.2/localization/messages_zh.min.js"></script>
+
+<!--输入框文字字数插件-->
+<script src="https://cdn.staticfile.org/bootstrap-maxlength/1.10.0/bootstrap-maxlength.min.js"></script>
+
+<!--Grid表格插件-->
+<script src="https://cdn.staticfile.org/bootstrap-table/1.17.1/bootstrap-table.min.js"></script>
+<link href="https://cdn.staticfile.org/bootstrap-table/1.17.1/bootstrap-table.min.css" rel="stylesheet" />
+<script src="https://cdn.staticfile.org/bootstrap-table/1.17.1/locale/bootstrap-table-zh-CN.min.js"></script>
+
+<environment include="Development">
+    <link href="~/output/portal.css" rel="stylesheet" asp-append-version="true" />
+    <script src="~/output/portal.js" type="text/javascript" asp-append-version="true"></script>
+</environment>
+<environment exclude="Development">
+    <link href="~/output/portal.min.css" rel="stylesheet" asp-append-version="true" />
+    <script src="~/output/portal.min.js" type="text/javascript" asp-append-version="true"></script>
+</environment>
+
+<partial name="Widgets/_Plugin_Store" />
+<partial name="Widgets/_Plugin_Toast" />
+
+<script>
+    CY.AjaxUrl = "/userapi";
+    CY.MVC = true;
+    CY.AjaxMask = false;
+
+    var baseTableoption = {
+        striped: true, //是否显示行间隔色
+        cache: false, //是否使用缓存，默认为true，所以一般情况下需要设置一下这个属性（*）
+        pagination: true, //是否显示分页（*）
+        sidePagination: "server", //分页方式：client客户端分页，server服务端分页（*）
+        pageNumber: 1, //初始化加载第一页，默认第一页
+        pageSize: 50, //每页的记录行数（*）
+        pageList: [10, 25, 50, 100], //可供选择的每页的行数（*）
+        showColumns: false, //是否显示列筛选
+        minimumCountColumns: 1, //列筛选时最少显示列数
+        clickToSelect: true, //是否启用点击选中行
+        //height: 500, //固定表格高度(超出滚动条显示)，如果没有设置表格会根据记录条数自适应表格高度(不显示滚动条)
+        showToggle: false, //是否显示详细视图和列表视图的切换按钮
+        cardView: false, //是否显示详细视图 台式（false） /手机
+        detailView: false, //是否显示父子表
+        showFooter: false,
+        toolbar: '#toolbar',                //工具按钮用哪个容器
+        onPageChange: function (pageindex, pagesize) { //调用各自页面的QueryPageList方法
+            if (typeof (QueryPageList) == 'function')
+                QueryPageList(pageindex, pagesize);
+        },
+        onDblClickRow: function (row, $element, field) {//调用各自页面的ShowModal方法
+            if (typeof (ShowModal) == 'function')
+                ShowModal(row, $element, field);
+        },
+
+    };
+
+    $(function () {
+        $(":input:checkbox").BootstrapCheck();
+        $(":input:radio").BootstrapCheck();
+
+        $('#btn-menu').on('click', function () {
+            $('.main .row .menu').toggle();
+        });
+    });
+
+
+    function DatetimeFormat(date) {
+        return dayjs(date).format("YYYY-MM-DD HH:mm:ss");
+    }
+
+    function DateFormat(date) {
+        return dayjs(date).format("YYYY-MM-DD");
+    }
+
+</script>

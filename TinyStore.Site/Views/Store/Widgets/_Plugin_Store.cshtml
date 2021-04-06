@@ -24,19 +24,6 @@ Store.UserRemove = function () {
     localStorage.removeItem("User");
 };
 
-//用户信息
-Store.UserExtend = function (userextra) {
-    if (userextra) {
-        localStorage.setItem("UserExtend", JSON.stringify(userextra));
-    } else {
-        return JSON.parse(localStorage.getItem("UserExtend"));
-    }
-};
-
-Store.UserExtendRemove = function () {
-    localStorage.removeItem("UserExtend");
-};
-
 
 //用户店铺列表
 Store.StoreList = function (storelist) {
@@ -52,25 +39,29 @@ Store.StoreListRemove = function () {
 };
 
 //用户店铺信息
-Store.StoreCurrent = function (index) {
-    if (index!==undefined) {     
-        if (index<0 || Store.StoreList().length <= index){
-            index = 0;
-        }
-        sessionStorage.setItem("StoreCurrent", index);
+Store.StoreCurrent = function (storecurrent) {
+    if (storecurrent) {
+        localStorage.setItem("StoreCurrent", JSON.stringify(storecurrent));
     } else {
-        index = sessionStorage.getItem("StoreCurrent");
-        if (index == null){
-            index = 0;
-        }
-        if (Store.StoreList().length > index)
-            return Store.StoreList()[index];
-        return null;
+        return JSON.parse(localStorage.getItem("StoreCurrent"));
     }
 };
 
 Store.StoreCurrentRemove = function () {
     localStorage.removeItem("StoreCurrent");
+};
+
+//用户收款信息
+Store.UserExtend = function (userextra) {
+    if (userextra) {
+        localStorage.setItem("UserExtend", JSON.stringify(userextra));
+    } else {
+        return JSON.parse(localStorage.getItem("UserExtend"));
+    }
+};
+
+Store.UserExtendRemove = function () {
+    localStorage.removeItem("UserExtend");
 };
 
 

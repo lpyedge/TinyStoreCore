@@ -28,11 +28,14 @@ namespace TinyStore.Model
         /// </summary>
         [SqlSugar.SugarColumn(Length = 500)] 
         public string Memo { get; set; }
+        
         [SqlSugar.SugarColumn(IndexGroupNameList = new []{"IsDelivery"})]
         public bool IsDelivery { get; set; }
+        
         [SqlSugar.SugarColumn(IndexGroupNameList = new []{"CreateDate"})]
         public DateTime CreateDate { get; set; }
         public DateTime DeliveryDate { get; set; }
+        
         [SqlSugar.SugarColumn(IndexGroupNameList = new []{"IsShow"})]
         public bool IsShow { get; set; }
     }

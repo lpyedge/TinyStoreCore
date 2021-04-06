@@ -6,14 +6,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TinyStore.Model.Extend;
 
-namespace TinyStore.Site.Controllers.Api
+namespace TinyStore.Site.Controllers
 {
     [ApiController]
     [MultipleSubmit]
     [UserHeaderToken("Login", "Register")]
     [Produces("application/json")]
-    [Route("userapi/[action]")]
-    public class UserController : ControllerBase
+    [Route("ApiUser/[action]")]
+    public class ApiUserController : ControllerBase
     {
         private Model.UserModel UserCurrent(string storeid, out Model.StoreModel store)
         {
@@ -476,12 +476,12 @@ namespace TinyStore.Site.Controllers.Api
                 order.DeliveryDate = DateTime.Now;
             }
 
-            var storemodel = BLL.StoreBLL.QueryModelByStoreId(order.StoreId);
-            if (storemodel == null)
-                return ApiResult.RCode("店铺不存在，请检查数据库");
-            if (storemodel.Amount < amountchange)
-                return ApiResult.RCode("店铺资金小于退款金额，请联系店铺管理人员解决");
-            BLL.StoreBLL.ChangeAmount(store.StoreId, -amountchange); //店铺金额减去变动金额
+            var usermodel = BLL.UserBLL.QueryModelById(order.UserId);
+            if (usermodel == null)
+                return ApiResult.RCode("商户不存在，请检查数据库");
+            if (usermodel.Amount < amountchange)
+                return ApiResult.RCode("商户资金小于退款金额，请联系店铺管理人员解决");
+            BLL.UserBLL.ChangeAmount(usermodel.UserId, -amountchange); //店铺金额减去变动金额
 
             BLL.OrderBLL.Update(order);
             UserLog(store.UserId, EUserLogType.订单管理, Request, store.StoreId, "订单退款申请");
@@ -739,7 +739,6 @@ namespace TinyStore.Site.Controllers.Api
             store.UserId = storeOrgin.UserId;
             store.Level = storeOrgin.Level;
             store.PaymentList = storeOrgin.PaymentList;
-            store.Amount = storeOrgin.Amount;
             store.Logo = SiteContext.Resource.MoveTempFile(store.Logo);
             BLL.StoreBLL.Update(store);
 
@@ -768,13 +767,11 @@ namespace TinyStore.Site.Controllers.Api
             return ApiResult.RData(new GridData<Model.OrderModel>(res.Rows, (int) res.Total, orderstat));
         }
 
-        public IActionResult WithDrawInsert([FromForm] string StoreId, [FromForm] double Amount,
+        public IActionResult WithDrawInsert([FromForm] double Amount,
             [FromForm] int BankType, [FromForm] string Bankaccount, [FromForm] string BankPersonName,
             [FromForm] string Name)
         {
-            var user = UserCurrent(StoreId, out Model.StoreModel store);
-            if (store != null)
-                return ApiResult.RCode("未知错误");
+            var user = UserCurrent();
 
             if (string.IsNullOrEmpty(Name))
                 return ApiResult.RCode("收款名称不能为空");
@@ -788,12 +785,8 @@ namespace TinyStore.Site.Controllers.Api
             if (Amount > SiteContext.Config.WithDrawMax)
                 return ApiResult.RCode($"提现金额必须小于等于{SiteContext.Config.WithDrawMax}");
 
-            if (string.IsNullOrEmpty(StoreId))
-                return ApiResult.RCode("店铺ID不能为空");
-            if (user == null)
-                return ApiResult.RCode("你没登录，请登录后操作");
-            if (Amount > store.Amount)
-                return ApiResult.RCode("提现金额不能大于当前金额");
+            if (Amount > user.Amount)
+                return ApiResult.RCode("提现金额不能大于商户资金");
             var withdraw = new Model.WithDrawModel
             {
                 Amount = Amount,
@@ -805,47 +798,40 @@ namespace TinyStore.Site.Controllers.Api
                 Income = 0,
                 IsFinish = false,
                 Memo = string.Empty,
-                StoreId = store.StoreId,
+                UserId = user.UserId,
                 TranId = string.Empty,
                 WithDrawId = Global.Generator.DateId()
             };
 
             BLL.WithDrawBLL.Insert(withdraw);
-            UserLog(store.UserId, EUserLogType.提现, Request, store.StoreId, "提现申请发布");
+            UserLog(user.UserId, EUserLogType.提现, Request, "", "提现申请发布");
             return ApiResult.RCode("");
         }
 
-        public IActionResult WithDrawPageList([FromForm] string StoreId, [FromForm] int PageIndex,
+        public IActionResult WithDrawPageList([FromForm] int PageIndex,
             [FromForm] int Pagesize, [FromForm] int State, [FromForm] DateTime Begin, [FromForm] DateTime End)
         {
-            var user = UserCurrent(StoreId, out Model.StoreModel store);
-            if (store != null)
-                return ApiResult.RCode("未知错误");
-
+            var user = UserCurrent();
 
             Begin = Begin.Date;
             End = End.Date.AddDays(1).AddSeconds(-1);
-            var res = BLL.WithDrawBLL.QueryPageList(store.StoreId, State, Begin, End, PageIndex, Pagesize);
+            var res = BLL.WithDrawBLL.QueryPageList(user.UserId, State, Begin, End, PageIndex, Pagesize);
             return ApiResult.RData(new GridData<Model.WithDrawModel>(res.Rows, (int) res.Total));
         }
 
-        public IActionResult WithDrawDelete([FromForm] string StoreId, [FromForm] string Id)
+        public IActionResult WithDrawDelete([FromForm] string Id)
         {
-            var user = UserCurrent(StoreId, out Model.StoreModel store);
-            if (store != null)
-                return ApiResult.RCode("未知错误");
+            var user = UserCurrent();
             if (string.IsNullOrEmpty(Id))
                 return ApiResult.RCode("ID不能为空");
-            if (user == null)
-                return ApiResult.RCode("你没登录，请登录后操作");
 
-            var withdraw = BLL.WithDrawBLL.QueryModelByWithDrawIdAndStoreId(Id, store.StoreId);
+            var withdraw = BLL.WithDrawBLL.QueryModelByWithDrawIdAndUserId(Id, user.UserId);
             if (withdraw == null)
                 return ApiResult.RCode("数据不存在或已被删除");
             if (withdraw.IsFinish)
                 return ApiResult.RCode("提现申请已处理，不能删除");
-            BLL.WithDrawBLL.DeleteByWithDrawIdAndStoreId(Id, store.StoreId);
-            UserLog(store.UserId, EUserLogType.提现, Request, store.StoreId, "提现申请删除");
+            BLL.WithDrawBLL.DeleteByWithDrawIdAndUserId(Id, user.UserId);
+            UserLog(user.UserId, EUserLogType.提现, Request, "", "提现申请删除");
             return ApiResult.RCode("");
         }
 

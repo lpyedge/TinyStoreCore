@@ -1,147 +1,129 @@
 ﻿@{
     Layout = null;
 }
-
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <partial name="Widgets/_Header" />
-    <link href="~/css/portal_store_login.css" rel="stylesheet" asp-append-version="true" />
+    <title>@SiteContext.Config.SiteName</title>
+    <partial name="Widgets/_Header"/>
 </head>
 <body class="bd-home">
-    <header class="navbar navbar-expand navbar-dark flex-md-row bd-navbar" style="min-height:3rem;">
-        <div class="navbar-nav flex-row ml-md-auto d-none d-md-flex">
-        </div>
-        <div class="navbar-nav-scroll">
-            <ul class="navbar-nav bd-navbar-nav flex-row">
-                <li class="nav-item">
-                    <a class="nav-link active" href="/">首页</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link">帮助中心</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link">联系我们</a>
-                </li>
-            </ul>
-        </div>
-        <div class="btns">
-            <div id="register" >
-                <a class="btn btn-bd-yellow d-none d-lg-inline-block mb-3 mb-md-0 ml-md-3" href="/store/register">商户注册</a>
-            </div>
-            <a class="mobile-toggle btn btn-info fa fa-bars" id="btn-menu"></a>
-        </div>
-    </header>
-    <main class="bd-masthead" role="main">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-7 text-center hidden-sm-down">
-                    <div class="col-12">
-                        <h1 class="mb-5 bd-text-purple-bright">全新购卡体验</h1>
-                        <p class="mb-5 lead">
-                            致力于解决虚拟商品的快捷寄售服务，为商户及其买家提供，便捷、绿色、安全、快速的销售和购买体验。
-                        </p>
-                        <p class="lead mb-4">
-                        </p>
-                        <div class="d-flex flex-column flex-md-row lead mb-3">
-                            <a href="/user/register" class="btn btn-lg btn-bd-purple mb-3 mb-md-0 mr-md-3">商户注册</a>
+<div id="q-app">
+    <q-layout view="lhh LpR lff" class="bg-grey-1">
+        <q-header reveal class="bg-primary q-py-xs" style="height: 65px;line-height: 65px;">
+            <q-toolbar class="fit">
+                <img src="~/images/logo.png" alt="SiteContext.Config.SiteName" class="full-height"/>
+                <q-toolbar-title class="desktop-only">
+                    @SiteContext.Config.SiteName
+                </q-toolbar-title>
+                <q-space></q-space>
+                <div class="q-gutter-sm row items-center no-wrap">
+                    <q-btn flat class="mobile-hide" style="color:#cdbfe3" size="lg" dense><q-icon name="fab fa-qq" size="sm" class="q-pr-xs"></q-icon>联系客服</q-btn>
+                    <q-btn outline class="q-px-sm" color="warning" size="lg" dense>商户注册</q-btn>
+                </div>
+            </q-toolbar>
+        </q-header>
+        <q-page-container>
+            <q-page :class="$q.platform.is.desktop?'q-pa-xl':'q-pa-md'">
+                <div class="q-mx-auto row" style="margin-top: 4rem;">
+                    <div class="col-7 desktop-only">
+                        <q-carousel
+                            transition-prev="slide-right"
+                            transition-next="slide-left"
+                            animated
+                            navigation
+                            control-color="primary"
+                            v-model="carouselslide">
+                            <q-carousel-slide name="slide1" class="column no-wrap flex-center">
+                                <div class="text-primary text-h2 text-weight-bolder">全新购卡体验</div>
+                                <div class="q-mt-xl text-center text-h5">
+                                    致力于解决虚拟商品的快捷寄售服务，为商户及其买家提供，便捷、绿色、安全、快速的销售和购买体验。
+                                </div>
+                            </q-carousel-slide>
+                            <q-carousel-slide name="slide2" class="column no-wrap flex-center">
+                                <div class="text-primary text-h2 text-weight-bolder">2全新购卡体验</div>
+                                <div class="q-mt-xl text-center text-h5">
+                                    2致力于解决虚拟商品的快捷寄售服务，为商户及其买家提供，便捷、绿色、安全、快速的销售和购买体验。
+                                </div>
+                            </q-carousel-slide>
+                        </q-carousel>
+                    </div>
+                    <div class="col">
+                        <div class="bg-grey-4 q-pa-xl flex-center q-gutter-y-lg">
+                            <div class="text-primary text-center  text-h4 text-weight-bolder q-mb-xl">商户登录</div>
+                            <q-input outlined v-model="loginForm.account" label="帐号" label-color="primary" bg-color="white">
+                                <template v-slot:prepend>
+                                    <q-icon name="person" size="lg"/>
+                                </template>
+                            </q-input>
+                            <q-input outlined v-model="loginForm.password" label="密码" label-color="primary" bg-color="white"
+                                     :type="loginForm.passwordShow?'text':'password'">
+                                <template v-slot:prepend>
+                                    <q-icon name="lock" size="lg"/>
+                                </template>
+                                <template v-slot:append>
+                                    <q-icon :name="loginForm.passwordShow?'visibility':'visibility_off'" size="lg"
+                                            @@click="loginForm.passwordShow=!loginForm.passwordShow"/>
+                                </template>
+                            </q-input>
+                            <q-btn :loading="loginForm.loading" color="secondary" size="lg" class="full-width" @@click="login">登录</q-btn>
                         </div>
                     </div>
                 </div>
-                <div class="mx-auto col-md-5 order-md-2 jumbotron">
-                    <div class="container-fluid">
-                        <form class="form-horizontal" id="divMain">
-                            <div class="form-group">
-                                <div class="col-sm-10">
-                                    <h2 class=" ml-0 text-center bd-text-purple">
-                                        用户登录
-                                    </h2>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <div class="input-group col-sm-10">
-                                    <div class="input-group-prepend">
-                                        <i class="input-group-text fa fa-user"></i>
-                                    </div>
-                                    <input name="Account" type="text" class="form-control" placeholder="用户名">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <div class="input-group col-sm-10">
-                                    <div class="input-group-prepend">
-                                        <i class="input-group-text fa fa-lock"></i>
-                                    </div>
-                                    <input name="Password" type="password" class="form-control" placeholder="密码">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <div class="input-group col-sm-10">
-                                    <a class="btn btn-large btn-warning" id="btnLogin">登录</a>
-                                    @*<button type="button" class="btn btn-link btn-sm ml-6">忘记密码</button>*@
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
-    <footer class="bd-footer text-muted">
-        <div class="container-fluid p-3 p-md-5">
-            <ul class="bd-footer-links">
-                <li><a href="http://show.gamemakesmoney.com/">gamemakesmoney</a></li>
-            </ul>
-        </div>
-    </footer>
-    <script>        
-        $(function () {
-            $("#divMain").find("input[maxlength]").maxlength({
-                alwaysShow: true,
-                threshold: 10,
-                warningClass: "badge badge-success",
-                limitReachedClass: "badge badge-danger"
-            });
-            $("#divMain").validate_popover({
-                
-                rules: {
-                    Account: {
-                        required: true,
-                        minlength: 3,
-                        maxlength: 20
-                    },
-                    Password: {
-                        required: true,
-                        minlength: 3,
-                        maxlength: 20
-                    }
+                <q-page-sticky position="bottom-right" :offset="[25, 25]">
+                    <q-btn round color="primary" icon="fab fa-qq" size="lg"/>
+                </q-page-sticky>
+            </q-page>
+        </q-page-container>
+    </q-layout>
+</div>
+<partial name="Widgets/_BodyEnd"/>
+<script>
+      new Vue({
+        el: '#q-app',
+        data:  {
+          loginForm:{
+              account:'',
+              password:'',
+              passwordShow:false,
+              loading:false,
+          },
+          carouselslide:'slide1',
+        },
+        methods: {
+            login (){
+                if (this.loginForm.account && this.loginForm.password){
+                    this.loginForm.loading = true;
+                    UserApi('login', {
+                        account: this.loginForm.account,
+                        password: this.loginForm.password
+                    })
+                    .then((response)=> {
+                        console.log(response.headers.token)
+                        if (response.data.code === 1){
+                            Store.Token(response.headers.token);
+                            Store.User(response.data.data.user);
+                            Store.UserExtend(response.data.data.userExtend);
+                            Store.StoreList(response.data.data.storeList);
+                            location.href = '@Url.ActionLink("Index", "User")';
+                        }
+                        else{
+                            Warning('帐号密码不匹配');
+                        }
+                        this.loginForm.loading = false;
+                    })
+                    .catch( (error)=> {
+                        this.loginForm.loading = false;
+                        Warning('接口通信错误');
+                        console.error(error);
+                    });
+                }else{
+                    Warning('请输入帐号&密码');
                 }
-            });
-
-            $("#btnLogin").on("click", function () {
-                if ($("#divMain").valid()) {
-                    CY.Ajax("Login",
-                        {
-                            "account": $("#divMain").find("[name='Account']").val(),
-                            "password": $("#divMain").find("[name='Password']").val()
-                        },
-                        function (data, xhr) {
-                            if (data.Result) {
-
-                                Store.Token(xhr.getResponseHeader("Token")); 
-                                Store.User(data.Data.User);
-                                Store.UserExtend(data.Data.UserExtend);
-                                Store.StoreList(data.Data.StoreList);
-                                Store.StoreCurrent(data.Data.StoreList[0]);
-                                setTimeout(function () { location.href = "@Url.ActionLink("","User")"; }, 2000);
-                                
-                            } else {
-                                $.toast("登录失败！" + data.Message + "");
-                            }
-                        });
-                }
-                return false;
-            });
-        });
-    </script>
+            }
+        },
+        // ...etc
+      })
+</script>
 </body>
 </html>

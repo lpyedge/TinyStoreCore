@@ -13,7 +13,7 @@ namespace TinyStore.Site.Controllers.Api
     [MultipleSubmit]
     [AdminHeaderToken("Login")]
     [Produces("application/json")]
-    [Route("adminapi/[action]")]
+    [Route("ApiAdmin/[action]")]
     public class ApiAdminController : ControllerBase
     {
         private Model.AdminModel AdminCurrent()
@@ -241,12 +241,12 @@ namespace TinyStore.Site.Controllers.Api
             //todo 支付平台收款 调用平台方法退款
             if (Global.EnumsDic<EPaymentType>().Values.Contains(order.PaymentType))
             {
-                var store = BLL.StoreBLL.QueryModelByStoreId(order.StoreId);
-                if (store == null)
-                    return ApiResult.RCode("店铺不存在，请检查数据库");
-                if (store.Amount < order.ReturnAmount)
-                    return ApiResult.RCode("店铺资金小于退款金额，请联系店铺管理人员解决");
-                BLL.StoreBLL.ChangeAmount(store.StoreId, -order.ReturnAmount);
+                var user = BLL.UserBLL.QueryModelById(order.UserId);
+                if (user == null)
+                    return ApiResult.RCode("商户不存在，请检查数据库");
+                if (user.Amount < order.ReturnAmount)
+                    return ApiResult.RCode("商户资金小于退款金额，请联系店铺管理人员解决");
+                BLL.UserBLL.ChangeAmount(user.UserId, -order.ReturnAmount);
             }
 
             BLL.OrderBLL.Update(order);
@@ -407,7 +407,7 @@ namespace TinyStore.Site.Controllers.Api
 
             Begin = Begin.Date;
             End = End.Date.AddDays(1).AddSeconds(-1);
-            var res = BLL.WithDrawBLL.QueryPageList(string.Empty, state, Begin, End, PageIndex, PageSize);
+            var res = BLL.WithDrawBLL.QueryPageList(0, state, Begin, End, PageIndex, PageSize);
             return ApiResult.RData(new GridData<Model.WithDrawModel>(res.Rows, (int) res.Total));
         }
 
@@ -420,13 +420,13 @@ namespace TinyStore.Site.Controllers.Api
             var withdraw = BLL.WithDrawBLL.QueryModelByWithDrawId(Id);
             if (withdraw == null)
                 return ApiResult.RCode("数据不存在或已被删除");
-            var store = BLL.StoreBLL.QueryModelByStoreId(withdraw.StoreId);
-            if (store == null)
-                return ApiResult.RCode("店铺不存在");
+            var user = BLL.UserBLL.QueryModelById(withdraw.UserId);
+            if (user == null)
+                return ApiResult.RCode("商户不存在");
             if (withdraw.IsFinish)
                 return ApiResult.RCode("提现申请已处理，不能删除");
-            if (withdraw.Amount > store.Amount)
-                return ApiResult.RCode("店铺余额不足以提现");
+            if (withdraw.Amount > user.Amount)
+                return ApiResult.RCode("商户余额不足以提现");
             if (Income > withdraw.Amount)
                 return ApiResult.RCode("到账金额不能大于申请金额");
             withdraw.Income = Income;
@@ -435,7 +435,7 @@ namespace TinyStore.Site.Controllers.Api
             withdraw.Memo = Memo;
             withdraw.IsFinish = true;
             BLL.WithDrawBLL.Update(withdraw);
-            BLL.StoreBLL.ChangeAmount(store.StoreId, -withdraw.Amount);
+            BLL.UserBLL.ChangeAmount(user.UserId, -withdraw.Amount);
             AdminLog(current.AdminId, EAdminLogType.提现管理, Request, "提现申请成功" + Id);
             return ApiResult.RCode("");
         }

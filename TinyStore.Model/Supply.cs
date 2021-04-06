@@ -56,7 +56,8 @@ namespace TinyStore.Model
         /// <summary>
         /// 用户编号 (0 表示系统货源)
         /// </summary>
-        public int UserId { get; set; } = 0;
+        [SqlSugar.SugarColumn(IndexGroupNameList = new []{"UserId"})]
+        public int UserId { get; set; }
         
         [SugarColumn(IsIgnore = true)] 
         public int StockNumber { get; set; }

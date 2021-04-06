@@ -20,6 +20,12 @@ namespace TinyStore.Model
         public string StoreId { get; set; }
 
         /// <summary>
+        /// 用户编号
+        /// </summary>
+        [SqlSugar.SugarColumn(IndexGroupNameList = new []{"UserId"})]
+        public int UserId { get; set; }
+        
+        /// <summary>
         ///商品编号
         /// </summary>
         [SqlSugar.SugarColumn(Length = 28,IndexGroupNameList = new []{"ProductId"})]

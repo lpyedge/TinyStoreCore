@@ -12,14 +12,15 @@
       },
       notify: {}, // default set of options for Notify Quasar plugin
       loading: {}, // default set of options for Loading Quasar plugin
-      loadingBar: { }, // settings for LoadingBar Quasar plugin
+      // loadingBar: { }, // settings for LoadingBar Quasar plugin
       // ..and many more (check Installation card on each Quasar component/directive/plugin)
     }
 </script>
+@* <script src="https://cdn.staticfile.org/lodash.js/4.17.21/lodash.min.js"></script> *@
+<script src="https://cdn.staticfile.org/axios/0.21.1/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/quasar@1.15.9/dist/quasar.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/quasar@1.15.9/dist/lang/zh-hans.umd.min.js"></script>
-<script src="https://cdn.staticfile.org/axios/0.21.1/axios.min.js"></script>
 
 <script>
 
@@ -28,7 +29,7 @@
         for(name in data){
             formData.append(name,data[name]);
         }
-        return axios.post('/UserApi/'+action, formData);
+        return axios.post('/ApiUser/'+action, formData);
     }
     
     function Warning(message){
@@ -39,6 +40,35 @@
               message
           });
     }
+    
+     function DeepClone(source){
+        if (Object.prototype.toString.call(source) === "[object Date]") {
+            return  new Date(source.valueOf());
+        } else {
+            return source;
+        }
+     }
+    function DeepMerge(target, source) {
+        //console.log("Clone", initalObj, typeof (initalObj), Object.prototype.toString.call(initalObj), Array.isArray(initalObj));
+        if (Object.prototype.toString.call(target) === "[object Object]"
+         && Object.prototype.toString.call(source) === "[object Object]") {
+            for (var name in source){
+                if (Object.prototype.toString.call(source[name]) === "[object Object]"){
+                    DeepMerge(target[name],source[name]);
+                }else{
+                    target[name] = DeepClone(source[name]);
+                }
+            }
+        } 
+    }
+    
+    function Goto(url,query){
+        if (query){
+            url += '?'+query;
+        }
+        location.href = url;
+    }
+    
     
     Quasar.lang.set(Quasar.lang.zhHans)
 </script>

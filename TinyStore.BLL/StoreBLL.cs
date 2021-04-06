@@ -14,10 +14,6 @@ namespace TinyStore.BLL
         {
             [p => p.Level] = SqlSugar.OrderByType.Desc
         };
-        public static void ChangeAmount(string storeId, double amount)
-        {
-            Update(p => p.StoreId == storeId, p => p.Amount == p.Amount + amount);
-        }
         public static void ModifyLevel(string storeId, EStoreLevel level)
         {
             Update(p => p.StoreId == storeId, p => p.Level == level);

@@ -92,7 +92,9 @@ namespace TinyStore.Site
                 Account = "test",
                 Password = Global.Hash("test", "test"),
                 Salt = "test",
-                ClientKey = "test"
+                ClientKey = "test",
+                Amount = 0,
+                AmountCharge = 1000,
             });
             TinyStore.BLL.UserExtendBLL.InsertAsync(new UserExtendModel()
             {
@@ -109,8 +111,6 @@ namespace TinyStore.Site
                 UserId = 1,
                 Email = "test@test.com",
                 Name = "小网店",
-                Amount = 0,
-                AmountCharge = 1000,
                 Initial = Global.Initial("小网店"),
                 Level = EStoreLevel.一星,
                 Logo = "#",
@@ -168,6 +168,7 @@ namespace TinyStore.Site
             {
                 OrderId = "test",
                 StoreId = "StoreId",
+                UserId = 1,
                 ProductId = "ProductId",
                 SupplyId = "SupplyId",
                 Amount = 18,

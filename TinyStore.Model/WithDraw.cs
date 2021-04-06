@@ -18,8 +18,8 @@ namespace TinyStore.Model
         /// <summary>
         /// 店铺编号
         /// </summary>
-        [SqlSugar.SugarColumn(Length = 28,IndexGroupNameList = new []{"StoreId"})]
-        public string StoreId { get; set; }
+        [SqlSugar.SugarColumn(IndexGroupNameList = new []{"UserId"})]
+        public int UserId { get; set; }
         
         /// <summary>
         /// 注释
