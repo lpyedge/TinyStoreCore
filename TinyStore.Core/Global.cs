@@ -396,6 +396,27 @@ namespace TinyStore
             return res;
         }
 
+        public class enumOption
+        {
+            public string label { get; set; }
+            public int value { get; set; }
+        }
+        
+        public static List<enumOption> EnumsOptions<T>()
+        {
+            var res = new List<enumOption>();
+            var type = typeof(T);
+            if (type.IsEnum)
+            {
+                foreach (dynamic item in Enum.GetValues(type))
+                {
+                    res.Add(new enumOption {label = item.ToString(), value = (int) item});
+                }
+            }
+
+            return res;
+        }
+
         public static Dictionary<int, string> EnumsDescDic<T>()
         {
             var desctype = typeof(System.ComponentModel.DescriptionAttribute);

@@ -13,7 +13,7 @@ namespace TinyStore.Site
             [Description("未知错误")] UnKonwError = 2,
 
 
-            [Description("未登录")] UserOffLine = 10,
+            [Description("未登录")] OffLine = 10,
             [Description("验证失败")] AuthorizationFailed = 11,
             [Description("对象已存在")] TargetExist = 12,
             [Description("对象不存在")] TargetNotExist = 13,
@@ -63,7 +63,10 @@ namespace TinyStore.Site
         public bool Result => code == ECode.Success;
 
         public string message { get; private set; }
-
+        public static JsonResult RCode()
+        {
+            return new JsonResult(new ApiResult());
+        }
         public static JsonResult RCode(ECode? p_code = null)
         {
             var result = p_code != null ? new ApiResult((ECode) p_code) : new ApiResult();

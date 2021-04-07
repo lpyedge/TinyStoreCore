@@ -65,6 +65,7 @@ namespace TinyStore.Model
         /// 店铺模版 单页面方式 呈现商品
         /// </summary>
         public bool IsSingle { get; set; } = true;
+        
         /// <summary>
         /// 店铺模版
         /// </summary>
@@ -85,7 +86,7 @@ namespace TinyStore.Model
         /// <summary>
         /// 店铺标识
         /// </summary>
-        [SqlSugar.SugarColumn(Length = 25,IndexGroupNameList = new []{"CreateDate"})]
+        [SqlSugar.SugarColumn(Length = 25,IndexGroupNameList = new []{"UniqueId"})]
         public string UniqueId { get; set; }
 
 

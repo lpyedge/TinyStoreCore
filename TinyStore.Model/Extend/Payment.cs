@@ -7,19 +7,24 @@ namespace TinyStore.Model.Extend
     public class Payment
     {
         /// <summary>
-        /// 支付方式
+        /// 是否系统支付方式
         /// </summary>
-        public string PaymentType{ get; set; }
+        public bool IsSystem { get; set; } = false;
+
+        /// <summary>
+        /// 是否启用
+        /// </summary>
+        public bool IsEnable { get; set; } = true;
+
+        /// <summary>
+        /// 手续费率
+        /// </summary>
+        public double Rate { get; set; }
         
         /// <summary>
         /// 支付名称
         /// </summary>
         public string Name { get; set; }
-        
-        /// <summary>
-        /// 收款帐号
-        /// </summary>
-        public string Account { get; set; }
         
         /// <summary>
         /// 收款说明
@@ -32,18 +37,8 @@ namespace TinyStore.Model.Extend
         public string QRCode { get; set; }
         
         /// <summary>
-        /// 手续费率
+        /// 收款帐号/姓名
         /// </summary>
-        public double Rate { get; set; }
-
-        /// <summary>
-        /// 是否展示
-        /// </summary>
-        public bool IsShow { get; set; } = true;
-
-        /// <summary>
-        /// 是否系统支付方式
-        /// </summary>
-        public bool IsSystem { get; set; } = true;
+        public string Account { get; set; }
     }
 }

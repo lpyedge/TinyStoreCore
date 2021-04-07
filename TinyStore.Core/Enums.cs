@@ -7,14 +7,14 @@ namespace TinyStore
     {
         支付宝 = 1,
         微信 = 2,
-        
+
         工商银行 = 11,
         农业银行 = 12,
         建设银行 = 13,
         中国银行 = 14,
         交通银行 = 15,
         邮储银行 = 16,
-        
+
         // 招商银行 = 51,
         // 民生银行 = 52,
         // 中信银行 = 53,
@@ -75,8 +75,8 @@ namespace TinyStore
 
     public enum EPaymentType : int
     {
-        [Description("支付宝H5")] AliPayWap = 1,
-        [Description("微信H5")] WeChatH5 = 2,
+        [PaymentAttribute(0.006, "支付宝H5")] AliPayWap = 1,
+        [PaymentAttribute(0.006, "微信H5")] WeChatH5 = 2,
         //[Description("支付宝QR")]
         //AliPayQR = 3,
         //[Description("微信QR")]

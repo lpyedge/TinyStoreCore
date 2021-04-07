@@ -4,7 +4,7 @@
     <title>@TinyStore.Site.SiteContext.Config.SiteName</title>
     <partial name="Widgets/_Header"/>
 </head>
-<body class="bd-home">
+<body>
 <div id="q-app">
     <q-layout view="hHh lpR fFf" class="bg-grey-1">
         <q-header elevated class="bg-primary q-py-xs" style="height: 65px;line-height: 65px;">
@@ -145,14 +145,15 @@
            { icon: 'vpn_key', text: '卡密管理',url:''  },      
          ],
        userlinks: [
-           { icon: 'person', text: '商户资料',url:'@Url.ActionLink("Profile", "User")' },
-           { icon: 'lock', text: '密码安全',url:'' },
+           { icon: 'person', text: '商户资料',url:'@Url.ActionLink("User_Profile", "User")' },
+           { icon: 'lock', text: '密码安全',url:'@Url.ActionLink("User_Secret","User")' },
            { icon: 'local_atm', text: '账目管理',url:'' },
            //{ icon: 'monetization_on', text: '提现管理' },     
            { icon: 'history', text: '操作日志',url:'' }
          ],
        storelinks: [
-           { icon: 'store_mall_directory', text: '店铺资料',url:''  },
+           { icon: 'store_mall_directory', text: '店铺资料',url:'@Url.ActionLink("Store_Info","User")'  },
+           { icon: 'fas fa-hand-holding-usd', text: '收款设置',url:'@Url.ActionLink("Store_Payment","User")'  },
            { icon: 'card_travel', text: '商品管理',url:''  },
            { icon: 'local_grocery_store', text: '订单管理',url:''  },
          ],
@@ -176,6 +177,31 @@
          }
      }
    };
+    
+    function DeepMerge(target, source) {
+        function DeepClone(source){
+            if (Object.prototype.toString.call(source) === "[object Date]") {
+                return  new Date(source.valueOf());
+            } else {
+                return source;
+            }
+         }
+         
+        if (Object.prototype.toString.call(target) === "[object Object]"
+         && Object.prototype.toString.call(source) === "[object Object]") {
+            for (var name in source){
+                if (Object.prototype.toString.call(source[name]) === "[object Object]"){
+                    if (target[name]){
+                        DeepMerge(target[name],source[name]);                        
+                    }else{
+                        target[name] = DeepClone(source[name]);
+                    }
+                }else{
+                    target[name] = DeepClone(source[name]);
+                }
+            }
+        } 
+    }
 </script>
 @RenderSection("Scripts", required: false)
 </body>

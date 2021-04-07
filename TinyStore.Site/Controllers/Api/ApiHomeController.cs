@@ -10,7 +10,7 @@ using TinyStore.Model.Extend;
 namespace TinyStore.Site.Controllers.Api
 {
     [ApiController]
-    [MultipleSubmit]
+    [MultipleSubmit("Resouce","ResouceTemp")]
     [Produces("application/json")]
     [Route("Api/[action]")]
     public class ApiHomeController : ControllerBase
@@ -103,8 +103,8 @@ namespace TinyStore.Site.Controllers.Api
                         // if (order.IsPay)
                         //     return ApiResult.RCode( "订单不存在或已付款");
 
-                        Model.Extend.Payment payment = SiteContext.Store.GetPaymentList(user)
-                            .FirstOrDefault(p => p.PaymentType == PaymentType);
+                        Model.Extend.Payment payment = store.PaymentList.FirstOrDefault(p =>
+                            p.IsEnable && string.Equals(p.Name, PaymentType, StringComparison.OrdinalIgnoreCase));
 
                         if (payment == null)
                             return ApiResult.RCode("支付方式不存在");
@@ -138,12 +138,12 @@ namespace TinyStore.Site.Controllers.Api
             if (order == null || order.IsPay)
                 return ApiResult.RCode("订单不存在或已付款");
 
-            var user = BLL.UserBLL.QueryModelById(order.UserId);
-            if (user == null)
-                return ApiResult.RCode("商户已关闭");
+            var store = BLL.StoreBLL.QueryModelById(order.StoreId);
+            if (store == null)
+                return ApiResult.RCode("店铺已关闭");
 
-            Model.Extend.Payment payment = SiteContext.Store.GetPaymentList(user)
-                .FirstOrDefault(p => p.PaymentType == PaymentType);
+            Model.Extend.Payment payment = store.PaymentList.FirstOrDefault(p =>
+                p.IsEnable && string.Equals(p.Name, PaymentType, StringComparison.OrdinalIgnoreCase));
 
             if (payment == null)
                 return ApiResult.RCode("支付方式不存在");

@@ -4,9 +4,8 @@
     window.quasarConfig = {
       brand: { // this will NOT work on IE 11
         primary: '#563d7c',
-        secondary:'#ffc107',
+        secondary:'#1976d2',
         accent:'#74574a',
-        warning:'#f2ab47',
         //error:'#f44336'
         // ... or all other brand colors
       },
@@ -42,14 +41,6 @@
         );
     }
     
-    function Warning(message){
-        Quasar.Notify.create({
-              type:'warning',
-              position:'center',
-              icon:'warning',
-              message
-          });
-    }
     var Notify = {};
     Notify.Warning=function (message){
        Quasar.Notify.create({
@@ -72,27 +63,7 @@
     
      
      
-    function DeepMerge(target, source) {
-        function DeepClone(source){
-            if (Object.prototype.toString.call(source) === "[object Date]") {
-                return  new Date(source.valueOf());
-            } else {
-                return source;
-            }
-         }
-         
-        //console.log("Clone", initalObj, typeof (initalObj), Object.prototype.toString.call(initalObj), Array.isArray(initalObj));
-        if (Object.prototype.toString.call(target) === "[object Object]"
-         && Object.prototype.toString.call(source) === "[object Object]") {
-            for (var name in source){
-                if (Object.prototype.toString.call(source[name]) === "[object Object]"){
-                    DeepMerge(target[name],source[name]);
-                }else{
-                    target[name] = DeepClone(source[name]);
-                }
-            }
-        } 
-    }
+    
     
     function Goto(url,query){
         if (query){

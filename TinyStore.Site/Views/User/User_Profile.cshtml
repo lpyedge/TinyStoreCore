@@ -6,7 +6,18 @@
 
         <q-separator class="q-my-md"></q-separator>
 
-        <q-input outlined dense stack-labelbg-color="white"
+        <div class="text-h6"><label class="on-left">帐号:</label>{{user.account}}   
+            <q-badge color="secondary" align="top" v-if="user.level">{{user.level}}<q-icon name="star" class="q-ml-xs" />
+                <q-tooltip content-class="bg-indigo" 
+                          transition-show="flip-right"
+                          transition-hide="flip-left" 
+                          :offset="[10, 10]">
+                    不同等级商户的货源成本价格不同
+                </q-tooltip>
+            </q-badge>
+        </div>
+        
+        <q-input outlined dense stack-label bg-color="white"
                  label="姓名"
                  v-model="userExtend.name">
         </q-input>
@@ -27,11 +38,11 @@
         </q-input>
         <q-input outlined dense stack-label bg-color="white"
                  label="联系QQ"
-                 v-model="userExtend.qQ"
+                 v-model="userExtend.qq"
                  maxlength="16">
         </q-input>
         
-        <q-btn class="float-right" color="primary" icon="save"  label="保存" @@click="userExtendSave"/>
+        <q-btn :loading="btnSaveLoading" class="float-right" color="primary" icon="save"  label="保存" @@click="userExtendSave"/>
     </q-form>
 </q-page>
 
@@ -39,28 +50,28 @@
     <script>
    var _page = {
        data:{
-           
+           btnSaveLoading:false
        },
        beforeMount(){
-           
        },
        methods: {
            userExtendSave(){
+               this.btnSaveLoading = true;
                UserApi("UserExtendSave",this.userExtend)
                .then((response)=> {
                    if (response.data.code === 1){
                        Store.UserExtend(response.data.data);                       
-                       Notify.Info('保存成功！');
+                       Notify.Info('保存成功');
                    }
                    else{
-                       Notify.Warning('保存失败，数据格式错误！');
+                       Notify.Warning('保存失败，数据格式错误');
                    }
-                   this.loginForm.loading = false;
+                   this.btnSaveLoading = false;
                })
                .catch( (error)=> {
-                   this.loginForm.loading = false;
                    Notify.Warning('接口通信错误');
                    console.error(error);
+                   this.btnSaveLoading = false;
                });
            }
        }

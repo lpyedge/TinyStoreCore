@@ -23,10 +23,27 @@ namespace TinyStore.Site.Controllers
             return View();
         }
 
-        public IActionResult Profile()
+        public IActionResult User_Profile()
         {
             return View();
         }
+        
+        public IActionResult User_Secret()
+        {
+            return View();
+        }
+        
+        public IActionResult Store_Info()
+        {
+            return View();
+        }
+        
+        public IActionResult Store_Payment()
+        {
+            return View();
+        }
+        
+        //！----------------------！//
 
         public IActionResult Benifit()
         {
@@ -64,10 +81,6 @@ namespace TinyStore.Site.Controllers
         {
             return View();
         }
-        public IActionResult Pwdmodify()
-        {
-            return View();
-        }
         public IActionResult Register()
         {
             return View();
@@ -77,10 +90,6 @@ namespace TinyStore.Site.Controllers
             return View();
         }
         public IActionResult Stockrecycle()
-        {
-            return View();
-        }
-        public IActionResult Store()
         {
             return View();
         }

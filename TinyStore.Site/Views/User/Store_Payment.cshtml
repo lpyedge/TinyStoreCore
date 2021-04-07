@@ -1,0 +1,281 @@
+﻿<q-page padding>
+    <q-form class="q-gutter-md">
+        <div class="text-h5 text-weight-bold text-grey-8">
+            <q-icon :name="storelinks[1].icon" size="md" class="on-left"></q-icon>{{storelinks[1].text}}
+        </div>
+
+        <q-separator class="q-my-md"></q-separator>
+
+        <q-list>
+            <q-item-label header class="text-weight-bold text-subtitle1 text-grey-8">
+                系统收款
+            </q-item-label>
+            
+            <div class="flex q-gutter-md">
+            <q-card style="max-width: 450px;width: 450px" class="bg-grey-1" bordered v-for="(item,i) in paymentListSystem">
+                <q-item>
+                    <q-item-section>
+                        <q-item-label class="text-subtitle1">
+                            {{item.name}}
+                            <q-badge v-if="item.rate" align="top">{{item.rate*100}}<q-icon name="fas fa-percent" size="0.6rem" class="q-ml-xs"/>
+                                <q-tooltip content-class="bg-indigo"
+                                           transition-show="flip-right"
+                                           transition-hide="flip-left"
+                                           :offset="[10, 10]">
+                                    手续费率
+                                </q-tooltip>
+                            </q-badge>
+                        </q-item-label>
+                        <q-item-label caption>
+                            {{item.memo}}
+                        </q-item-label>
+                    </q-item-section>
+                    <q-separator vertical ></q-separator>
+                    <q-item-section side>
+                        <q-toggle v-model="item.isEnable" color="green">启用</q-toggle>
+                    </q-item-section>
+                </q-item>
+            </q-card>
+            </div>
+        </q-list>
+        
+        <q-list>
+            <q-item-label header class="text-weight-bold text-subtitle1 text-grey-8">
+                自定义收款 <q-btn color="secondary" class="on-right" round dense icon="add" @@click="paymentDialogShow(-1)"></q-btn>
+            </q-item-label>
+            <div class="flex q-gutter-md">
+            <q-card style="max-width: 450px;width: 450px" class="bg-grey-1" bordered v-for="(item,i) in paymentListCustom">
+                <q-item>
+                    <q-item-section>
+                        <q-item-label class="text-subtitle1">
+                            {{item.name}}
+                            <q-badge v-if="item.rate" align="top">{{item.rate*100}}<q-icon name="fas fa-percent" size="0.6rem" class="q-ml-xs"/>
+                                <q-tooltip content-class="bg-indigo"
+                                           transition-show="flip-right"
+                                           transition-hide="flip-left"
+                                           :offset="[10, 10]">
+                                    手续费率
+                                </q-tooltip>
+                            </q-badge>
+                        </q-item-label>
+                        <q-item-label caption>
+                            {{item.memo}}
+                        </q-item-label>
+                    </q-item-section>
+                    <q-separator vertical ></q-separator>
+                    <q-item-section side>
+                        <q-toggle v-model="item.isEnable" color="green">启用</q-toggle>
+                    </q-item-section>
+                </q-item>
+                <q-separator ></q-separator>
+                <q-card-section class="row no-padding">
+                    <div class="col-auto">
+                        <img v-if="item.qrCode" style="width: 5rem;height: 5rem;" :alt="item.qrCode" :src="qrcodeImg(item.qrCode)"/>
+                        <div v-else style="width: 5rem;height: 5rem;" class="relative-position"><q-icon name="fas fa-qrcode" size="md" class="absolute-center"></q-icon></div>
+                    </div>
+                    <div class="col relative-position"><label class="absolute-center full-width text-h5 q-pa-sm">{{item.account}}</label></div>
+                    <q-icon class="absolute-bottom-right q-ma-sm" color="negative" size="1.4rem" name="far fa-edit" @@click="paymentDialogShow(i)"></q-icon>
+                </q-card-section>
+            </q-card>
+            </div>
+        </q-list>
+
+        <q-btn :loading="btnSaveLoading" class="float-right" color="primary" icon="save" label="保存" @@click="storePaymentListSave"/>
+    </q-form>
+</q-page>
+
+<q-dialog v-model="paymentDialog">
+    <q-card class="q-pb-md" style="max-width: 500px; width: 500px;">
+        <q-card-section class="row items-center q-pb-none">
+            <div class="text-h6">收款方式</div>
+            <q-space ></q-space>
+            <q-btn icon="close" flat round dense v-close-popup ></q-btn>
+        </q-card-section>
+        <q-card-section class="q-gutter-sm">
+            <q-input outlined dense stack-label bg-color="white"
+                     label="收款名称"
+                     v-model="paymentCurrent.name"
+                     ref="paymentCurrent_name"
+                     :rules="[val => !!val || '必须输入收款名称',val => val.length < 8 || '收款名称长度必须小于8']">
+            </q-input>
+            <q-input outlined dense stack-label bg-color="white"
+                     label="收款帐号"
+                     hint="建议格式（帐号 / 姓名）"
+                     v-model="paymentCurrent.account"
+                     ref="paymentCurrent_account"
+                     :rules="[val => !!val || '必须输入收款帐号']">
+            </q-input>
+          
+            <q-input outlined dense stack-label bg-color="white"
+                     readonly
+                     label="收款二维码"
+                     hint="点击二维码图标解析收款二维码"
+                     v-model="paymentCurrent.qrCode">
+                <template v-slot:append>
+                    <q-icon name="fas fa-qrcode" color="negative" @@click="$refs.qrcodeImagePick.click()"></q-icon>
+                </template>
+            </q-input>
+            <input class="hidden" type="file" accept="image/*"  ref="qrcodeImagePick" @@change="qrcodeRead"/>
+            <q-input outlined dense stack-label bg-color="white"
+                     label="收款说明"
+                     v-model="paymentCurrent.memo">
+            </q-input>
+        </q-card-section>
+        <q-card-section>
+            <q-btn class="float-left" color="negative" icon="delete_forever" label="移除" @@click="paymentDialogRemove" v-if="paymentIndex >= 0"></q-btn>
+            <q-btn class="float-right" color="warning" icon="edit" :label="paymentIndex >= 0 ? '修改' : '新增'" @@click="paymentDialogEdit"></q-btn>
+        </q-card-section>
+    </q-card>
+</q-dialog>
+
+@section Scripts{
+    <script src="https://cdn.staticfile.org/qrcode-generator/1.4.4/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.3.1/dist/jsQR.min.js"></script>
+    <script>
+   var _page = {
+       data:{
+           paymentCurrent:{},
+           paymentIndex:-2,//默认 -2 新增 -1 其他 索引值
+           paymentDialog:false,
+           btnSaveLoading:false,
+       },
+       beforeMount(){
+           
+       },
+       computed:{
+           paymentListSystem: function (){
+               var res = [];
+               for (i in this.storeCurrent.paymentList){
+                   if (this.storeCurrent.paymentList[i].isSystem){
+                       res.push(this.storeCurrent.paymentList[i]);
+                   }
+               }
+               return res;
+           },
+           paymentListCustom: function (){
+               var res = [];
+               for (i in this.storeCurrent.paymentList){
+                   if (!this.storeCurrent.paymentList[i].isSystem){
+                       res.push(this.storeCurrent.paymentList[i]);
+                   }
+               }
+               return res;
+           }
+       },
+       methods: {
+           qrcodeImg(str){
+               var qr = qrcode(0, "Q");
+               qr.addData(str);
+               qr.make();
+               return  qr.createDataURL();
+           },
+           qrcodeRead(){
+                if (arguments.length === 1 && arguments[0].target && arguments[0].target.files && arguments[0].target.files.length === 1){
+                    var file = arguments[0].target.files[0];
+                    var img =  new Image();
+                    img.onload = () => {
+                         var canvas = document.createElement('canvas'); 
+                         var context = canvas.getContext('2d'); 
+                         canvas.width = img.width; 
+                         canvas.height = img.height; 
+                         context.drawImage(img,0,0); 
+                         var myData = context.getImageData(0,0,img.width,img.height); 
+                         var qrcode = jsQR(myData.data, img.width,img.height);
+                         if (qrcode){
+                             this.paymentCurrent.qrCode = qrcode.data;
+                         }
+                    }
+                    var reader = new FileReader();
+                    reader.onload =  ()=> {
+                        img.src = reader.result;
+                    }
+                    reader.readAsDataURL(file);
+                }
+           },
+           paymentDialogShow(i){
+               this.paymentDialog=true;
+               this.paymentIndex =i;
+               if (i>=0){
+                   this.paymentCurrent= JSON.parse(JSON.stringify(this.paymentListCustom[i]));
+               }else{
+                   this.paymentCurrent = {isEnable:false};
+               }
+           },
+           paymentDialogEdit(){
+               if (this.paymentIndex >= 0 ){
+                   var index = 0;
+                   for (i in this.storeCurrent.paymentList){
+                       if (!this.storeCurrent.paymentList[i].isSystem){
+                           if (index === this.paymentIndex){
+                               this.$set(this.storeCurrent.paymentList, i, JSON.parse(JSON.stringify(this.paymentCurrent)))
+                               break;
+                           }
+                           index++;
+                       }
+                   }
+               }else if (this.paymentIndex === -1){
+                   this.$set(this.storeCurrent.paymentList, this.storeCurrent.paymentList.length, JSON.parse(JSON.stringify(this.paymentCurrent)))
+               }
+               this.paymentIndex = -2;
+               this.paymentDialog=false;
+               this.paymentCurrent = {};
+           },
+           paymentDialogRemove(){
+               this.$q.dialog({
+                title: '再次确认',
+                message: '确定要移除名称为['+this.paymentCurrent.name+']的收款方式?',
+                cancel: true,
+                persistent: true
+              }).onOk(() => {
+                if (this.paymentIndex !== -2){
+                      var index = 0;
+                      for (i in this.storeCurrent.paymentList){
+                          if (!this.storeCurrent.paymentList[i].isSystem){
+                              if (index === this.paymentIndex){
+                                  this.storeCurrent.paymentList.splice(i,1);
+                                  break;
+                              }
+                              index++;
+                          }
+                      }
+                  }
+                  this.paymentIndex = -2;
+                  this.paymentDialog=false;
+                  this.paymentCurrent = {};
+              })
+           },
+           storePaymentListSave(){
+               var isenable =false;
+               for (i in this.storeCurrent.paymentList){
+                   if (this.storeCurrent.paymentList[i].isEnable){
+                       isenable = true;
+                   }
+               }
+               
+               if (isenable){
+                   this.btnSaveLoading = true;
+                   UserApi("StorePaymentListSave", this.storeCurrent)
+                      .then((response)=> {
+                          if (response.data.code === 1){ 
+                              Store.StoreList(response.data.data);
+                              Notify.Info('保存成功');
+                          } else{
+                              Notify.Warning('保存失败，数据格式错误');
+                          }
+                          this.btnSaveLoading = false;
+                      })
+                      .catch( (error)=> {
+                          Notify.Warning('接口通信错误');
+                          console.error(error);
+                          this.btnSaveLoading = false;
+                      });
+               }else{
+                   Notify.Warning('必须保留一个启用的支付方式');
+               }
+           }
+       }
+   };
+   DeepMerge(_layout,_page);
+   new Vue(_layout);
+    </script>
+}

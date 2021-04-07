@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -86,80 +87,6 @@ namespace TinyStore.Site.Controllers
             }
         }
 
-        public IActionResult Register([FromForm] string Account, [FromForm] string Password, [FromForm] string QQ,
-            [FromForm] string Email, [FromForm] string Telphone)
-        {
-            if (string.IsNullOrWhiteSpace(Account) || string.IsNullOrWhiteSpace(Password) ||
-                string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(Telphone))
-            {
-                return ApiResult.RCode("传参错误");
-            }
-
-            if (BLL.UserBLL.QueryModelByAccount(Account) != null)
-                return ApiResult.RCode("商户账号已存在");
-            if (BLL.UserExtendBLL.QueryModelByEmail(Email) != null)
-                return ApiResult.RCode("保密邮箱已存在");
-            if (BLL.UserExtendBLL.QueryModelByTelPhone(Telphone) != null)
-                return ApiResult.RCode("手机号已存在");
-            var salt = Global.Generator.Guid().Substring(0, 6); //6位有效字符
-            BLL.UserBLL.Insert(new Model.UserModel
-            {
-                Account = Account,
-                ClientKey = string.Empty,
-                Password = Global.Hash(Password, salt),
-                Salt = salt
-            });
-            var user = BLL.UserBLL.QueryModelByAccount(Account);
-            if (user == null)
-                return ApiResult.RCode("注册失败");
-
-            var ip = SiteContext.RequestInfo._ClientIP(HttpContext).ToString();
-            var useragent = Request.Headers["User-Agent"].ToString();
-            var acceptlanguage = Request.Headers["Accept-Language"].ToString();
-            BLL.UserExtendBLL.Insert(new Model.UserExtendModel
-            {
-                BankAccount = string.Empty,
-                BankPersonName = string.Empty,
-                BankType = EBankType.工商银行,
-                Email = Email,
-                IdCard = string.Empty,
-                Name = string.Empty,
-                QQ = QQ,
-                TelPhone = Telphone,
-                RegisterIP = ip,
-                RegisterDate = DateTime.Now,
-                UserAgent = useragent,
-                AcceptLanguage = acceptlanguage,
-                UserId = user.UserId
-            });
-
-            // var StoreId = Global.Generator.DateId(1);
-            //
-            // BLL.StoreBLL.Insert(new Model.Store
-            // {
-            //     Email = Email,
-            //     Name = string.Empty,
-            //     QQ = QQ,
-            //     TelPhone = Telphone,
-            //     UserId = user.UserId,
-            //     DomainSub = string.Empty,
-            //     DomainTop = string.Empty,
-            //     Level = EStoreLevel.无,
-            //     Memo = string.Empty,
-            //     Template = EStoreTemplate.模板一,
-            //     StoreId = StoreId,
-            //     Amount = 0,
-            //     PaymentJson = "[]",
-            //     UniqueId = StoreId
-            // });
-
-            UserLog(user.UserId, EUserLogType.注册, Request);
-
-            return ApiResult.RCode("");
-        }
-
-        
-
         [HttpPost]
         public IActionResult UserExtendSave(Model.UserExtendModel userExtend)
         {
@@ -167,7 +94,7 @@ namespace TinyStore.Site.Controllers
 
             if (!string.IsNullOrEmpty(userExtend.IdCard) && !Utils.IDCard.IsIDCard(userExtend.IdCard))
                 return ApiResult.RCode(ApiResult.ECode.DataFormatError);
-            
+
             if (!string.IsNullOrEmpty(userExtend.Email) && !userExtend.Email.Contains("@"))
                 return ApiResult.RCode(ApiResult.ECode.DataFormatError);
 
@@ -206,6 +133,200 @@ namespace TinyStore.Site.Controllers
 
             return ApiResult.RData(userExtendOrigin);
         }
+
+
+        [HttpPost]
+        public IActionResult UserPasswordModify([FromForm] string PasswordOld, [FromForm] string PasswordNew)
+        {
+            var user = UserCurrent();
+            if (!string.Equals(Global.Hash(PasswordOld, user.Salt), user.Password,
+                StringComparison.OrdinalIgnoreCase))
+                return ApiResult.RCode(ApiResult.ECode.AuthorizationFailed);
+
+            user.Password = Global.Hash(PasswordNew, user.Salt);
+            BLL.UserBLL.Update(user);
+            UserLog(user.UserId, EUserLogType.修改商户信息, Request, "", "密码修改");
+            return ApiResult.RCode();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UploadFormFile([FromForm] string Model, [FromForm] string Id,
+            [FromForm] string Name)
+        {
+            if (string.IsNullOrEmpty(Model) || string.IsNullOrEmpty(Id) || string.IsNullOrEmpty(Name))
+                return ApiResult.RCode(ApiResult.ECode.DataFormatError);
+            if (Request.Form.Files.Count == 0)
+                return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
+
+            try
+            {
+                var files = new Dictionary<string, byte[]>();
+                for (var i = 0; i < Request.Form.Files.Count; i++)
+                {
+                    using (var stream = Request.Form.Files[i].OpenReadStream())
+                    {
+                        byte[] buffer = new byte[Request.Form.Files[i].Length];
+                        await stream.ReadAsync(buffer, 0, buffer.Length);
+                        files.Add(Request.Form.Files[i].ContentType,
+                            buffer); //  {name: {key:contenttype,value:byte[]},}
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(Id))
+                {
+                    Id = Global.Generator.DateId(2);
+                }
+
+                var res = SiteContext.Resource.UploadFiles(Model, Id, Name, files);
+                return new JsonResult(res);
+            }
+            catch
+            {
+                return ApiResult.RCode(ApiResult.ECode.UnKonwError);
+            }
+        }
+
+        [HttpPost]
+        public IActionResult StoreSave(Model.StoreModel store)
+        {
+            if (store == null)
+                return ApiResult.RCode(ApiResult.ECode.AuthorizationFailed);
+            var user = UserCurrent(store.StoreId, out Model.StoreModel storeOrigin);
+            if (storeOrigin == null)
+                return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
+
+            // if (string.Equals("admin", store.UniqueId, StringComparison.OrdinalIgnoreCase) ||
+            //     string.Equals("user", store.UniqueId, StringComparison.OrdinalIgnoreCase))
+            //     return ApiResult.RCode(store.UniqueId + "是系统关键词，不能使用");
+
+            if (store.Name.Length >= 10)
+                return ApiResult.RCode(ApiResult.ECode.DataFormatError);
+
+            if (store.UniqueId.Length <= 5)
+                return ApiResult.RCode(ApiResult.ECode.DataFormatError);
+
+            if (!string.IsNullOrWhiteSpace(store.UniqueId))
+            {
+                var compare = BLL.StoreBLL.QueryModelByUniqueId(store.UniqueId);
+                if (compare != null && !string.Equals(compare.StoreId, store.StoreId,
+                    StringComparison.OrdinalIgnoreCase))
+                    return ApiResult.RCode(ApiResult.ECode.TargetExist);
+            }
+
+            storeOrigin.Logo = SiteContext.Resource.MoveTempFile(store.Logo);
+
+            storeOrigin.Name = store.Name;
+            storeOrigin.Initial = Global.Initial(store.Name);
+            storeOrigin.UniqueId = store.UniqueId;
+            storeOrigin.Template = store.Template;
+            storeOrigin.Memo = store.Memo;
+            storeOrigin.Email = store.Email;
+            storeOrigin.TelPhone = store.TelPhone;
+            storeOrigin.QQ = store.QQ;
+
+            BLL.StoreBLL.Update(storeOrigin);
+
+            UserLog(user.UserId, EUserLogType.修改店铺信息, Request, store.StoreId, "店铺信息修改");
+
+            return ApiResult.RData(BLL.StoreBLL.QueryListByUserId(user.UserId));
+        }
+
+
+        [HttpPost]
+        public IActionResult StorePaymentListSave(Model.StoreModel store)
+        {
+            if (store == null)
+                return ApiResult.RCode(ApiResult.ECode.AuthorizationFailed);
+            var user = UserCurrent(store.StoreId, out Model.StoreModel storeOrigin);
+            if (storeOrigin == null)
+                return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
+
+            var systemPaymentList = SiteContext.SystemPaymentList();
+            foreach (var item in store.PaymentList.Where(p => p.IsSystem))
+            {
+                systemPaymentList.FirstOrDefault(p => p.Name == item.Name).IsEnable = item.IsEnable;
+            }
+
+            var paymentList = new List<Model.Extend.Payment>(systemPaymentList);
+            paymentList.AddRange(store.PaymentList.Where(p => !p.IsSystem));
+            storeOrigin.PaymentList = paymentList;
+
+            BLL.StoreBLL.Update(storeOrigin);
+
+            UserLog(user.UserId, EUserLogType.修改店铺信息, Request, store.StoreId, "店铺收款方式修改");
+
+            return ApiResult.RData(BLL.StoreBLL.QueryListByUserId(user.UserId));
+        }
+
+        public IActionResult Register([FromForm] string Account, [FromForm] string Password, [FromForm] string QQ,
+            [FromForm] string Email, [FromForm] string Telphone)
+        {
+            if (string.IsNullOrWhiteSpace(Account) || string.IsNullOrWhiteSpace(Password) ||
+                string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(Telphone))
+            {
+                return ApiResult.RCode("传参错误");
+            }
+
+            if (BLL.UserBLL.QueryModelByAccount(Account) != null)
+                return ApiResult.RCode("商户账号已存在");
+            if (BLL.UserExtendBLL.QueryModelByEmail(Email) != null)
+                return ApiResult.RCode("保密邮箱已存在");
+            if (BLL.UserExtendBLL.QueryModelByTelPhone(Telphone) != null)
+                return ApiResult.RCode("手机号已存在");
+            var salt = Global.Generator.Guid().Substring(0, 6); //6位有效字符
+            BLL.UserBLL.Insert(new Model.UserModel
+            {
+                Account = Account,
+                ClientKey = string.Empty,
+                Password = Global.Hash(Password, salt),
+                Salt = salt
+            });
+            var user = BLL.UserBLL.QueryModelByAccount(Account);
+            if (user == null)
+                return ApiResult.RCode("注册失败");
+            var ip = SiteContext.RequestInfo._ClientIP(HttpContext).ToString();
+            var useragent = Request.Headers["User-Agent"].ToString();
+            var acceptlanguage = Request.Headers["Accept-Language"].ToString();
+            BLL.UserExtendBLL.Insert(new Model.UserExtendModel
+            {
+                BankAccount = string.Empty,
+                BankPersonName = string.Empty,
+                BankType = EBankType.工商银行,
+                Email = Email,
+                IdCard = string.Empty,
+                Name = string.Empty,
+                QQ = QQ,
+                TelPhone = Telphone,
+                RegisterIP = ip,
+                RegisterDate = DateTime.Now,
+                UserAgent = useragent,
+                AcceptLanguage = acceptlanguage,
+                UserId = user.UserId
+            });
+
+// var StoreId = Global.Generator.DateId(1);
+//
+// BLL.StoreBLL.Insert(new Model.Store
+// {
+//     Email = Email,
+//     Name = string.Empty,
+//     QQ = QQ,
+//     TelPhone = Telphone,
+//     UserId = user.UserId,
+//     DomainSub = string.Empty,
+//     DomainTop = string.Empty,
+//     Level = EStoreLevel.无,
+//     Memo = string.Empty,
+//     Template = EStoreTemplate.模板一,
+//     StoreId = StoreId,
+//     Amount = 0,
+//     PaymentJson = "[]",
+//     UniqueId = StoreId
+// });
+            UserLog(user.UserId, EUserLogType.注册, Request);
+            return ApiResult.RCode("");
+        }
+
 
         public IActionResult OrderPageList([FromForm] string StoreId, [FromForm] DateTime Begin,
             [FromForm] DateTime End, [FromForm] int State, [FromForm] int Keykind, [FromForm] string Key,
@@ -338,8 +459,8 @@ namespace TinyStore.Site.Controllers
             if (string.IsNullOrEmpty(order.NoticeAccount))
                 return ApiResult.RCode("手机号或电子邮箱不能为空");
 
-            Model.Extend.Payment payment = SiteContext.Store.GetPaymentList(user)
-                .FirstOrDefault(p => p.PaymentType == order.PaymentType);
+            Model.Extend.Payment payment = store.PaymentList.FirstOrDefault(p =>
+                p.IsEnable && string.Equals(p.Name, order.PaymentType, StringComparison.OrdinalIgnoreCase));
 
             if (payment == null)
                 return ApiResult.RCode("支付方式不存在");
@@ -374,7 +495,7 @@ namespace TinyStore.Site.Controllers
                 NoticeAccount = order.NoticeAccount,
                 OrderId = Global.Generator.DateId(2),
                 PaymentFee = order.Amount * payment.Rate,
-                PaymentType = payment.PaymentType,
+                PaymentType = payment.Name,
                 ProductId = product.ProductId,
                 Quantity = order.Quantity,
                 ReturnAmount = 0,
@@ -500,18 +621,6 @@ namespace TinyStore.Site.Controllers
             return ApiResult.RCode("");
         }
 
-        public IActionResult UserPwdModify([FromForm] string PwdOld, [FromForm] string PwdNew)
-        {
-            var user = UserCurrent();
-            if (!string.Equals(Global.Hash(PwdOld, user.Salt), user.Password,
-                StringComparison.OrdinalIgnoreCase))
-                return ApiResult.RCode("旧密码不正确");
-            user.Password = Global.Hash(PwdNew, user.Salt);
-            BLL.UserBLL.Update(user);
-            UserLog(user.UserId, EUserLogType.修改商户信息, Request, "", "密码修改");
-            return ApiResult.RCode("");
-        }
-
         public IActionResult UserLogPageList([FromForm] string StoreId, [FromForm] int PageIndex,
             [FromForm] int Pagesize, [FromForm] int UserLogType, [FromForm] DateTime Begin, [FromForm] DateTime End)
         {
@@ -539,16 +648,16 @@ namespace TinyStore.Site.Controllers
             return ApiResult.RData(new GridData<Model.ProductModel>(res.Rows, (int) res.Total));
         }
 
-        // public IActionResult SupplierList([FromForm] string StoreId)
-        // {
-        //     var user = User(StoreId, out Model.Store store);
-        //     if (store != null)
-        //         return ApiResult.RCode("未知错误");
-        //
-        //     return new JsonResult(Api.UserApi.Supplier.GetAllList(store));
-        // }
+// public IActionResult SupplierList([FromForm] string StoreId)
+// {
+//     var user = User(StoreId, out Model.Store store);
+//     if (store != null)
+//         return ApiResult.RCode("未知错误");
+//
+//     return new JsonResult(Api.UserApi.Supplier.GetAllList(store));
+// }
 
-        //todo  StoreId=>UserId 前端需要配合修改
+//todo  StoreId=>UserId 前端需要配合修改
         public IActionResult ProductSupplyPageList([FromForm] int PageIndex,
             [FromForm] int Pagesize)
         {
@@ -702,44 +811,6 @@ namespace TinyStore.Site.Controllers
             return ApiResult.RCode("");
         }
 
-        public IActionResult StoreSave([FromForm] string Store)
-        {
-            var store = Global.Json.Deserialize<Model.StoreModel>(Store);
-            if (store == null)
-                return ApiResult.RCode("店铺数据格式错误");
-            var user = UserCurrent(store.StoreId, out Model.StoreModel store2);
-            if (store2 != null)
-                return ApiResult.RCode("未知错误");
-
-
-            // if (string.Equals("admin", store.UniqueId, StringComparison.OrdinalIgnoreCase) ||
-            //     string.Equals("user", store.UniqueId, StringComparison.OrdinalIgnoreCase))
-            //     return ApiResult.RCode(store.UniqueId + "是系统关键词，不能使用");
-
-            if (store.UniqueId.Length <= 5)
-                return ApiResult.RCode("店铺标识长度必须大于5位");
-
-            if (!string.IsNullOrWhiteSpace(store.UniqueId))
-            {
-                var compare = BLL.StoreBLL.QueryModelByUniqueId(store.UniqueId);
-                if (compare != null && !string.Equals(compare.StoreId, store.StoreId,
-                    StringComparison.OrdinalIgnoreCase))
-                    return ApiResult.RCode(store.UniqueId + "已被使用");
-            }
-
-            var storeOrgin = BLL.StoreBLL.QueryModelByStoreId(store.StoreId);
-
-            store.Initial = Global.Initial(store.Name);
-
-            store.StoreId = storeOrgin.StoreId;
-            store.UserId = storeOrgin.UserId;
-            store.PaymentList = storeOrgin.PaymentList;
-            store.Logo = SiteContext.Resource.MoveTempFile(store.Logo);
-            BLL.StoreBLL.Update(store);
-
-            UserLog(store.UserId, EUserLogType.修改店铺信息, Request, store.StoreId, "店铺信息修改");
-            return ApiResult.RData(store);
-        }
 
         public IActionResult OrderPageListBenifit([FromForm] string StoreId, [FromForm] string SId,
             [FromForm] bool IsHasReturn, [FromForm] DateTime Begin, [FromForm] DateTime End, [FromForm] int PageIndex,
@@ -839,7 +910,6 @@ namespace TinyStore.Site.Controllers
                 .QueryListByCategoryIdAndStoreIdIsStock(Category, store.StoreId));
         }
 
-
         public IActionResult StockPageList([FromForm] string SupplyId,
             [FromForm] bool IsShow,
             [FromForm] int PageIndex, [FromForm] int Pagesize)
@@ -852,7 +922,7 @@ namespace TinyStore.Site.Controllers
             return ApiResult.RData(new GridData<Model.StockModel>(res.Rows, (int) res.Total));
         }
 
-        //todo 后期修改优化此接口
+//todo 后期修改优化此接口
         public IActionResult StockInsert([FromForm] string SupplyId, [FromForm] bool Spilt,
             [FromForm] string Stock, [FromForm] bool CheckRepeatName, [FromForm] bool CheckRepeatPwd)
         {
@@ -944,7 +1014,6 @@ namespace TinyStore.Site.Controllers
             return ApiResult.RCode(res, ApiResult.ECode.Success);
         }
 
-
         public IActionResult StockDelete([FromForm] string StockIds)
         {
             var user = UserCurrent();
@@ -959,7 +1028,6 @@ namespace TinyStore.Site.Controllers
             UserLog(user.UserId, EUserLogType.库存管理, Request, "", "库存删除" + StockIds);
             return ApiResult.RCode("");
         }
-
 
         public IActionResult StockSetIsShow([FromForm] string StockIds,
             [FromForm] bool IsShow)
@@ -979,140 +1047,98 @@ namespace TinyStore.Site.Controllers
         }
 
 
-        // public IActionResult SupplierPageList([FromForm] string StoreId, [FromForm] int PageIndex,
-        //     [FromForm] int Pagesize)
-        // {
-        //     var user = User(StoreId, out Model.Store store);
-        //     if (store != null)
-        //         return ApiResult.RCode("未知错误");
-        //     return new JsonResult(Api.UserApi.Supplier.GetPageList(user, StoreId, PageIndex, Pagesize));
-        // }
-        //
-        // public IActionResult SupplierSave([FromForm] string StoreId, [FromForm] string Sid, [FromForm] string Name,
-        //     [FromForm] int BankType, [FromForm] string Email, [FromForm] string BankAccount, [FromForm] string QQ,
-        //     [FromForm] double Feerate)
-        // {
-        //     var user = User(StoreId, out Model.Store store);
-        //     if (store != null)
-        //         return ApiResult.RCode("未知错误");
-        //     if (string.IsNullOrEmpty(Name))
-        //         return ApiResult.RCode("供货商名称不能为空");
-        //     EBankType ebanktype = (EBankType) BankType;
-        //     if (ebanktype == 0)
-        //         return ApiResult.RCode("请输入正确的账户类型");
-        //     if (user == null)
-        //         return ApiResult.RCode("你没登录，请登录后操作");
-        //
-        //     if (string.IsNullOrEmpty(Sid))
-        //     {
-        //         if (BLL.SupplierBLL.QueryModelByStoreIdAndName(store.StoreId, Name) != null)
-        //             return ApiResult.RCode("供货商名称已存在");
-        //         if (BLL.SupplierBLL.QueryModelByStoreIdAndEmail(store.StoreId, Email) != null)
-        //             return ApiResult.RCode("供货商邮箱已存在");
-        //         var supplier = new Model.Supplier
-        //         {
-        //             Email = Email, BankType = ebanktype, SId = Global.Generator.DateId(1), QQ = QQ, Name = Name,
-        //             BankAccount = BankAccount, UserId = user.UserId, FeeRate = Feerate
-        //         };
-        //         BLL.SupplierBLL.Insert(supplier);
-        //         UserLog(store.UserId, EUserLogType.供货商管理, Request, store.StoreId,
-        //             "供货商添加");
-        //         return ApiResult.RCode("");
-        //     }
-        //     else
-        //     {
-        //         var data = BLL.SupplierBLL.QueryModelBySId(Sid);
-        //         if (data == null)
-        //             return ApiResult.RCode("供货商不存在或已被删除");
-        //         var datacompare = BLL.SupplierBLL.QueryModelByStoreIdAndName(store.StoreId, Name);
-        //         if (datacompare != null &&
-        //             !string.Equals(data.SId, datacompare.SId, StringComparison.OrdinalIgnoreCase))
-        //             return ApiResult.RCode("供货商名称已存在");
-        //         datacompare = BLL.SupplierBLL.QueryModelByStoreIdAndEmail(store.StoreId, Email);
-        //         if (datacompare != null &&
-        //             !string.Equals(data.SId, datacompare.SId, StringComparison.OrdinalIgnoreCase))
-        //             return ApiResult.RCode("供货商邮箱已存在");
-        //         data.BankAccount = BankAccount;
-        //         data.BankType = ebanktype;
-        //         data.QQ = QQ;
-        //         data.Name = Name;
-        //         data.FeeRate = Feerate;
-        //         data.Email = Email;
-        //         BLL.SupplierBLL.Update(data);
-        //         UserLog(store.UserId, EUserLogType.供货商管理, Request, store.StoreId,
-        //             "供货商修改");
-        //         return ApiResult.RCode("");
-        //     }
-        // }
-        //
-        // public IActionResult SupplierDelete([FromForm] string StoreId, [FromForm] string Sid)
-        // {
-        //     var user = User(StoreId, out Model.Store store);
-        //     if (store != null)
-        //         return ApiResult.RCode("未知错误");
-        //     return new JsonResult(Api.UserApi.Supplier.Delete(user, StoreId, Sid,
-        //         SiteContext.RequestInfo._ClientIP(HttpContext).ToString(),
-        //         SiteContext.RequestInfo._UserAgent(HttpContext)));
-        // }
-        //
-        // public IActionResult SupplierModel([FromForm] string Sid)
-        // {
-        //     var res = new Msg<Model.Supplier>();
-        //     var user = User();
-        //     var model = BLL.SupplierBLL.QueryModelBySId(Sid);
-        //     if (model == null)
-        //     {
-        //         res.Result = false;
-        //         res.Message = "供应商不存在";
-        //     }
-        //     else
-        //     {
-        //         res.Data = model;
-        //     }
-        //
-        //     return new JsonResult(res);
-        // }
-
-        public async Task<IActionResult> UploadFormFile([FromForm] string Model, [FromForm] string Id,
-            [FromForm] string Name)
-        {
-            try
-            {
-                if (!string.IsNullOrWhiteSpace(Model))
-                {
-                    if (Request.Form.Files.Count > 0)
-                    {
-                        var files = new Dictionary<string, byte[]>();
-                        for (var i = 0; i < Request.Form.Files.Count; i++)
-                        {
-                            using (var stream = Request.Form.Files[i].OpenReadStream())
-                            {
-                                byte[] buffer = new byte[Request.Form.Files[i].Length];
-                                await stream.ReadAsync(buffer, 0, buffer.Length);
-                                files.Add(Request.Form.Files[i].ContentType,
-                                    buffer); //  {name: {key:contenttype,value:byte[]},}
-                            }
-                        }
-
-                        if (string.IsNullOrWhiteSpace(Id))
-                        {
-                            Id = Global.Generator.DateId(2);
-                        }
-
-                        var res = SiteContext.Resource.UploadFiles(Model, Id, Name, files);
-                        return new JsonResult(res);
-                    }
-                }
-                else
-                {
-                    return ApiResult.RCode("参数错误");
-                }
-            }
-            catch
-            {
-            }
-
-            return ApiResult.RCode("未上传任何文件");
-        }
+// public IActionResult SupplierPageList([FromForm] string StoreId, [FromForm] int PageIndex,
+//     [FromForm] int Pagesize)
+// {
+//     var user = User(StoreId, out Model.Store store);
+//     if (store != null)
+//         return ApiResult.RCode("未知错误");
+//     return new JsonResult(Api.UserApi.Supplier.GetPageList(user, StoreId, PageIndex, Pagesize));
+// }
+//
+// public IActionResult SupplierSave([FromForm] string StoreId, [FromForm] string Sid, [FromForm] string Name,
+//     [FromForm] int BankType, [FromForm] string Email, [FromForm] string BankAccount, [FromForm] string QQ,
+//     [FromForm] double Feerate)
+// {
+//     var user = User(StoreId, out Model.Store store);
+//     if (store != null)
+//         return ApiResult.RCode("未知错误");
+//     if (string.IsNullOrEmpty(Name))
+//         return ApiResult.RCode("供货商名称不能为空");
+//     EBankType ebanktype = (EBankType) BankType;
+//     if (ebanktype == 0)
+//         return ApiResult.RCode("请输入正确的账户类型");
+//     if (user == null)
+//         return ApiResult.RCode("你没登录，请登录后操作");
+//
+//     if (string.IsNullOrEmpty(Sid))
+//     {
+//         if (BLL.SupplierBLL.QueryModelByStoreIdAndName(store.StoreId, Name) != null)
+//             return ApiResult.RCode("供货商名称已存在");
+//         if (BLL.SupplierBLL.QueryModelByStoreIdAndEmail(store.StoreId, Email) != null)
+//             return ApiResult.RCode("供货商邮箱已存在");
+//         var supplier = new Model.Supplier
+//         {
+//             Email = Email, BankType = ebanktype, SId = Global.Generator.DateId(1), QQ = QQ, Name = Name,
+//             BankAccount = BankAccount, UserId = user.UserId, FeeRate = Feerate
+//         };
+//         BLL.SupplierBLL.Insert(supplier);
+//         UserLog(store.UserId, EUserLogType.供货商管理, Request, store.StoreId,
+//             "供货商添加");
+//         return ApiResult.RCode("");
+//     }
+//     else
+//     {
+//         var data = BLL.SupplierBLL.QueryModelBySId(Sid);
+//         if (data == null)
+//             return ApiResult.RCode("供货商不存在或已被删除");
+//         var datacompare = BLL.SupplierBLL.QueryModelByStoreIdAndName(store.StoreId, Name);
+//         if (datacompare != null &&
+//             !string.Equals(data.SId, datacompare.SId, StringComparison.OrdinalIgnoreCase))
+//             return ApiResult.RCode("供货商名称已存在");
+//         datacompare = BLL.SupplierBLL.QueryModelByStoreIdAndEmail(store.StoreId, Email);
+//         if (datacompare != null &&
+//             !string.Equals(data.SId, datacompare.SId, StringComparison.OrdinalIgnoreCase))
+//             return ApiResult.RCode("供货商邮箱已存在");
+//         data.BankAccount = BankAccount;
+//         data.BankType = ebanktype;
+//         data.QQ = QQ;
+//         data.Name = Name;
+//         data.FeeRate = Feerate;
+//         data.Email = Email;
+//         BLL.SupplierBLL.Update(data);
+//         UserLog(store.UserId, EUserLogType.供货商管理, Request, store.StoreId,
+//             "供货商修改");
+//         return ApiResult.RCode("");
+//     }
+// }
+//
+// public IActionResult SupplierDelete([FromForm] string StoreId, [FromForm] string Sid)
+// {
+//     var user = User(StoreId, out Model.Store store);
+//     if (store != null)
+//         return ApiResult.RCode("未知错误");
+//     return new JsonResult(Api.UserApi.Supplier.Delete(user, StoreId, Sid,
+//         SiteContext.RequestInfo._ClientIP(HttpContext).ToString(),
+//         SiteContext.RequestInfo._UserAgent(HttpContext)));
+// }
+//
+// public IActionResult SupplierModel([FromForm] string Sid)
+// {
+//     var res = new Msg<Model.Supplier>();
+//     var user = User();
+//     var model = BLL.SupplierBLL.QueryModelBySId(Sid);
+//     if (model == null)
+//     {
+//         res.Result = false;
+//         res.Message = "供应商不存在";
+//     }
+//     else
+//     {
+//         res.Data = model;
+//     }
+//
+//     return new JsonResult(res);
+// }
     }
 }

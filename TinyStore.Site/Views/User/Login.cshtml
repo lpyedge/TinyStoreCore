@@ -7,7 +7,7 @@
     <title>@SiteContext.Config.SiteName</title>
     <partial name="Widgets/_Header"/>
 </head>
-<body class="bd-home">
+<body>
 <div id="q-app">
     <q-layout view="lhh LpR lff" class="bg-grey-1">
         <q-header reveal class="bg-primary q-py-xs" style="height: 65px;line-height: 65px;">
@@ -18,8 +18,8 @@
                 </q-toolbar-title>
                 <q-space></q-space>
                 <div class="q-gutter-sm row items-center no-wrap">
-                    <q-btn flat class="mobile-hide" style="color:#cdbfe3" size="lg" dense><q-icon name="fab fa-qq" size="sm" class="q-pr-xs"></q-icon>联系客服</q-btn>
-                    <q-btn outline class="q-px-sm" color="warning" size="lg" dense>商户注册</q-btn>
+                    <q-btn flat class="mobile-hide" style="color:#cdbfe3" size="lg" dense><q-icon name="fab fa-qq" size="sm" class="on-left"></q-icon>联系客服</q-btn>
+                    <q-btn outline class="q-px-sm" color="warning" size="lg" dense label="商户注册"></q-btn>
                 </div>
             </q-toolbar>
         </q-header>
@@ -66,7 +66,7 @@
                                             @@click="loginForm.passwordShow=!loginForm.passwordShow"/>
                                 </template>
                             </q-input>
-                            <q-btn :loading="loginForm.loading" color="secondary" size="lg" class="full-width" @@click="login">登录</q-btn>
+                            <q-btn :loading="btnLoginLoading" color="secondary" size="lg" class="full-width" @@click="login" ><q-icon name="fas fa-paper-plane" size="md" class="on-left"></q-icon>登录</q-btn>
                         </div>
                     </div>
                 </div>
@@ -86,14 +86,14 @@
               account:'',
               password:'',
               passwordShow:false,
-              loading:false,
           },
+          btnLoginLoading:false,
           carouselslide:'slide1',
         },
         methods: {
             login (){
                 if (this.loginForm.account && this.loginForm.password){
-                    this.loginForm.loading = true;
+                    this.btnLoginLoading = true;
                     UserApi('login', {
                         account: this.loginForm.account,
                         password: this.loginForm.password
@@ -109,11 +109,12 @@
                         else{
                             Notify.Warning('帐号密码不匹配');
                         }
-                        this.loginForm.loading = false;
+                        this.btnLoginLoading = false;
                     })
                     .catch( (error)=> {
-                        this.loginForm.loading = false;
                         Notify.Warning('接口通信错误');
+                        console.error(error);
+                        this.btnLoginLoading = false;
                     });
                 }else{
                     Notify.Warning('请输入帐号&密码');

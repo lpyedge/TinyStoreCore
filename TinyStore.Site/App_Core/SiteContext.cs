@@ -132,10 +132,9 @@ namespace TinyStore.Site
                     {
                         Name = "A先生",
                         Account = "13101010101",
-                        IsShow = true,
+                        IsEnable = true,
                         IsSystem = false,
                         Rate = 0,
-                        PaymentType = "alipay",
                         QRCode = "alipay://xxxxx",
                         Memo = "支付宝shoukuan",
                     }
@@ -802,29 +801,26 @@ namespace TinyStore.Site
         }
 
 
-        public static class Store
+        public static List<Model.Extend.Payment> SystemPaymentList()
         {
-            public static List<Model.Extend.Payment> GetPaymentList(Model.UserModel user)
+            var list = new List<Model.Extend.Payment>();
+
+            foreach (EPaymentType item in Enum.GetValues(typeof(EPaymentType)))
             {
-                var rate = Config.TaxConfigList[user.Level];
-                var list = new List<Model.Extend.Payment>();
-
-                foreach (EPaymentType item in Enum.GetValues(typeof(EPaymentType)))
+                var attr = Utils.Reflection.Attribute.GetCustomAttribute<PaymentAttribute>(item).First();
+                var model = new Model.Extend.Payment()
                 {
-                    var model = new Model.Extend.Payment()
-                    {
-                        Name = Utils.Reflection.Attribute.GetCustomAttribute<DescriptionAttribute>(item).First()
-                            .Description,
-                        PaymentType = item.ToString(),
-                        Rate = rate,
-                        IsShow = true
-                    };
+                    Name = item.ToString(),
+                    Memo = attr.Memo,
+                    Rate = attr.Rate,
+                    IsSystem = true,
+                    IsEnable = true,
+                };
 
-                    list.Add(model);
-                }
-
-                return list;
+                list.Add(model);
             }
+
+            return list;
         }
 
 
