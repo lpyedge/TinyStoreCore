@@ -1,0 +1,272 @@
+﻿<q-page padding>
+    <q-form class="q-gutter-md">
+        <div class="text-h5 text-weight-bold text-grey-8">
+            <q-icon :name="supplylinks[0].icon" size="md" class="on-left"></q-icon>{{supplylinks[0].text}}
+        </div>
+
+        <q-separator class="q-my-md"></q-separator>
+        <div class="row q-gutter-y-sm justify-between">
+        <q-tabs
+            class="col-xs-auto col-md-auto text-grey-8"
+            active-color="primary"
+            indicator-color="primary"
+            content-class="text-h5"
+            align="left"
+            narrow-indicator
+            v-model="supplyType">
+            <q-tab name="system" label="系统货源"></q-tab>
+            <q-tab name="custom" label="自定义货源"></q-tab>
+        </q-tabs>
+        <q-toolbar class="col-xs-12 col-md-auto">
+            <q-select outlined dense options-dense stack-label bg-color="white"
+                      style="width: 10rem"
+                      label="分类"
+                      v-model="supplyFilter.category"
+                      emit-value
+                      map-options
+                      :options="supply.categoryOptions">
+            </q-select>
+            <q-input outlined dense stack-label bg-color="white"
+                     class="on-right"
+                     label="关键词"
+                     v-model="supplyFilter.keyname">
+                <template v-slot:prepend>
+                    <q-icon name="fas fa-filter" color="primary" size="xs"/>
+                </template>
+            </q-input>
+        </q-toolbar>
+        </div>
+        <q-list animated class=" row q-gutter-md">
+                    <q-card class="col-auto"  style="width: 18rem;" bordered v-for="(item,i) in supplyListByFilter()">
+                        <q-item class="q-pa-xs" >
+                            <q-item-section class="relative-position">
+                                <q-item-label class="text-subtitle1">
+                                    {{item.name}}
+                                </q-item-label>
+                                <q-item-label caption>
+                                    {{item.category}}
+                                </q-item-label>
+                                <q-icon class="absolute-bottom-right" :name="deliveryTypeOption(item.deliveryType).icon">
+                                    <q-tooltip>{{deliveryTypeOption(item.deliveryType).name}}</q-tooltip>
+                                </q-icon>
+                            </q-item-section>
+                            <q-separator vertical class="q-mx-sm"></q-separator>
+                            <q-item-section class="relative-position" style="height:3rem;">
+                                <q-icon name="fas fa-yen-sign" size="lg" color="primary"></q-icon>
+                                <q-item-label style="height: 2rem;line-height: 2rem;margin-top: 1rem;">
+                                    <label class="text-h6 text-primary">{{parseInt(item.cost)}}</label>
+                                    <label class="text-caption text-italic text-grey-8">.{{parseFloat(item.cost).toFixed(2).split('.')[1]}}</label>
+                                </q-item-label>
+                                <q-badge class="absolute-top-right" color="accent">
+                                    {{parseFloat(item.faceValue).toFixed(2)}}
+                                </q-badge>
+                            </q-item-section>
+                        </q-item>
+                        <q-separator ></q-separator>
+                        <q-card-section>
+                            <label class="ellipsis-2-lines">{{item.memo}}</label>
+                            <q-icon class="absolute-bottom-right q-ma-xs" color="primary" size="1.4rem" name="zoom_out_map" @@click="supplyDialogShow(i)"></q-icon>
+                        </q-card-section>
+                    </q-card>
+                </q-list>
+
+        <q-btn :loading="btnSaveLoading" class="float-right" color="primary" icon="save" label="保存" @@click="supplyListSave"/>
+    </q-form>
+</q-page>
+
+<q-dialog v-model="supplyDialog">
+    <q-card class="q-pb-md" style="max-width: 500px; width: 500px;">
+        <q-card-section class="row items-center q-pb-none">
+            <div class="text-h6">收款方式</div>
+            <q-space ></q-space>
+            <q-btn icon="close" flat round dense v-close-popup></q-btn>
+        </q-card-section>
+        <q-card-section class="q-gutter-sm">
+            <q-input outlined dense stack-label bg-color="white"
+                     label="收款名称"
+                     v-model="supplyCurrent.name"
+                     ref="supplyCurrent_name"
+                     :rules="[val => !!val || '必须输入收款名称',val => val.length < 8 || '收款名称长度必须小于8']">
+            </q-input>
+            <q-input outlined dense stack-label bg-color="white"
+                     label="收款帐号"
+                     hint="建议格式（帐号 / 姓名）"
+                     v-model="supplyCurrent.account"
+                     ref="supplyCurrent_account"
+                     :rules="[val => !!val || '必须输入收款帐号']">
+            </q-input>
+
+            <q-input outlined dense stack-label bg-color="white"
+                     readonly
+                     label="收款二维码"
+                     hint="点击二维码图标解析收款二维码"
+                     v-model="supplyCurrent.qrCode">
+            </q-input>
+            <q-input outlined dense stack-label bg-color="white"
+                     label="收款说明"
+                     v-model="supplyCurrent.memo">
+            </q-input>
+        </q-card-section>
+        <q-card-section>
+            <q-btn class="float-left" color="negative" icon="delete_forever" label="移除" @@click="supplyDialogRemove" v-if="supplyIndex >= 0"></q-btn>
+            <q-btn class="float-right" color="warning" icon="edit" :label="supplyIndex >= 0 ? '修改' : '新增'" @@click="supplyDialogEdit"></q-btn>
+        </q-card-section>
+    </q-card>
+</q-dialog>
+
+@section Scripts{
+    <script src="https://cdn.staticfile.org/qrcode-generator/1.4.4/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.3.1/dist/jsQR.min.js"></script>
+    <script>
+   var _page = {
+       data:{
+           supplyType:'system',
+           supply:{
+             custom:[],
+             system:[],  
+             categoryOptions:['aa','bb'],
+           },
+           supplyFilter:{
+               keyname:'',
+               category:'',
+           },
+           supplyCurrent:{},
+           supplyIndex:-2,//默认 -2 新增 -1 其他 索引值
+           supplyDialog:false,
+           btnSaveLoading:false,
+       },
+       beforeMount(){
+           UserApi("SupplyList",{},true)
+              .then((response)=> {
+                  if (response.data.code === 1){ 
+                      this.supply.custom = response.data.data.supplyCustom;
+                      this.supply.system = response.data.data.supplySystem;
+                      this.supplyFilterReset();
+                  } else{
+                      Notify.Warning('货源数据加载失败');
+                  }
+              })
+              .catch( (error)=> {
+                  Notify.Warning('接口通信错误');
+                  console.error(error);
+              });
+       },
+       watch: {
+             supplyType: function (val, oldVal) {
+                 if (val!==oldVal){
+                     this.supplyFilterReset();
+                 }
+             },
+        },
+       computed:{
+           
+       },
+       methods: {
+           supplyFilterReset(){
+               this.supplyFilter.keyname='';
+               this.supplyFilter.category='';
+               this.supply.categoryOptions = [];
+               this.supply.categoryOptions.push({label:"全部*",value:''});
+               var datas = _.groupBy(this.supply[this.supplyType], 'category');
+               for (var categoty in datas) {
+                   if(categoty){
+                       this.supply.categoryOptions.push({label:categoty,value:categoty});
+                   }
+               }
+           },
+           supplyListByFilter(){
+               return _.filter(this.supply[this.supplyType],(data)=>{
+                   if (this.supplyFilter.category){
+                        return data.category === this.supplyFilter.category && 
+                        (data.name.toLowerCase().indexOf(this.supplyFilter.keyname.toLowerCase()) > -1 || data.memo.toLowerCase().indexOf(this.supplyFilter.keyname.toLowerCase()) > -1);
+                   }
+                   return data.name.toLowerCase().indexOf(this.supplyFilter.keyname.toLowerCase()) > -1 || data.memo.toLowerCase().indexOf(this.supplyFilter.keyname.toLowerCase()) > -1;
+               });
+           },
+           supplyDialogShow(i){
+               this.supplyDialog=true;
+               this.supplyIndex =i;
+               if (i>=0){
+                   this.supplyCurrent= JSON.parse(JSON.stringify(this.supply[this.supplyType][i]));
+               }else{
+                   this.supplyCurrent = {isEnable:false};
+               }
+           },
+           supplyDialogEdit(){
+               if (this.supplyIndex >= 0 ){
+                   var index = 0;
+                   for (i in this.supply[this.supplyType]){
+                       if (!this.supply[this.supplyType].isSystem){
+                           if (index === this.supplyIndex){
+                               this.$set(this.supply[this.supplyType], i, JSON.parse(JSON.stringify(this.supplyCurrent)))
+                               break;
+                           }
+                           index++;
+                       }
+                   }
+               }else if (this.supplyIndex === -1){
+                   this.$set(this.supply[this.supplyType], this.supply[this.supplyType].length, JSON.parse(JSON.stringify(this.supplyCurrent)))
+               }
+               this.supplyIndex = -2;
+               this.supplyDialog=false;
+               this.supplyCurrent = {};
+           },
+           supplyDialogRemove(){
+               this.$q.dialog({
+                title: '再次确认',
+                message: '确定要移除名称为['+this.supplyCurrent.name+']的收款方式?',
+                cancel: true,
+                persistent: true
+              }).onOk(() => {
+                if (this.supplyIndex !== -2){
+                      var index = 0;
+                      for (i in this.storeCurrent.paymentList){
+                          if (!this.storeCurrent.paymentList[i].isSystem){
+                              if (index === this.paymentIndex){
+                                  this.storeCurrent.paymentList.splice(i,1);
+                                  break;
+                              }
+                              index++;
+                          }
+                      }
+                  }
+                  this.supplyIndex = -2;
+                  this.supplyDialog=false;
+                  this.supplyCurrent = {};
+              })
+           },
+           supplyListSave(){
+               var isenable =false;
+               for (i in this.storeCurrent.paymentList){
+                   if (this.storeCurrent.paymentList[i].isEnable){
+                       isenable = true;
+                   }
+               }
+               
+               if (isenable){
+                   this.btnSaveLoading = true;
+                   UserApi("StorePaymentListSave", this.storeCurrent)
+                      .then((response)=> {
+                          if (response.data.code === 1){ 
+                              Store.StoreList(response.data.data);
+                              Notify.Info('保存成功');
+                          } else{
+                              Notify.Warning('保存失败，数据格式错误');
+                          }
+                          this.btnSaveLoading = false;
+                      })
+                      .catch( (error)=> {
+                          Notify.Warning('接口通信错误');
+                          console.error(error);
+                          this.btnSaveLoading = false;
+                      });
+               }else{
+                   Notify.Warning('必须保留一个启用的支付方式');
+               }
+           }
+       }
+   };
+   DeepMerge(_layout,_page);
+   new Vue(_layout);
+    </script>
+}

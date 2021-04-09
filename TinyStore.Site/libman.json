@@ -1,0 +1,48 @@
+{
+  "version": "1.0",
+  "defaultProvider": "cdnjs",
+    "libraries": [
+        {
+            "provider": "jsdelivr",
+            "library": "lodash@4.17.21",
+            "destination": "wwwroot/lib/lodash/",
+            "files": [
+                "lodash.min.js"
+            ]
+        },
+        {
+            "provider": "jsdelivr",
+            "library": "axios@0.21.1",
+            "destination": "wwwroot/lib/axios/",
+            "files": [
+                "dist/axios.min.js"
+            ]
+        },
+        {
+            "provider": "jsdelivr",
+            "library": "vue@2.6.12",
+            "destination": "wwwroot/lib/vue/",
+            "files": [
+                "dist/vue.min.js"
+            ]
+        },
+        {
+            "provider": "jsdelivr",
+            "library": "quasar@1.15.10",
+            "destination": "wwwroot/lib/quasar/",
+            "files": [
+                "dist/quasar.min.css",
+                "dist/quasar.umd.min.js",
+                "dist/lang/zh-hans.umd.min.js"
+            ]
+        },
+        {
+            "provider": "jsdelivr",
+            "library": "animate.css@4.1.1",
+            "destination": "wwwroot/lib/animate.css/",
+            "files": [
+                "animate.min.css"
+            ]
+        }
+    ]
+}

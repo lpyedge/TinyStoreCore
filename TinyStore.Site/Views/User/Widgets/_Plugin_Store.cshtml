@@ -53,8 +53,9 @@ Store.StoreListRemove = function () {
 
 //商户当前店铺
 Store.StoreCurrent = function (index) {
+    var storeList =Store.StoreList();    
     if (index!==undefined) {     
-        if (index<0 || Store.StoreList().length <= index){
+        if (index<0 || (storeList && storeList.length <= index)){
             index = 0;
         }
         sessionStorage.setItem("StoreCurrent", index);
@@ -63,8 +64,8 @@ Store.StoreCurrent = function (index) {
         if (index == null){
             index = 0;
         }
-        if (Store.StoreList().length > index)
-            return Store.StoreList()[index];
+        if (storeList && storeList.length > index)
+            return storeList[index];
         return null;
     }
 };

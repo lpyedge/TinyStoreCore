@@ -39,7 +39,7 @@
         {{~}}
     </script>
     <script>
-        var stoerlist =  @Json.Serialize(ViewBag.StoerList);;
+        var stoerlist =  @Json.Serialize(ViewBag.StoerList);
 
         $(function () {
             var datas = _.groupBy(stoerlist, 'Initial');

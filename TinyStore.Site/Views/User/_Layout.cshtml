@@ -141,8 +141,8 @@
        storeList : Store.StoreList(),
        storeCurrent : Store.StoreCurrent(),
        supplylinks: [
-           { icon: 'person', text: '货源管理',url:'' },
-           { icon: 'vpn_key', text: '卡密管理',url:''  },      
+           { icon: 'fas fa-dolly', text: '货源管理',url:'@Url.ActionLink("Supply_List", "User")' },
+           { icon: 'vpn_key', text: '卡密管理',url:'@Url.ActionLink("Supply_Stock", "User")'  },      
          ],
        userlinks: [
            { icon: 'person', text: '商户资料',url:'@Url.ActionLink("User_Profile", "User")' },
@@ -162,6 +162,11 @@
            { text: 'Privacy' },
            { text: 'Policy & Safety' },
            { text: 'Test new features' }
+         ],
+         deliveryTypeOptions:[
+             {icon:'person',name:'卡密',color:'primary',value:1},
+             {icon:'person',name:'人工',color:'primary',value:2},
+             {icon:'person',name:'接口',color:'primary',value:3},
          ]
      },
      beforeCreate(){
@@ -174,6 +179,14 @@
      methods: {
          setStoreCurrent(index){
              Store.StoreCurrent(index);
+         },
+         deliveryTypeOption(deliveryType){
+             for (i in this.deliveryTypeOptions){
+                 if (this.deliveryTypeOptions[i].value === deliveryType){
+                     return  this.deliveryTypeOptions[i];
+                 }
+             }
+             return null;
          }
      }
    };

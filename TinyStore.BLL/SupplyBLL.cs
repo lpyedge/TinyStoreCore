@@ -19,6 +19,11 @@ namespace TinyStore.BLL
             return QueryList(-1, p => ids.Contains(p.SupplyId), SortSupplyIdDesc);
         }
         
+        public static List<Model.SupplyModel> QueryListByUserId(int userId)
+        {
+            return QueryList(-1, p => p.UserId == userId , SortSupplyIdDesc);
+        }
+        
         public static PageList<Model.SupplyModel> QueryPageList(int pageindex, int pagesize)
         {
             return QueryPageList(pageindex, pagesize, null, SortSupplyIdDesc);

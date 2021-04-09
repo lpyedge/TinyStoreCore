@@ -11,8 +11,8 @@
                 系统收款
             </q-item-label>
             
-            <div class="flex q-gutter-md">
-            <q-card style="max-width: 450px;width: 450px" class="bg-grey-1" bordered v-for="(item,i) in paymentListSystem">
+            <div class="row q-gutter-md">
+            <q-card class="col-auto" bordered v-for="(item,i) in paymentListSystem">
                 <q-item>
                     <q-item-section>
                         <q-item-label class="text-subtitle1">
@@ -30,7 +30,7 @@
                             {{item.memo}}
                         </q-item-label>
                     </q-item-section>
-                    <q-separator vertical ></q-separator>
+                    <q-separator vertical class="q-mx-sm"></q-separator>
                     <q-item-section side>
                         <q-toggle v-model="item.isEnable" color="green">启用</q-toggle>
                     </q-item-section>
@@ -43,38 +43,30 @@
             <q-item-label header class="text-weight-bold text-subtitle1 text-grey-8">
                 自定义收款 <q-btn color="secondary" class="on-right" round dense icon="add" @@click="paymentDialogShow(-1)"></q-btn>
             </q-item-label>
-            <div class="flex q-gutter-md">
-            <q-card style="max-width: 450px;width: 450px" class="bg-grey-1" bordered v-for="(item,i) in paymentListCustom">
+            <div class="row q-gutter-md">
+            <q-card class="col-auto" bordered v-for="(item,i) in paymentListCustom">
                 <q-item>
                     <q-item-section>
                         <q-item-label class="text-subtitle1">
                             {{item.name}}
-                            <q-badge v-if="item.rate" align="top">{{item.rate*100}}<q-icon name="fas fa-percent" size="0.6rem" class="q-ml-xs"/>
-                                <q-tooltip content-class="bg-indigo"
-                                           transition-show="flip-right"
-                                           transition-hide="flip-left"
-                                           :offset="[10, 10]">
-                                    手续费率
-                                </q-tooltip>
-                            </q-badge>
                         </q-item-label>
                         <q-item-label caption>
                             {{item.memo}}
                         </q-item-label>
                     </q-item-section>
-                    <q-separator vertical ></q-separator>
+                    <q-separator vertical class="q-mx-sm"></q-separator>
                     <q-item-section side>
                         <q-toggle v-model="item.isEnable" color="green">启用</q-toggle>
                     </q-item-section>
                 </q-item>
                 <q-separator ></q-separator>
                 <q-card-section class="row no-padding">
-                    <div class="col-auto">
+                    <div class="col-shrink">
                         <img v-if="item.qrCode" style="width: 5rem;height: 5rem;" :alt="item.qrCode" :src="qrcodeImg(item.qrCode)"/>
                         <div v-else style="width: 5rem;height: 5rem;" class="relative-position"><q-icon name="fas fa-qrcode" size="md" class="absolute-center"></q-icon></div>
                     </div>
-                    <div class="col relative-position"><label class="absolute-center full-width text-h5 q-pa-sm">{{item.account}}</label></div>
-                    <q-icon class="absolute-bottom-right q-ma-sm" color="negative" size="1.4rem" name="far fa-edit" @@click="paymentDialogShow(i)"></q-icon>
+                    <div class="col text-h6" style="text-align: center;height:5rem;line-height: 5rem;width: 18rem">{{item.account}}</div>
+                    <q-icon class="absolute-bottom-right q-ma-xs" color="negative" size="1.4rem" name="far fa-edit" @@click="paymentDialogShow(i)"></q-icon>
                 </q-card-section>
             </q-card>
             </div>

@@ -42,6 +42,14 @@ namespace TinyStore.Site.Controllers
         {
             return View();
         }
+        public IActionResult Supply_List()
+        {
+            return View();
+        }
+        public IActionResult Supply_Stock()
+        {
+            return View();
+        }
         
         //！----------------------！//
 
@@ -85,15 +93,7 @@ namespace TinyStore.Site.Controllers
         {
             return View();
         }
-        public IActionResult Stock()
-        {
-            return View();
-        }
         public IActionResult Stockrecycle()
-        {
-            return View();
-        }
-        public IActionResult Supplier()
         {
             return View();
         }

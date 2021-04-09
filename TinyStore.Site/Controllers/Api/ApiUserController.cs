@@ -61,7 +61,7 @@ namespace TinyStore.Site.Controllers
         public IActionResult Login([FromForm] string account, [FromForm] string password)
         {
             if (string.IsNullOrWhiteSpace(account) || string.IsNullOrWhiteSpace(password))
-                return ApiResult.RCode("传参错误");
+                return ApiResult.RCode(ApiResult.ECode.DataFormatError);
             var user = BLL.UserBLL.QueryModelByAccount(account);
             if (user != null && string.Equals(user.Password, Global.Hash(password, user.Salt)))
             {
@@ -83,7 +83,7 @@ namespace TinyStore.Site.Controllers
             }
             else
             {
-                return ApiResult.RCode("商户账号或密码不正确");
+                return ApiResult.RCode(ApiResult.ECode.AuthorizationFailed);
             }
         }
 
@@ -125,9 +125,7 @@ namespace TinyStore.Site.Controllers
             userExtendOrigin.TelPhone = userExtend.TelPhone;
             userExtendOrigin.Email = userExtend.Email;
             userExtendOrigin.IdCard = userExtend.IdCard;
-            // userextend.BankAccount = Bankaccount;
-            // userextend.BankPersonName = BankPersonName;
-            // userextend.BankType = (EBankType) Banktype;
+
             BLL.UserExtendBLL.Update(userExtendOrigin);
             UserLog(userExtendOrigin.UserId, EUserLogType.修改商户信息, Request, "", "个人信息修改");
 
@@ -256,6 +254,16 @@ namespace TinyStore.Site.Controllers
             UserLog(user.UserId, EUserLogType.修改店铺信息, Request, store.StoreId, "店铺收款方式修改");
 
             return ApiResult.RData(BLL.StoreBLL.QueryListByUserId(user.UserId));
+        }
+
+        [HttpPost]
+        public IActionResult SupplyList()
+        {
+            var user = UserCurrent();
+
+            var supplyCustom = BLL.SupplyBLL.QueryListByUserId(user.UserId);
+            var supplySystem = BLL.SupplyBLL.QueryListByUserId(SiteContext.Config.SupplyUserIdSys);
+            return ApiResult.RData(new {supplySystem, supplyCustom});
         }
 
         public IActionResult Register([FromForm] string Account, [FromForm] string Password, [FromForm] string QQ,
@@ -658,16 +666,7 @@ namespace TinyStore.Site.Controllers
 // }
 
 //todo  StoreId=>UserId 前端需要配合修改
-        public IActionResult ProductSupplyPageList([FromForm] int PageIndex,
-            [FromForm] int Pagesize)
-        {
-            var user = UserCurrent();
 
-            var res = BLL.SupplyBLL.QueryPageListByUserIds(
-                new List<int>() {user.UserId, SiteContext.Config.SupplyUserIdSys}, PageIndex, Pagesize);
-            return ApiResult.RData(
-                new GridData<Model.SupplyModel>(res.Rows, (int) res.Total));
-        }
 
         public IActionResult ProductAddFromSupply([FromForm] string StoreId, [FromForm] string Ids,
             [FromForm] string Category)

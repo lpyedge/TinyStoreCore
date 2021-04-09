@@ -126,7 +126,7 @@ namespace TinyStore.Site
                 Memo = "自家供货，自家销售",
                 Template = EStoreTemplate.模板一,
                 IsSingle = true,
-                PaymentList = new List<Payment>()
+                PaymentList = new List<Payment>(SiteContext.SystemPaymentList())
                 {
                     new Payment()
                     {
@@ -144,8 +144,68 @@ namespace TinyStore.Site
             });
             BLL.SupplyBLL.InsertAsync(new SupplyModel()
             {
+                UserId = SiteContext.Config.SupplyUserIdSys,
+                Category = "腾讯",
+                Cost = 5,
+                Name = "QQ币",
+                Memo = "请留下您的QQ号码方便我们来充值",
+                DeliveryType = EDeliveryType.人工,
+                FaceValue = 10,
+                IsShow = true,
+                SupplyId = Global.Generator.DateId(2)
+            });
+            BLL.SupplyBLL.InsertAsync(new SupplyModel()
+            {
+                UserId = SiteContext.Config.SupplyUserIdSys,
+                Category = "腾讯",
+                Cost = 100,
+                Name = "微信号",
+                Memo = "请联系客服购买，标价非真实价格",
+                DeliveryType = EDeliveryType.人工,
+                FaceValue = 100,
+                IsShow = true,
+                SupplyId = Global.Generator.DateId(2)
+            });
+            BLL.SupplyBLL.InsertAsync(new SupplyModel()
+            {
+                UserId = SiteContext.Config.SupplyUserIdSys,
+                Category = "腾讯",
+                Cost = 100,
+                Name = "QQ号",
+                Memo = "请联系客服购买，标价非真实价格",
+                DeliveryType = EDeliveryType.人工,
+                FaceValue = 100,
+                IsShow = true,
+                SupplyId = Global.Generator.DateId(2)
+            });
+            BLL.SupplyBLL.InsertAsync(new SupplyModel()
+            {
+                UserId = SiteContext.Config.SupplyUserIdSys,
+                Category = "网易",
+                Cost = 35,
+                Name = "魔兽点卡",
+                Memo = "请联系客服购买，标价非真实价格",
+                DeliveryType = EDeliveryType.卡密,
+                FaceValue = 50,
+                IsShow = true,
+                SupplyId = Global.Generator.DateId(2)
+            });
+            BLL.SupplyBLL.InsertAsync(new SupplyModel()
+            {
+                UserId = SiteContext.Config.SupplyUserIdSys,
+                Category = "网易",
+                Cost = 35,
+                Name = "魔兽怀旧服点卡",
+                Memo = "请联系客服购买，标价非真实价格",
+                DeliveryType = EDeliveryType.卡密,
+                FaceValue = 50,
+                IsShow = true,
+                SupplyId = Global.Generator.DateId(2)
+            });
+            BLL.SupplyBLL.InsertAsync(new SupplyModel()
+            {
                 UserId = 1,
-                Category = "",
+                Category = "腾讯",
                 Cost = 5,
                 Name = "QQ币",
                 Memo = "请留下您的QQ号码方便我们来充值",

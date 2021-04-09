@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -27,7 +29,25 @@ namespace TinyStore.Site
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseStartup<Startup>();
+                    webBuilder
+                        .UseKestrel(option =>
+                        {
+                            option.ConfigureHttpsDefaults((httpsConfig) =>
+                            {
+                                var certPemFile =
+                                    new FileInfo(AppDomain.CurrentDomain.BaseDirectory + "App_Data/cert.pem");
+                                var privateKeyPemFile =
+                                    new FileInfo(AppDomain.CurrentDomain.BaseDirectory + "App_Data/prrvate.key");
+                                if (certPemFile.Exists && privateKeyPemFile.Exists)
+                                {
+                                    httpsConfig.ServerCertificate = X509Certificate2.CreateFromPemFile(certPemFile.FullName,
+                                            privateKeyPemFile.FullName);
+                                    httpsConfig.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13;
+                                }
+                            });
+                        })
+                        .UseIIS()
+                        .UseStartup<Startup>();
                 });
     }
 }
