@@ -241,12 +241,12 @@ namespace TinyStore.Site.Controllers.Api
             //todo 支付平台收款 调用平台方法退款
             if (Global.EnumsDic<EPaymentType>().Values.Contains(order.PaymentType))
             {
-                var user = BLL.UserBLL.QueryModelById(order.UserId);
-                if (user == null)
+                var userExtend = BLL.UserExtendBLL.QueryModelById(order.UserId);
+                if (userExtend == null)
                     return ApiResult.RCode("商户不存在，请检查数据库");
-                if (user.Amount < order.ReturnAmount)
+                if (userExtend.Amount < order.ReturnAmount)
                     return ApiResult.RCode("商户资金小于退款金额，请联系店铺管理人员解决");
-                BLL.UserBLL.ChangeAmount(user.UserId, -order.ReturnAmount);
+                BLL.UserExtendBLL.ChangeAmount(userExtend.UserId, -order.ReturnAmount);
             }
 
             BLL.OrderBLL.Update(order);
@@ -372,11 +372,11 @@ namespace TinyStore.Site.Controllers.Api
         {
             var current = AdminCurrent();
 
-            var user = BLL.UserBLL.QueryModelById(Id);
-            if (user == null)
+            var userExtend = BLL.UserExtendBLL.QueryModelById(Id);
+            if (userExtend == null)
                 return ApiResult.RCode("商户不存在");
 
-            BLL.UserBLL.ModifyLevel(user.UserId, (EUserLevel) Level);
+            BLL.UserExtendBLL.ModifyLevel(userExtend.UserId, (EUserLevel) Level);
             AdminLog(current.AdminId, EAdminLogType.店铺管理, Request, "商户级别修改" + Id);
             return ApiResult.RCode("");
         }
@@ -421,12 +421,12 @@ namespace TinyStore.Site.Controllers.Api
             var withdraw = BLL.WithDrawBLL.QueryModelByWithDrawId(Id);
             if (withdraw == null)
                 return ApiResult.RCode("数据不存在或已被删除");
-            var user = BLL.UserBLL.QueryModelById(withdraw.UserId);
-            if (user == null)
+            var userExtend = BLL.UserExtendBLL.QueryModelById(withdraw.UserId);
+            if (userExtend == null)
                 return ApiResult.RCode("商户不存在");
             if (withdraw.IsFinish)
                 return ApiResult.RCode("提现申请已处理，不能删除");
-            if (withdraw.Amount > user.Amount)
+            if (withdraw.Amount > userExtend.Amount)
                 return ApiResult.RCode("商户余额不足以提现");
             if (Income > withdraw.Amount)
                 return ApiResult.RCode("到账金额不能大于申请金额");
@@ -436,7 +436,7 @@ namespace TinyStore.Site.Controllers.Api
             withdraw.Memo = Memo;
             withdraw.IsFinish = true;
             BLL.WithDrawBLL.Update(withdraw);
-            BLL.UserBLL.ChangeAmount(user.UserId, -withdraw.Amount);
+            BLL.UserExtendBLL.ChangeAmount(userExtend.UserId, -withdraw.Amount);
             AdminLog(current.AdminId, EAdminLogType.提现管理, Request, "提现申请成功" + Id);
             return ApiResult.RCode("");
         }

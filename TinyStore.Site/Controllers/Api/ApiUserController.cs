@@ -601,12 +601,12 @@ namespace TinyStore.Site.Controllers
                 order.DeliveryDate = DateTime.Now;
             }
 
-            var usermodel = BLL.UserBLL.QueryModelById(order.UserId);
-            if (usermodel == null)
+            var userExtend = BLL.UserExtendBLL.QueryModelById(order.UserId);
+            if (userExtend == null)
                 return ApiResult.RCode("商户不存在，请检查数据库");
-            if (usermodel.Amount < amountchange)
+            if (userExtend.Amount < amountchange)
                 return ApiResult.RCode("商户资金小于退款金额，请联系店铺管理人员解决");
-            BLL.UserBLL.ChangeAmount(usermodel.UserId, -amountchange); //店铺金额减去变动金额
+            BLL.UserExtendBLL.ChangeAmount(userExtend.UserId, -amountchange); //店铺金额减去变动金额
 
             BLL.OrderBLL.Update(order);
             UserLog(store.UserId, EUserLogType.订单管理, Request, store.StoreId, "订单退款申请");
@@ -682,6 +682,9 @@ namespace TinyStore.Site.Controllers
             if (string.IsNullOrEmpty(Category))
                 return ApiResult.RCode("产品分类不存在");
 
+            var userExtend = BLL.UserExtendBLL.QueryModelById(user.UserId);
+            if (userExtend == null)
+                return ApiResult.RCode(ApiResult.ECode.AuthorizationFailed);
 
             var productlist = new List<Model.ProductModel>();
             foreach (var item in BLL.SupplyBLL.QueryListByIds(ids))
@@ -690,7 +693,7 @@ namespace TinyStore.Site.Controllers
                 {
                     Amount = item.FaceValue,
                     Category = Category,
-                    Cost = (item.Cost * SiteContext.Config.SupplyRates[user.Level]),
+                    Cost = (item.Cost * SiteContext.Config.SupplyRates[userExtend.Level]),
                     IsShow = false,
                     Memo = item.Name,
                     Name = item.Name,
@@ -838,6 +841,11 @@ namespace TinyStore.Site.Controllers
         {
             var user = UserCurrent();
 
+
+            var userExtend = BLL.UserExtendBLL.QueryModelById(user.UserId);
+            if (userExtend == null)
+                return ApiResult.RCode(ApiResult.ECode.AuthorizationFailed);
+            
             if (string.IsNullOrEmpty(Name))
                 return ApiResult.RCode("收款名称不能为空");
             // if (string.IsNullOrEmpty(BankPersonName))
@@ -850,7 +858,7 @@ namespace TinyStore.Site.Controllers
             if (Amount > SiteContext.Config.WithDrawMax)
                 return ApiResult.RCode($"提现金额必须小于等于{SiteContext.Config.WithDrawMax}");
 
-            if (Amount > user.Amount)
+            if (Amount > userExtend.Amount)
                 return ApiResult.RCode("提现金额不能大于商户资金");
             var withdraw = new Model.WithDrawModel
             {

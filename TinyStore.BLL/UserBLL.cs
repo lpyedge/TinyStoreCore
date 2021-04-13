@@ -47,14 +47,5 @@ namespace TinyStore.BLL
         }
 
 
-        public static void ChangeAmount(int userId, double amount)
-        {
-            Update(p => p.UserId == userId, p => p.Amount == p.Amount + amount);
-        }
-
-        public static void ModifyLevel(int userId, EUserLevel p_level)
-        {
-            Update(p => p.UserId == userId, p => p.Level == p_level);
-        }
     }
 }

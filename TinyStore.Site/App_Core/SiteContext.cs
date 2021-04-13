@@ -93,13 +93,15 @@ namespace TinyStore.Site
                 Password = Global.Hash("test", "test"),
                 Salt = "test",
                 ClientKey = "test",
-                Amount = 0,
-                AmountCharge = 1000,
-                Level = EUserLevel.一星,
             });
             TinyStore.BLL.UserExtendBLL.InsertAsync(new UserExtendModel()
             {
                 UserId = 1,
+                
+                Amount = 0,
+                AmountCharge = 1000,
+                Level = EUserLevel.一星,
+                
                 Email = "test@test.com",
                 Name = "姓名",
                 RegisterDate = DateTime.Now,

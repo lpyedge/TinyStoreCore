@@ -7,6 +7,21 @@ namespace TinyStore.Model
     {
         [SqlSugar.SugarColumn(IsPrimaryKey = true)]
         public int UserId { get; set; }
+        
+        /// <summary>
+        /// 商户等级
+        /// </summary>
+        public EUserLevel Level { get; set; } = EUserLevel.无;
+
+        /// <summary>
+        /// 金额 可以提现
+        /// </summary>
+        public double Amount { get; set; }
+        
+        /// <summary>
+        /// 签帐额度 仅可抵扣商品成本
+        /// </summary>
+        public double AmountCharge { get; set; }
 
         /// <summary>
         /// 手机号

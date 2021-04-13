@@ -1,6 +1,4 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,8 +7,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using JsonProperty = Newtonsoft.Json.Serialization.JsonProperty;
-using JsonSerializer = Newtonsoft.Json.JsonSerializer;
 
 namespace TinyStore
 {
