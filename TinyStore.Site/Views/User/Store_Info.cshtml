@@ -11,14 +11,14 @@
                 <q-input outlined dense stack-label bg-color="white"
                          class="col"
                          label="店铺名称"
-                         v-model="storeCurrent.name"
+                         v-model.trim="storeCurrent.name"
                          ref="store_name"
                          :rules="[val => !!val || '必须输入店铺名称',val => val.length < 10 || '店铺名称长度必须小于10']">
                 </q-input>
                 <q-input outlined dense stack-label bg-color="white"
                          class="col"
                          label="店铺标识"
-                         v-model="storeCurrent.uniqueId"
+                         v-model.trim="storeCurrent.uniqueId"
                          hint="设置后不要轻易修改，会影响客户打开时的网址"
                          ref="store_uniqueId"
                          :rules="[val => !!val || '必须输入店铺标识',val => val.length > 5 || '店铺标识长度必须大于5']">
@@ -56,25 +56,25 @@
         </div>
         <q-input outlined dense stack-label bg-color="white"
                  label="店铺介绍"
-                 v-model="storeCurrent.memo"
+                 v-model.trim="storeCurrent.memo"
                  autogrow>
         </q-input>
         <q-input outlined dense stack-label bg-color="white"
                  label="联系邮箱"
-                 v-model="storeCurrent.email"
+                 v-model.trim="storeCurrent.email"
                  placeholder="@@">
         </q-input>
         <q-input outlined dense stack-label bg-color="white"
                  label="联系电话"
-                 v-model="storeCurrent.telPhone">
+                 v-model.trim="storeCurrent.telPhone">
         </q-input>
         <q-input outlined dense stack-label bg-color="white"
                  label="联系QQ"
-                 v-model="storeCurrent.qq"
+                 v-model.trim="storeCurrent.qq"
                  maxlength="16">
         </q-input>
         
-        <q-btn :loading="btnSaveLoading" class="float-right" color="primary" icon="save"  label="保存" @@click="storeSave"/>
+        <q-btn :loading="btnSaveLoading" class="float-right" color="primary" icon="save"  label="保存" @@click="storeSave" ></q-btn>
     </q-form>
 </q-page>
 

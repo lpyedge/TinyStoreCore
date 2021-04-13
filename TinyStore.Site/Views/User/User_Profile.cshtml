@@ -19,30 +19,30 @@
         
         <q-input outlined dense stack-label bg-color="white"
                  label="姓名"
-                 v-model="userExtend.name">
+                 v-model.trim="userExtend.name">
         </q-input>
         <q-input outlined dense stack-label bg-color="white"
                  label="身份证"
-                 v-model="userExtend.idCard"
+                 v-model.trim="userExtend.idCard"
                  mask="##################"
                  fill-mask>
         </q-input>
         <q-input outlined dense stack-label bg-color="white"
                  label="联系邮箱"
-                 v-model="userExtend.email"
+                 v-model.trim="userExtend.email"
                  placeholder="@@">
         </q-input>
         <q-input outlined dense stack-label bg-color="white"
                  label="联系电话"
-                 v-model="userExtend.telPhone">
+                 v-model.trim="userExtend.telPhone">
         </q-input>
         <q-input outlined dense stack-label bg-color="white"
                  label="联系QQ"
-                 v-model="userExtend.qq"
+                 v-model.trim="userExtend.qq"
                  maxlength="16">
         </q-input>
         
-        <q-btn :loading="btnSaveLoading" class="float-right" color="primary" icon="save"  label="保存" @@click="userExtendSave"/>
+        <q-btn :loading="btnSaveLoading" class="float-right" color="primary" icon="save"  label="保存" @@click="userExtendSave" ></q-btn>
     </q-form>
 </q-page>
 

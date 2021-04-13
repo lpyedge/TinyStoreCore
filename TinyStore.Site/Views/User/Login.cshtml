@@ -51,7 +51,7 @@
                     <div class="col">
                         <div class="bg-grey-4 q-pa-xl flex-center q-gutter-y-lg">
                             <div class="text-primary text-center  text-h4 text-weight-bolder q-mb-xl">商户登录</div>
-                            <q-input outlined v-model="loginForm.account" label="帐号" label-color="primary" bg-color="white">
+                            <q-input outlined v-model.trim="loginForm.account" label="帐号" label-color="primary" bg-color="white">
                                 <template v-slot:prepend>
                                     <q-icon name="person" size="lg"/>
                                 </template>

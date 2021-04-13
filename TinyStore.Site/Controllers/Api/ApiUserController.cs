@@ -265,7 +265,57 @@ namespace TinyStore.Site.Controllers
             var supplySystem = BLL.SupplyBLL.QueryListByUserId(SiteContext.Config.SupplyUserIdSys);
             return ApiResult.RData(new {supplySystem, supplyCustom});
         }
+        
+        [HttpPost]
+        public IActionResult SupplyCustomSave(List<Model.SupplyModel> supplyList)
+        {
+            var user = UserCurrent();
 
+            var supplyCustom = BLL.SupplyBLL.QueryListByUserId(user.UserId);
+            foreach (var supplyModel in supplyList)
+            {
+                var data = supplyCustom.FirstOrDefault(p => p.SupplyId == supplyModel.SupplyId);
+                if (data == null)
+                {
+                    supplyModel.SupplyId = Global.Generator.DateId(1);
+                    supplyModel.IsShow = true;
+                    supplyModel.UserId = user.UserId;
+                    
+                    BLL.SupplyBLL.InsertAsync(supplyModel);
+                    
+                    supplyCustom.Add(supplyModel);
+                }
+                else
+                {
+                    data.Name = supplyModel.Name;
+                    data.DeliveryType = supplyModel.DeliveryType;
+                    data.Category = supplyModel.Category;
+                    data.FaceValue = supplyModel.FaceValue;
+                    data.Cost = supplyModel.Cost;
+                    data.Memo = supplyModel.Memo;
+                    data.IsShow = true;
+                    data.UserId = user.UserId;
+                    
+                    BLL.SupplyBLL.UpdateAsync(data);
+                }
+            }
+
+            var supplyIds2Remove = supplyCustom.Where(p => !supplyList.All(x => x.SupplyId == p.SupplyId)).Select(p=>p.SupplyId).ToList();
+            if (supplyIds2Remove.Count > 0)
+            {
+                BLL.SupplyBLL.DeleteByIdsAndUserId(supplyIds2Remove,user.UserId);
+                foreach (var supplyId in supplyIds2Remove)
+                {
+                    supplyCustom.Remove(supplyCustom.FirstOrDefault(p => p.SupplyId == supplyId));
+                }
+            }
+
+            var supplySystem = BLL.SupplyBLL.QueryListByUserId(SiteContext.Config.SupplyUserIdSys);
+            
+            return ApiResult.RData(new {supplySystem, supplyCustom});
+        }
+        
+        
         public IActionResult Register([FromForm] string Account, [FromForm] string Password, [FromForm] string QQ,
             [FromForm] string Email, [FromForm] string Telphone)
         {

@@ -43,7 +43,7 @@ namespace TinyStore.Model
         public double Cost { get; set; }
 
         /// <summary>
-        /// 是否上架
+        /// 是否上架 仅配合userId为0 即系统货源情况下使用
         /// </summary>
         [SqlSugar.SugarColumn(IndexGroupNameList = new []{"IsShow"})]
         public bool IsShow { get; set; }

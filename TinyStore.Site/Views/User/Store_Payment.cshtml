@@ -33,7 +33,7 @@
                         </q-item-section>
                         <q-separator vertical class="q-mx-sm"></q-separator>
                         <q-item-section side>
-                            <q-toggle v-model="item.isEnable" color="green">启用</q-toggle>
+                            <q-toggle v-model="item.isEnable" color="green" @@input="storePaymentListAutoSave">启用</q-toggle>
                         </q-item-section>
                     </q-item>
                 </q-card>
@@ -57,7 +57,7 @@
                         </q-item-section>
                         <q-separator vertical class="q-mx-sm"></q-separator>
                         <q-item-section side>
-                            <q-toggle v-model="item.isEnable" color="green">启用</q-toggle>
+                            <q-toggle v-model="item.isEnable" color="green" @@input="storePaymentListAutoSave">启用</q-toggle>
                         </q-item-section>
                     </q-item>
                     <q-separator></q-separator>
@@ -72,8 +72,6 @@
                 </q-card>
             </div>
         </q-list>
-
-        <q-btn :loading="btnSaveLoading" class="float-right" color="primary" icon="save" label="保存" @@click="storePaymentListSave" />
     </q-form>
 </q-page>
 
@@ -87,14 +85,14 @@
         <q-card-section class="q-gutter-sm">
             <q-input outlined dense stack-label bg-color="white"
                      label="收款名称"
-                     v-model="paymentCurrent.name"
+                     v-model.trim="paymentCurrent.name"
                      ref="paymentCurrent_name"
                      :rules="[val => !!val || '必须输入收款名称',val => val.length < 8 || '收款名称长度必须小于8']">
             </q-input>
             <q-input outlined dense stack-label bg-color="white"
                      label="收款帐号"
                      hint="建议格式（帐号 / 姓名）"
-                     v-model="paymentCurrent.account"
+                     v-model.trim="paymentCurrent.account"
                      ref="paymentCurrent_account"
                      :rules="[val => !!val || '必须输入收款帐号']">
             </q-input>
@@ -111,7 +109,7 @@
             <input class="hidden" type="file" accept="image/*" ref="qrcodeImagePick" @@change="qrcodeRead" />
             <q-input outlined dense stack-label bg-color="white"
                      label="收款说明"
-                     v-model="paymentCurrent.memo">
+                     v-model.trim="paymentCurrent.memo">
             </q-input>
         </q-card-section>
         <q-card-section>
@@ -198,24 +196,29 @@
                         this.paymentCurrent = { isEnable: false };
                     }
                 },
-                paymentDialogEdit() {
-                    if (this.paymentIndex >= 0) {
-                        var index = 0;
-                        for (i in this.storeCurrent.paymentList) {
-                            if (!this.storeCurrent.paymentList[i].isSystem) {
-                                if (index === this.paymentIndex) {
-                                    this.$set(this.storeCurrent.paymentList, i, JSON.parse(JSON.stringify(this.paymentCurrent)))
-                                    break;
-                                }
-                                index++;
-                            }
-                        }
-                    } else if (this.paymentIndex === -1) {
-                        this.$set(this.storeCurrent.paymentList, this.storeCurrent.paymentList.length, JSON.parse(JSON.stringify(this.paymentCurrent)))
-                    }
-                    this.paymentIndex = -2;
-                    this.paymentDialog = false;
-                    this.paymentCurrent = {};
+                paymentDialogEdit() {                    
+                   this.$refs.paymentCurrent_name.validate();
+                   this.$refs.paymentCurrent_account.validate();
+                   if (!this.$refs.paymentCurrent_name.hasError && !this.$refs.paymentCurrent_account.hasError){
+                       if (this.paymentIndex >= 0) {
+                           var index = 0;
+                           for (i in this.storeCurrent.paymentList) {
+                               if (!this.storeCurrent.paymentList[i].isSystem) {
+                                   if (index === this.paymentIndex) {
+                                       this.$set(this.storeCurrent.paymentList, i, JSON.parse(JSON.stringify(this.paymentCurrent)))
+                                       break;
+                                   }
+                                   index++;
+                               }
+                           }
+                       } else if (this.paymentIndex === -1) {
+                           this.$set(this.storeCurrent.paymentList, this.storeCurrent.paymentList.length, JSON.parse(JSON.stringify(this.paymentCurrent)))
+                       }
+                       this.storePaymentListAutoSave();
+                       this.paymentIndex = -2;
+                       this.paymentDialog = false;
+                       this.paymentCurrent = {};
+                   }                    
                 },
                 paymentDialogRemove() {
                     this.$q.dialog({
@@ -235,13 +238,14 @@
                                     index++;
                                 }
                             }
+                            this.storePaymentListAutoSave();
                         }
                         this.paymentIndex = -2;
                         this.paymentDialog = false;
                         this.paymentCurrent = {};
                     })
                 },
-                storePaymentListSave() {
+                storePaymentListAutoSave() {
                     var isenable = false;
                     for (i in this.storeCurrent.paymentList) {
                         if (this.storeCurrent.paymentList[i].isEnable) {
@@ -250,21 +254,18 @@
                     }
 
                     if (isenable) {
-                        this.btnSaveLoading = true;
                         UserApi("StorePaymentListSave", this.storeCurrent)
                             .then((response) => {
                                 if (response.data.code === 1) {
                                     Store.StoreList(response.data.data);
-                                    Notify.Info('保存成功');
+                                    //Notify.Info('保存成功');
                                 } else {
-                                    Notify.Warning('保存失败，数据格式错误');
+                                    //Notify.Warning('保存失败，数据格式错误');
                                 }
-                                this.btnSaveLoading = false;
                             })
                             .catch((error) => {
                                 Notify.Warning('接口通信错误');
                                 console.error(error);
-                                this.btnSaveLoading = false;
                             });
                     } else {
                         Notify.Warning('必须保留一个启用的支付方式');
