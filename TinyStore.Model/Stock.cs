@@ -16,7 +16,6 @@ namespace TinyStore.Model
         [SqlSugar.SugarColumn(Length = 28,IndexGroupNameList = new []{"SupplyId"})] 
         public string SupplyId { get; set; }
 
-
         /// <summary>
         /// 卡号 / 名称
         /// </summary>

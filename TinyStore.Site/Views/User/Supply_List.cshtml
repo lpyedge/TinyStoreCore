@@ -1,11 +1,9 @@
 ﻿<q-page padding>
-    <q-form class="q-gutter-md">
-        <div class="text-h5 text-weight-bold text-grey-8">
-            <q-icon :name="supplylinks[0].icon" size="md" class="on-left"></q-icon>{{supplylinks[0].text}}
-        </div>
-
-        <q-separator class="q-my-md"></q-separator>
-        <div class="row q-gutter-y-sm justify-between">
+    <div class="text-h5 text-weight-bold text-grey-8">
+        <q-icon :name="supplylinks[0].icon" size="md" class="on-left"></q-icon>{{supplylinks[0].text}}
+    </div>
+    <q-separator class="q-my-md"></q-separator>
+    <div class="row q-gutter-y-sm justify-between">
         <q-tabs
             class="col-xs-auto col-md-auto text-grey-8"
             active-color="primary"
@@ -35,44 +33,45 @@
                 </template>
             </q-input>
         </q-toolbar>
-        </div>
-        <q-list animated class=" row q-gutter-md">
-            <q-card class="col-auto"  style="width: 18rem;" bordered v-for="(item,i) in supplyListByFilter()">
-                <q-item class="q-pa-xs" >
-                    <q-item-section class="relative-position">
-                        <q-item-label class="text-subtitle1">
-                            {{item.name}}
-                        </q-item-label>
-                        <q-item-label caption>
-                            {{item.category}}
-                        </q-item-label>
-                        <q-icon color="primary" class="absolute-bottom-right" :name="deliveryTypeOption(item.deliveryType).icon">
+    </div>
+    <q-list animated class="row q-gutter-md q-ma-none">
+        <q-card class="col-auto" bordered v-for="(item,i) in supplyListByFilter()">
+            <q-item class="q-pa-xs" style="height:3rem;">
+                <q-item-section >
+                    <q-item-label class="text-subtitle1">
+                        {{item.name}}5测试商品
+                    </q-item-label>
+                    <q-item-label caption>
+                        {{item.category}}
+                        <q-icon class="float-right" color="primary" :name="deliveryTypeOption(item.deliveryType).icon">
                             <q-tooltip>{{deliveryTypeOption(item.deliveryType).name}}</q-tooltip>
                         </q-icon>
-                    </q-item-section>
-                    <q-separator vertical class="q-mx-sm"></q-separator>
-                    <q-item-section class="relative-position" style="height:3rem;">
-                        <q-icon name="fas fa-yen-sign" size="lg" color="primary"></q-icon>
-                        <q-item-label style="height: 2rem;line-height: 2rem;margin-top: 1rem;">
-                            <label class="text-h6 text-primary">{{parseInt(item.cost)}}</label>
-                            <label class="text-caption text-italic text-grey-8">.{{parseFloat(item.cost).toFixed(2).split('.')[1]}}</label>
-                        </q-item-label>
-                        <q-badge class="absolute-top-right" color="accent">
+                    </q-item-label>
+                </q-item-section>
+                <q-separator vertical class="q-mx-sm"></q-separator>
+                <q-icon class="col-auto" name="fas fa-yen-sign" size="lg" color="primary"></q-icon>
+                <q-item-section side>
+                    <div class="col-4">
+                        <q-badge class="float-right" color="accent">
                             {{parseFloat(item.faceValue).toFixed(2)}}
                         </q-badge>
-                    </q-item-section>
-                </q-item>
-                <q-separator ></q-separator>
-                <q-card-section>
-                    <label class="ellipsis-2-lines">{{item.memo}}</label>
-                </q-card-section>
-                <q-icon class="absolute-bottom-right q-ma-xs" color="primary" size="1.4rem" name="zoom_out_map" @@click="supplyDialogShow(i)"></q-icon>
-            </q-card>
-            <q-card class="col-auto relative-position"  style="width: 18rem;" bordered v-if="supplyType == 'custom'" >
-                <q-icon class="absolute-center" name="add" size="xl" color="primary" @@click="supplyDialogShow(-1)"></q-icon>
-            </q-card>
-            </q-list>
-    </q-form>
+                    </div>
+                    <q-item-label class="col-8">
+                        <label class="text-h6 text-primary">{{parseInt(item.cost)}}</label>
+                        <label class="text-caption text-italic text-grey-8">.{{parseFloat(item.cost).toFixed(2).split('.')[1]}}</label>
+                    </q-item-label>
+                </q-item-section>
+            </q-item>
+            <q-separator ></q-separator>
+            <q-card-section style="height: 4.7rem;width: 18rem;">
+                <label class="ellipsis-2-lines">{{item.memo}}</label>
+            </q-card-section>
+            <q-icon class="absolute-bottom-right q-ma-xs" color="primary" size="1.4rem" name="zoom_out_map" @@click="supplyDialogShow(i)"></q-icon>
+        </q-card>
+        <q-card class="col-auto" style="width: 18rem;height: 8rem" bordered v-if="supplyType == 'custom'">
+            <q-icon class="absolute-center" name="add" size="xl" color="primary" @@click="supplyDialogShow(-1)"></q-icon>
+        </q-card>
+    </q-list>
 </q-page>
 
 <q-dialog v-model="supplyDialog">
@@ -101,7 +100,7 @@
                           map-options
                           :options="supply.categoryOptions">
                 </q-select>
-                <q-space class="col-auto q-mx-xs" ></q-space>
+                <q-space class="col-auto q-mx-xs"></q-space>
                 <q-select outlined dense options-dense stack-label bg-color="white"
                           class="col"
                           label="发货方式"
@@ -115,8 +114,7 @@
                     <template v-slot:selected-item="scope">
                         <q-chip
                             dense
-                            class="transparent q-ma-none q-pa-none"
-                        >
+                            class="transparent q-ma-none q-pa-none">
                             <q-icon class="on-left" color="primary" text-color="white" :name="scope.opt.icon" size="xs"></q-icon>
                             {{ scope.opt.name }}
                         </q-chip>
@@ -126,8 +124,7 @@
                             v-bind="scope.itemProps"
                             v-on="scope.itemEvents">
                             <q-chip
-                                class="transparent q-ma-none q-pa-none"
-                            >
+                                class="transparent q-ma-none q-pa-none">
                                 <q-icon class="on-left" color="primary" text-color="white" :name="scope.opt.icon" size="xs"></q-icon>
                                 {{ scope.opt.name }}
                             </q-chip>
@@ -145,7 +142,7 @@
                          ref="supplyCurrent_faceValue"
                          :rules="[val => !!val || '必须输入面值']">
                 </q-input>
-                <q-space class="col-auto q-mx-xs" ></q-space>
+                <q-space class="col-auto q-mx-xs"></q-space>
                 <q-input outlined dense stack-label bg-color="white"
                          class="col"
                          label="成本"

@@ -1,22 +1,24 @@
 ﻿<q-page padding>
-    <q-form class="q-gutter-md">
-        <div class="text-h5 text-weight-bold text-grey-8">
-            <q-icon :name="userlinks[0].icon" size="md" class="on-left"></q-icon>{{userlinks[0].text}}
-        </div>
+    <div class="text-h5 text-weight-bold text-grey-8">
+        <q-icon :name="userlinks[0].icon" size="md" class="on-left"></q-icon>{{userlinks[0].text}}
+    </div>
 
-        <q-separator class="q-my-md"></q-separator>
+    <q-separator class="q-my-md"></q-separator>
 
-        <div class="text-h6"><label class="on-left">帐号:</label>{{user.account}}   
-            <q-badge color="secondary" align="top" v-if="user.level">{{user.level}}<q-icon name="star" class="q-ml-xs" />
-                <q-tooltip content-class="bg-indigo" 
-                          transition-show="flip-right"
-                          transition-hide="flip-left" 
-                          :offset="[10, 10]">
+    <q-form class="q-gutter-md q-ma-none">
+        <div class="text-h6">
+            <label class="on-left">帐号:</label>{{user.account}}
+            <q-badge color="secondary" align="top" v-if="user.level">
+                {{user.level}}<q-icon name="star" class="q-ml-xs"/>
+                <q-tooltip content-class="bg-indigo"
+                           transition-show="flip-right"
+                           transition-hide="flip-left"
+                           :offset="[10, 10]">
                     不同等级商户的货源成本价格不同
                 </q-tooltip>
             </q-badge>
         </div>
-        
+
         <q-input outlined dense stack-label bg-color="white"
                  label="姓名"
                  v-model.trim="userExtend.name">
@@ -41,13 +43,13 @@
                  v-model.trim="userExtend.qq"
                  maxlength="16">
         </q-input>
-        
-        <q-btn :loading="btnSaveLoading" class="float-right" color="primary" icon="save"  label="保存" @@click="userExtendSave" ></q-btn>
+
+        <q-btn :loading="btnSaveLoading" class="float-right" color="primary" icon="save" label="保存" @@click="userExtendSave"></q-btn>
     </q-form>
 </q-page>
 
 @section Scripts{
-   <script>
+    <script>
    var _page = {
        data:{
            btnSaveLoading:false

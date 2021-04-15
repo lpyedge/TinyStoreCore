@@ -1,11 +1,11 @@
 ﻿<q-page padding>
-    <q-form class="q-gutter-md">
-        <div class="text-h5 text-weight-bold text-grey-8">
-            <q-icon :name="storelinks[0].icon" size="md" class="on-left"></q-icon>{{storelinks[0].text}}
-        </div>
+    <div class="text-h5 text-weight-bold text-grey-8">
+        <q-icon :name="storelinks[0].icon" size="md" class="on-left"></q-icon>{{storelinks[0].text}}
+    </div>
 
-        <q-separator class="q-my-md"></q-separator>
+    <q-separator class="q-my-md"></q-separator>
 
+    <q-form class="q-gutter-md q-ma-none">
         <div class="row">
             <div class="col column on-left">
                 <q-input outlined dense stack-label bg-color="white"
@@ -37,7 +37,7 @@
                        :src="storeCurrent.logo"
                        spinner-color="white"
                        @@click="$refs.store_logo_pick.click()">
-                    
+
                     <q-icon class="absolute-top-right" color="orange-9" name="backup" size="sm"></q-icon>
                     @* <template v-slot:loading> *@
                     @*     <div class="text-subtitle1 text-white"> *@
@@ -49,7 +49,7 @@
                             暂无图片
                             <q-icon class="absolute-top-right" color="orange-9" name="backup" size="sm"></q-icon>
                         </div>
-                  </template>
+                    </template>
                 </q-img>
                 <input class="hidden" type="file" accept="image/*" ref="store_logo_pick" @@change="storeLogoUpload">
             </div>
@@ -73,13 +73,13 @@
                  v-model.trim="storeCurrent.qq"
                  maxlength="16">
         </q-input>
-        
-        <q-btn :loading="btnSaveLoading" class="float-right" color="primary" icon="save"  label="保存" @@click="storeSave" ></q-btn>
+
+        <q-btn :loading="btnSaveLoading" class="float-right" color="primary" icon="save" label="保存" @@click="storeSave"></q-btn>
     </q-form>
 </q-page>
 
 @section Scripts{
-   <script>
+    <script>
    var _page = {
        data:{
           storeTemplates: @Json.Serialize(Global.EnumsOptions<EStoreTemplate>()),

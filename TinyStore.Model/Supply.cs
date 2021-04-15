@@ -43,7 +43,9 @@ namespace TinyStore.Model
         public double Cost { get; set; }
 
         /// <summary>
-        /// 是否上架 仅配合userId为0 即系统货源情况下使用
+        /// 是否上架
+        /// 系统货源即userId为0 时系统管理员用来做上下架处理
+        /// 默认每个用户会自动创建一个SupplyId = userId, IsShow = false的货源数据，隐藏不显示作为默认货源，发货方式固定为手动发货
         /// </summary>
         [SqlSugar.SugarColumn(IndexGroupNameList = new []{"IsShow"})]
         public bool IsShow { get; set; }
