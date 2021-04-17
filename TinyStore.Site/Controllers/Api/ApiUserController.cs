@@ -341,6 +341,11 @@ namespace TinyStore.Site.Controllers
             [FromForm] int pageIndex, [FromForm] int pageSize)
         {
             var user = UserCurrent();
+
+            var supplyModel = BLL.SupplyBLL.QueryModelById(supplyId);
+            if (supplyModel == null)
+                return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
+
             bool? outIsShow = null;
             if (bool.TryParse(isShow, out bool tempIsShow))
             {
@@ -396,6 +401,10 @@ namespace TinyStore.Site.Controllers
         {
             var user = UserCurrent();
 
+            var supplyModel = BLL.SupplyBLL.QueryModelById(supplyId);
+            if (supplyModel == null)
+                return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
+
             bool? outIsShow = null;
             if (bool.TryParse(isShow, out bool tempIsShow))
             {
@@ -427,6 +436,10 @@ namespace TinyStore.Site.Controllers
             [FromForm] bool isShow, [FromForm] bool isAllowRepeat)
         {
             var user = UserCurrent();
+
+            var supplyModel = BLL.SupplyBLL.QueryModelById(supplyId);
+            if (supplyModel == null)
+                return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
 
             var datas = new List<Model.StockModel>();
             var repeatNameList = new List<string>();
@@ -471,14 +484,16 @@ namespace TinyStore.Site.Controllers
                 if (!isAllowRepeat)
                 {
                     var namelist = datas.Select(p => p.Name).ToList();
-                    var stockRepeatList =BLL.StockBLL.QueryList(p =>
+                    var stockRepeatList = BLL.StockBLL.QueryList(p =>
                         p.UserId == user.UserId && p.SupplyId == supplyId && namelist.Contains(p.Name));
                     if (stockRepeatList.Count > 0)
                     {
-                        repeatNameList.AddRange(stockRepeatList.Select(p=>p.Name));
-                        datas = datas.Where(p => !stockRepeatList.Select(x => x.Name).ToList().Contains(p.Name)).ToList();
+                        repeatNameList.AddRange(stockRepeatList.Select(p => p.Name));
+                        datas = datas.Where(p => !stockRepeatList.Select(x => x.Name).ToList().Contains(p.Name))
+                            .ToList();
                     }
                 }
+
                 BLL.StockBLL.InsertRange(datas);
                 return ApiResult.RData(repeatNameList);
             }
@@ -488,98 +503,16 @@ namespace TinyStore.Site.Controllers
             }
         }
 
-//todo 后期修改优化此接口
-        public IActionResult StockInsert([FromForm] string SupplyId, [FromForm] bool Spilt,
-            [FromForm] string Stock, [FromForm] bool CheckRepeatName, [FromForm] bool CheckRepeatPwd)
+        [HttpPost]
+        public IActionResult ProductList([FromForm] string storeId)
         {
-            var user = UserCurrent();
+            var user = UserCurrent(storeId, out Model.StoreModel store);
+            if (store == null)
+                return ApiResult.RCode(ApiResult.ECode.AuthorizationFailed);
 
-            if (string.IsNullOrEmpty(Stock))
-                return ApiResult.RCode("卡号数据不能为空");
-            var supply = string.IsNullOrEmpty(SupplyId)
-                ? null
-                : BLL.SupplyBLL.QueryModelById(SupplyId);
-            if (supply == null || supply.DeliveryType != EDeliveryType.卡密)
-                return ApiResult.RCode("货源不存在或已被删除");
-            Stock = Stock.Replace("\r", string.Empty); //不用加换行符了
-            var stocklist = BLL.StockBLL.QueryListBySupplyIdCanUse(SupplyId, user.UserId);
-            var repaet_name = new List<string>();
-            var repaet_pwd = new List<string>();
-            string card_name, card_pwd;
-            var ids = new List<string>();
-            foreach (var card in Stock.Split('\n'))
-            {
-                if (Spilt)
-                {
-                    card_name = card.Split("|||")[0];
-                    card_pwd = card.Split("|||")[1];
-                    if (!string.IsNullOrEmpty(card_name) || !string.IsNullOrEmpty(card_pwd))
-                    {
-                        if (CheckRepeatName && stocklist.FirstOrDefault(p => p.Name == card_name) != null)
-                        {
-                            repaet_name.Add(card_name);
-                        }
-                        else if (CheckRepeatPwd &&
-                                 stocklist.FirstOrDefault(p => p.Memo == card_pwd) != null) //密码重复验证？
-                        {
-                            repaet_pwd.Add(card_pwd);
-                        }
-                        else
-                        {
-                            var id = Global.Generator.DateId(2);
-                            do
-                            {
-                                id = Global.Generator.DateId(2);
-                            } while (ids.Contains(id));
-
-                            ids.Add(id);
-                            stocklist.Add(new Model.StockModel
-                            {
-                                Name = card_name,
-                                Memo = card_pwd,
-                                CreateDate = DateTime.Now,
-                                DeliveryDate = DateTime.Now,
-                                IsShow = false,
-                                IsDelivery = false,
-                                SupplyId = SupplyId,
-                                StockId = id,
-                                UserId = user.UserId
-                            });
-                        }
-                    }
-                }
-            }
-
-
-            BLL.StockBLL.InsertRange(stocklist);
-            UserLog(user.UserId, EUserLogType.库存管理, Request,
-                "", "增加库存" + stocklist.Count + "条");
-            string res = "你一共增加了" + stocklist.Count + "个库存 ";
-            if (repaet_name.Count > 0)
-            {
-                res += "重复卡号" + repaet_name.Count + "个，分别是:<ul>";
-                foreach (var item in repaet_name)
-                {
-                    res += "<li>" + item + "</li>";
-                }
-
-                res += "</ul>";
-            }
-
-            if (repaet_pwd.Count > 0)
-            {
-                res += "重复密码" + repaet_pwd.Count + "个，分别是:<ul>";
-                foreach (var item in repaet_pwd)
-                {
-                    res += "<li>" + item + "</li>";
-                }
-
-                res += "</ul>";
-            }
-
-            return ApiResult.RCode(res, ApiResult.ECode.Success);
+            var res = BLL.ProductBLL.QueryListByStoreId(store.StoreId);
+            return ApiResult.RData(res);
         }
-
 
         public IActionResult Register([FromForm] string Account, [FromForm] string Password, [FromForm] string QQ,
             [FromForm] string Email, [FromForm] string Telphone)
@@ -960,16 +893,6 @@ namespace TinyStore.Site.Controllers
             return ApiResult.RData(new GridData<Model.UserLogModel>(res.Rows, (int) res.Total));
         }
 
-        public IActionResult ProducPageList([FromForm] string StoreId, [FromForm] int PageIndex,
-            [FromForm] int Pagesize)
-        {
-            var user = UserCurrent(StoreId, out Model.StoreModel store);
-            if (store != null)
-                return ApiResult.RCode("未知错误");
-
-            var res = BLL.ProductBLL.QueryPageListByStoreId(store.StoreId, PageIndex, Pagesize);
-            return ApiResult.RData(new GridData<Model.ProductModel>(res.Rows, (int) res.Total));
-        }
 
 // public IActionResult SupplierList([FromForm] string StoreId)
 // {

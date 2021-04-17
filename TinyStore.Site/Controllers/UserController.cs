@@ -33,6 +33,16 @@ namespace TinyStore.Site.Controllers
             return View();
         }
         
+        public IActionResult Supply_List()
+        {
+            return View();
+        }
+        public IActionResult Supply_Stock()
+        {
+            return View();
+        }
+        
+        
         public IActionResult Store_Info()
         {
             return View();
@@ -42,11 +52,13 @@ namespace TinyStore.Site.Controllers
         {
             return View();
         }
-        public IActionResult Supply_List()
+        
+        public IActionResult Store_Product()
         {
             return View();
         }
-        public IActionResult Supply_Stock()
+        
+        public IActionResult Store_Order()
         {
             return View();
         }
@@ -57,38 +69,35 @@ namespace TinyStore.Site.Controllers
         {
             return View();
         }
-        public IActionResult Order(string sid, string productid)
-        {
-            if(!string.IsNullOrWhiteSpace(sid))
-            {
-                var supplier = BLL.SupplyBLL.QueryModelById(sid);
-                if(supplier != null)
-                {
-                    ViewBag.Supplier = supplier;
-                    return View();
-                }
-            }
-            if (!string.IsNullOrWhiteSpace(productid))
-            {
-                var prodcut = BLL.ProductBLL.QueryModelByProductId(productid);
-                if (prodcut != null)
-                {
-                    ViewBag.Product = prodcut;
-                    return View();
-                }
-            }
-            return View();
-        }
+        // public IActionResult Order(string sid, string productid)
+        // {
+        //     if(!string.IsNullOrWhiteSpace(sid))
+        //     {
+        //         var supplier = BLL.SupplyBLL.QueryModelById(sid);
+        //         if(supplier != null)
+        //         {
+        //             ViewBag.Supplier = supplier;
+        //             return View();
+        //         }
+        //     }
+        //     if (!string.IsNullOrWhiteSpace(productid))
+        //     {
+        //         var prodcut = BLL.ProductBLL.QueryModelByProductId(productid);
+        //         if (prodcut != null)
+        //         {
+        //             ViewBag.Product = prodcut;
+        //             return View();
+        //         }
+        //     }
+        //     return View();
+        // }
 
         [Route("/store/ordercloserecord/{sid}")]
         public IActionResult Ordercloserecord(string sid)
         {
             return View();
         }
-        public IActionResult Product()
-        {
-            return View();
-        }
+     
         public IActionResult Register()
         {
             return View();

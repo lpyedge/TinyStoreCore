@@ -303,6 +303,7 @@
            },
            stockMultipleAction(action){
                var stockIds = _.map(this.stockSelected, 'stockId');
+               this.stockFilter.loading =true;
                UserApi('StockMultipleAction',{ stockIds:JSON.stringify(stockIds), action},true)
                .then((response)=> {
                      if (response.data.code === 1){ 

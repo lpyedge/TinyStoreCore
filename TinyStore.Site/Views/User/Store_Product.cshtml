@@ -1,0 +1,247 @@
+﻿<q-page padding>
+    <div class="text-h5 text-weight-bold text-grey-8">
+        <q-icon :name="storelinks[2].icon" size="md" class="on-left"></q-icon>{{storelinks[2].text}}
+    </div>
+    <q-separator class="q-my-md"></q-separator>
+    <div class="row q-gutter-xs q-mx-none q-my-sm">
+        <q-select outlined dense options-dense stack-label bg-color="white"
+                  style="min-width: 180px"
+                  label="分类"
+                  v-model="productFilter.category"
+                  emit-value
+                  map-options
+                  :options="productFilter.categoryOptions">
+        </q-select>
+        <q-input outlined dense stack-label bg-color="white"
+                 class="col-shrink"
+                 label="关键词"
+                 v-model="productFilter.keyname">
+            <template v-slot:prepend>
+                <q-icon name="fas fa-filter" color="primary" size="xs"/>
+            </template>
+        </q-input>
+        <q-toggle class="col-shrink" toggle-indeterminate v-model="productFilter.isShow" color="orange" :label="stockIsShowOptions[1].name" left-label></q-toggle>
+    </div>
+
+    <div class="row q-gutter-xs q-mx-none q-my-sm">
+        @* <q-btn class="q-mx-xs" color="primary" @@click="stockImportDialog = true"><q-icon class="on-left" size="xs" name="fas fa-file-import"></q-icon>导入</q-btn> *@
+        @* <q-btn class="q-mx-xs" color="primary" @@click="stockExport"><q-icon class="on-left" size="xs" name="fas fa-file-export"></q-icon>导出</q-btn> *@
+        <q-space ></q-space>
+        <q-btn-dropdown :disable-main-btn="productSelected.length === 0" color="warning" label="批量操作">
+            <q-list>
+                <q-item clickable v-close-popup @@click="productMultipleAction(0)">
+                    <q-item-section>
+                        <q-item-label><q-icon class="on-left" size="xs" name="delete_forever"></q-icon>删除</q-item-label>
+                    </q-item-section>
+                </q-item>
+
+                <q-item clickable v-close-popup @@click="productMultipleAction(1)">
+                    <q-item-section>
+                        <q-item-label><q-icon class="on-left" size="xs" :name="stockIsShowOptions[0].icon"></q-icon>{{stockIsShowOptions[0].name}}</q-item-label>
+                    </q-item-section>
+                </q-item>
+
+                <q-item clickable v-close-popup @@click="productMultipleAction(2)">
+                    <q-item-section>
+                        <q-item-label><q-icon class="on-left" size="xs" :name="stockIsShowOptions[1].icon"></q-icon>{{stockIsShowOptions[1].name}}</q-item-label>
+                    </q-item-section>
+                </q-item>
+            </q-list>
+        </q-btn-dropdown>
+    </div>
+    <q-table
+        :grid="!$q.platform.is.desktop"
+
+        row-key="productId"
+        :data="productData"
+        :columns="productColumns"
+
+        selection="multiple"
+        :selected.sync="productSelected"
+
+        :pagination.sync="productFilter.pagination"
+        :rows-per-page-options="[10, 25, 50, 100, 200]"
+        @@request="productListByFilter">
+        <template v-slot:body="props">
+            <q-tr :props="props">
+                <q-td>
+                    <q-checkbox v-model="props.selected"></q-checkbox>
+                </q-td>
+                <q-td key="name">
+                    <strong>{{ props.row.name }}</strong>
+                </q-td>
+                <q-td auto-width key="state">
+                    {{ void (isDeliveryIndex = props.row.isDelivery ? 1 : 0, isShowIndex = props.row.isShow ? 1 : 0) }}
+                    <q-icon size="sm" :name="stockIsShowOptions[isShowIndex].icon" :color="stockIsShowOptions[isShowIndex].color">
+                        <q-tooltip>
+                            {{ stockIsShowOptions[isShowIndex].name }}
+                        </q-tooltip>
+                    </q-icon>
+                    <q-icon size="sm" :name="stockIsDeliveryOptions[isDeliveryIndex].icon" :color="stockIsDeliveryOptions[isDeliveryIndex].color">
+                        <q-tooltip>
+                            {{ stockIsDeliveryOptions[isDeliveryIndex].name }}
+                        </q-tooltip>
+                    </q-icon>
+                </q-td>
+            </q-tr>
+        </template>
+        <template v-slot:item="props">
+            <div class="q-pa-xs col-xs-12 col-sm-6 col-md-4">
+                <q-card>
+                    <q-item dense>
+                        <q-item-section >
+                            <q-checkbox dense v-model="props.selected"></q-checkbox>
+                        </q-item-section>
+                        <q-item-section style="display: inline-block;text-align: right">
+                            <q-icon size="sm" :name="props.row.isShow?'play_circle_filled':'pause'" :color="props.row.isShow?'primary':'warning'">
+                                <q-tooltip>
+                                    {{ props.row.isShow?'上架':'下架' }}
+                                </q-tooltip>
+                            </q-icon>
+                            <q-icon size="sm" :name="props.row.isDelivery?'send':'card_travel'" :color="props.row.isDelivery?'warning':'primary'">
+                                <q-tooltip>
+                                    {{ props.row.isDelivery?'已售':'在库' }}
+                                </q-tooltip>
+                            </q-icon>
+                        </q-item-section>
+                    </q-item>
+                    <q-separator></q-separator>
+                    <q-card-section class="q-pa-xs">
+                        <strong>{{ props.row.name }}</strong>
+                    </q-card-section>
+                </q-card>
+            </div>
+        </template>
+    </q-table>
+</q-page>
+
+@* <q-dialog v-model="stockImportDialog"> *@
+@*     <q-card class="q-pb-md" style="max-width: 500px; width: 500px;"> *@
+@*         <q-card-section class="row items-center q-pb-none"> *@
+@*             卡密导入 *@
+@*             <q-space ></q-space> *@
+@*             <q-btn icon="close" flat round dense v-close-popup></q-btn> *@
+@*         </q-card-section> *@
+@*         <q-card-section class="q-gutter-sm"> *@
+@*             <q-input outlined dense stack-label bg-color="white" *@
+@*                      type="textarea" *@
+@*                      label="卡密数据" hint="格式： 每行一条卡密信息" *@
+@*                      v-model.trim="stockImportContent"> *@
+@*             </q-input> *@
+@*         </q-card-section> *@
+@*         <q-card-section> *@
+@*             <q-btn class="float-right" color="warning" icon="edit" label="保存" :disable="stockImportContent.length === 0" @@click="stockImport"></q-btn> *@
+@*             <q-toggle class="float-right" v-model="stockImportIsShow" color="orange" :label="stockIsShowOptions[1].name" left-label></q-toggle> *@
+@*             <q-toggle class="float-right" v-model="stockImportIsAllowRepeat" color="primary" label="允许重复" left-label></q-toggle> *@
+@*         </q-card-section> *@
+@*     </q-card> *@
+@* </q-dialog> *@
+
+@section Scripts{
+
+    <script src="https://cdn.staticfile.org/FileSaver.js/2.0.5/FileSaver.min.js"
+            asp-fallback-test="saveAs"
+            asp-fallback-src="~/lib/file-saver/dist/FileSaver.min.js"></script>
+
+    <script>
+   var _page = {
+       data:{
+           productFilter:{
+               keyname:'',
+               category:'',
+               categoryOptions:[],
+               isShow:null,
+               pagination:{                   
+                   page: 1,
+                   rowsPerPage: 25,
+                   rowsNumber:0,
+                   sortBy: 'name',
+                   descending: true,
+               },
+           },
+           productData:[],
+           productColumns:[
+               {
+                   align: 'left',
+                   name:'name',
+                   label:'名称',
+               },
+               {
+                   align: 'left',
+                   // format: (val, row) => `${row.isShow}`,
+                   name:'state',
+                   label:'状态'
+               },
+           ],
+           productSelected:[],
+           
+           stockImportDialog:false,
+           stockImportContent:'',
+           stockImportIsShow:true,
+           stockImportIsAllowRepeat:false,
+       },
+       beforeMount(){
+           UserApi('ProductList',{ storeId:this.storeCurrent.storeId },true)
+              .then((response)=> {
+                  if (response.data.code === 1){ 
+                      this.productList = response.data.data;
+                      this.productFilterReset();
+                  } else{
+                      Notify.Warning('商品数据加载失败');
+                  }
+              })
+              .catch( (error)=> {
+                  Notify.Warning('接口通信错误');
+                  console.error(error);
+              });
+       },
+       computed:{
+           
+       },
+       methods: {
+           productFilterReset(){
+               this.productFilter.keyname='';
+               this.productFilter.isShow=null;
+               this.productFilter.pagination.page =1;
+               this.productFilter.pagination.rowsPerPage =25;
+               
+               this.productFilter.categoryOptions.push({label:"全部*",value:''});
+               var datas = _.groupBy(this.productData, 'category');
+               for (var categoty in datas) {
+                   if(categoty){
+                       this.supplyFilter.categoryOptions.push({label:categoty,value:categoty});
+                   }
+               }
+           },
+           productMultipleAction(action){
+               var stockIds = _.map(this.productSelected, 'stockId');
+               UserApi('StockMultipleAction',{ stockIds:JSON.stringify(stockIds), action},true)
+               .then((response)=> {
+                     if (response.data.code === 1){ 
+                         //this.loadStockData();
+                     } else{
+                         Notify.Warning('操作执行失败');
+                     }
+                     this.productFilter.loading =false;
+                 })
+                 .catch( (error)=> {
+                     this.productFilter.loading =false;
+                     Notify.Warning('接口通信错误');
+                     console.error(error);
+                 });
+           },
+           productListByFilter(){
+               return _.filter(this.productData,(data)=>{
+                   if (this.productFilter.category){
+                        return data.category === this.productFilter.category && 
+                        (data.name.toLowerCase().indexOf(this.productFilter.keyname.toLowerCase()) > -1 || data.memo.toLowerCase().indexOf(this.productFilter.keyname.toLowerCase()) > -1);
+                   }
+                   return data.name.toLowerCase().indexOf(this.productFilter.keyname.toLowerCase()) > -1 || data.memo.toLowerCase().indexOf(this.productFilter.keyname.toLowerCase()) > -1;
+               });
+           },
+       }
+   };
+   DeepMerge(_layout,_page);
+   new Vue(_layout);
+    </script>
+}

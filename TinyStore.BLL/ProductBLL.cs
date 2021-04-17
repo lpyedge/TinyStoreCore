@@ -34,12 +34,21 @@ namespace TinyStore.BLL
         {
             return QueryModel(p => p.ProductId == productId);
         }
-        
-        public static PageList<Model.ProductModel> QueryPageListByStoreId(string storeId, int pageindex, int pagesize)
+        public static List<Model.ProductModel> QueryListByStoreId(string storeId)
         {
-            return QueryPageList(pageindex, pagesize, p => p.StoreId == storeId, SortAsc);
+            return QueryList(-1, p=>p.StoreId == storeId, SortAsc);
         }
-        
+        public static List<Model.ProductModel> QueryListBySearch(string storeId, string category,
+            string keyname, int pageindex, int pagesize)
+        {
+            var where = SqlSugar.Expressionable.Create<Model.ProductModel>()
+                .And(p => p.StoreId == storeId)
+                .AndIF(!string.IsNullOrWhiteSpace(category), p => p.Category == category)
+                .AndIF(!string.IsNullOrWhiteSpace(keyname), p => p.Name.Contains(keyname) || p.Memo.Contains(keyname));
+
+            return QueryList(-1, where.ToExpression(), SortAsc);
+        }
+
         public static List<Model.ProductModel> QueryListByStoreIdShow(string storeId)
         {
             List<Model.ProductModel> data;
@@ -49,12 +58,12 @@ namespace TinyStore.BLL
                     .Where(p => p.StoreId == storeId && p.IsShow == true)
                     .OrderBy(p => p.Sort, SqlSugar.OrderByType.Asc)
                     .ToList();
-                
+
                 foreach (var item in data.Where(p => p.DeliveryType != EDeliveryType.卡密))
                 {
                     item.StockNumber = -1;
                 }
-                
+
                 if (data.Count > 0)
                 {
                     var ids = data.Where(p => p.DeliveryType == EDeliveryType.卡密).Select(p => p.SupplyId).ToList();
@@ -66,7 +75,7 @@ namespace TinyStore.BLL
                             .Select(p => new
                                 {SupplyId = p.SupplyId, StockNumber = SqlSugar.SqlFunc.AggregateCount(p.StockId)})
                             .ToList();
-                        
+
                         foreach (var item in data.Where(p => p.DeliveryType == EDeliveryType.卡密))
                         {
                             var stockCount = list.FirstOrDefault(x => x.SupplyId == item.ProductId);
@@ -75,7 +84,7 @@ namespace TinyStore.BLL
                     }
                 }
             }
-        
+
             return data;
         }
 
