@@ -62,5 +62,14 @@
     "dist/jsQR.min.js"
   ]
 }
+,
+{
+  "provider": "jsdelivr",
+  "library": "file-saver@2.0.5",
+  "destination": "wwwroot/lib/file-saver/",
+  "files": [
+    "dist/FileSaver.min.js"
+  ]
+}
 ]
 }

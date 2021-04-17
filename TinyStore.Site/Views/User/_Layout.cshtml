@@ -167,6 +167,14 @@
              {icon:'vpn_key',name:'卡密',color:'primary',value:1},
              {icon:'pan_tool',name:'人工',color:'primary',value:2},
              {icon:'device_hub',name:'接口',color:'primary',value:3},
+         ],
+         stockIsDeliveryOptions:[
+            { icon:'card_travel',name:'在库',color:'primary',value :false},
+            { icon:'send',name:'已售',color:'warning',value :true},
+         ],
+         stockIsShowOptions:[
+             { icon:'pause',name:'下架',color:'warning',value :false},
+             { icon:'play_circle_filled',name:'上架',color:'primary',value :true},
          ]
      },
      beforeCreate(){

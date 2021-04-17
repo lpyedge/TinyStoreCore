@@ -63,7 +63,7 @@ namespace TinyStore.Site.Controllers.Api
                     var order = new Model.OrderModel
                     {
                         Amount = price * Quantity,
-                        ClientIP = SiteContext.RequestInfo._ClientIP(Request).ToString(),
+                        ClientIP = Utils.RequestInfo._ClientIP(Request).ToString(),
                         Contact = Contact,
                         Cost = product.Cost * Quantity,
                         CreateDate = DateTime.Now,

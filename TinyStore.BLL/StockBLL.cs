@@ -44,11 +44,25 @@ namespace TinyStore.BLL
                 SortCreateDateDescAndIsUsedAsc);
         }
 
-        public static PageList<Model.StockModel> QueryPageListBySupplyId(string supplyId, int userId, bool isshow,
+        public static PageList<Model.StockModel> QueryPageListByUserSearch(string supplyId, int userId, string keyname,bool? isshow,
             int pageindex, int pagesize)
         {
-            return QueryPageList(pageindex, pagesize,
-                p => p.SupplyId == supplyId && p.UserId == userId && p.IsShow == isshow,
+            var exp = SqlSugar.Expressionable.Create<Model.StockModel>()
+                .And(p => p.SupplyId == supplyId && p.UserId == userId)
+                .AndIF(isshow != null, p => p.IsShow == (bool) isshow)
+                .AndIF(!string.IsNullOrWhiteSpace(keyname), p => p.Name.Contains(keyname) || p.Memo.Contains(keyname));
+
+            return QueryPageList(pageindex, pagesize, exp.ToExpression(),
+                SortDeliveryDateDescAndIsUsedAsc);
+        }
+        public static List<Model.StockModel> QueryListByUserSearch(string supplyId, int userId, string keyname,bool? isshow)
+        {
+            var exp = SqlSugar.Expressionable.Create<Model.StockModel>()
+                .And(p => p.SupplyId == supplyId && p.UserId == userId)
+                .AndIF(isshow != null, p => p.IsShow == (bool) isshow)
+                .AndIF(!string.IsNullOrWhiteSpace(keyname), p => p.Name.Contains(keyname) || p.Memo.Contains(keyname));
+
+            return QueryList(-1, exp.ToExpression(),
                 SortDeliveryDateDescAndIsUsedAsc);
         }
 

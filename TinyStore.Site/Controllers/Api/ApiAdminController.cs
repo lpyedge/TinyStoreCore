@@ -29,7 +29,7 @@ namespace TinyStore.Site.Controllers.Api
                 AdminLogType = type,
                 AdminId = adminId,
                 CreateDate = DateTime.Now,
-                ClientIP = SiteContext.RequestInfo._ClientIP(request).ToString(),
+                ClientIP = Utils.RequestInfo._ClientIP(request).ToString(),
                 UserAgent = request.Headers["User-Agent"].ToString(),
                 AcceptLanguage = request.Headers["Accept-Language"].ToString(),
                 Memo = memo,
