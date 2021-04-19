@@ -148,5 +148,9 @@ namespace TinyStore.BLL
         //         .AndIF(!string.IsNullOrWhiteSpace(category), p => p.Category == category);
         //     return QueryList(-1, where.ToExpression(), SortAsc);
         // }
+        public static void DeleteByIdsAndUserId(List<string> ids,string sotreId)
+        {
+            Delete(p => ids.Contains(p.ProductId) && p.StoreId == sotreId);
+        }
     }
 }

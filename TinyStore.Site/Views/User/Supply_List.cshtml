@@ -11,9 +11,10 @@
             content-class="text-h5"
             align="left"
             narrow-indicator
+            inline-label
             v-model="supplyType">
-            <q-tab name="system" label="系统货源"></q-tab>
-            <q-tab name="custom" label="自定义货源"></q-tab>
+            <q-tab :icon="supplyTypeOptions[0].icon" :name="supplyTypeOptions[0].value" :label="supplyTypeOptions[0].name + '货源'"></q-tab>
+            <q-tab :icon="supplyTypeOptions[1].icon" :name="supplyTypeOptions[1].value" :label="supplyTypeOptions[1].name + '货源'"></q-tab>
         </q-tabs>
         <q-toolbar class="col-xs-12 col-md-auto">
             <q-select outlined dense options-dense stack-label bg-color="white"
@@ -25,6 +26,7 @@
                     :options="supplyFilter.categoryOptions">
             </q-select>
             <q-input outlined dense stack-label bg-color="white"
+                     clearable
                      class="on-right"
                      label="关键词"
                      v-model="supplyFilter.keyname">
@@ -38,10 +40,10 @@
         <q-card class="col-auto" bordered v-for="(item,i) in supplyListByFilter()">
             <q-item class="q-pa-xs" style="height:3rem;">
                 <q-item-section >
-                    <q-item-label class="text-subtitle1">
+                    <q-item-label class="text-subtitle1" :lines="1">
                         {{item.name}}
                     </q-item-label>
-                    <q-item-label caption>
+                    <q-item-label caption :lines="1">
                         {{item.category}}
                         <q-icon class="float-right" color="primary" :name="deliveryTypeOption(item.deliveryType).icon">
                             <q-tooltip>{{deliveryTypeOption(item.deliveryType).name}}</q-tooltip>
@@ -84,7 +86,7 @@
         <q-card-section class="q-gutter-sm">
             <q-input outlined dense stack-label bg-color="white"
                      label="商品名称"
-                     :readonly="supplyCurrent.userId !== userExtend.userId"
+                     :readonly="supplyDialogReadonly"
                      v-model.trim="supplyCurrent.name"
                      ref="supplyCurrent_name"
                      :rules="[val => !!val || '必须输入商品名称',val => val.length <= 10 || '商品名称长度限制10位']">
@@ -94,7 +96,7 @@
                           class="col"
                           label="商品分类"
                           use-input hide-selected fill-input @@input-value="createCategory"
-                          :readonly="supplyCurrent.userId !== userExtend.userId"
+                          :readonly="supplyDialogReadonly"
                           v-model.trim="supplyCurrent.category"
                           emit-value
                           map-options
@@ -104,7 +106,7 @@
                 <q-select outlined dense options-dense stack-label bg-color="white"
                           class="col"
                           label="发货方式"
-                          :readonly="supplyCurrent.userId !== userExtend.userId"
+                          :readonly="supplyDialogReadonly"
                           v-model="supplyCurrent.deliveryType"
                           emit-value
                           map-options
@@ -137,7 +139,7 @@
                          class="col"
                          label="面值"
                          hint="建议零售价"
-                         :readonly="supplyCurrent.userId !== userExtend.userId"
+                         :readonly="supplyDialogReadonly"
                          v-model.number="supplyCurrent.faceValue"
                          ref="supplyCurrent_faceValue"
                          :rules="[val => !!val || '必须输入面值']">
@@ -147,7 +149,7 @@
                          class="col"
                          label="成本"
                          hint="结算价格"
-                         :readonly="supplyCurrent.userId !== userExtend.userId"
+                         :readonly="supplyDialogReadonly"
                          v-model.number="supplyCurrent.cost"
                          ref="supplyCurrent_cost"
                          :rules="[val => !!val || '必须输入成本']">
@@ -156,7 +158,7 @@
             <q-input outlined dense stack-label bg-color="white"
                      autogrow
                      label="商品说明"
-                     :readonly="supplyCurrent.userId !== userExtend.userId"
+                     :readonly="supplyDialogReadonly"
                      v-model.trim="supplyCurrent.memo">
             </q-input>
         </q-card-section>
@@ -185,7 +187,6 @@
            supplyCurrent:{},
            supplyIndex:-2,//默认 -2 新增 -1 其他 索引值
            supplyDialog:false,
-           btnSaveLoading:false,
        },
        beforeMount(){
            UserApi("SupplyList",{},true)
@@ -211,7 +212,9 @@
              },
         },
        computed:{
-           
+           supplyDialogReadonly(){
+               return this.supplyCurrent.userId !== this.userExtend.userId;
+           }
        },
        methods: {
            createCategory(val){
@@ -220,7 +223,10 @@
            supplyFilterReset(){
                this.supplyFilter.keyname='';
                this.supplyFilter.category='';
+               
                this.supply.categoryOptions = [];
+               this.supplyFilter.categoryOptions = [];
+               
                this.supplyFilter.categoryOptions.push({label:"全部*",value:''});
                var datas = _.groupBy(this.supply[this.supplyType], 'category');
                for (var categoty in datas) {
@@ -232,11 +238,17 @@
            },
            supplyListByFilter(){
                return _.filter(this.supply[this.supplyType],(data)=>{
+                   var res = true;
                    if (this.supplyFilter.category){
-                        return data.category === this.supplyFilter.category && 
-                        (data.name.toLowerCase().indexOf(this.supplyFilter.keyname.toLowerCase()) > -1 || data.memo.toLowerCase().indexOf(this.supplyFilter.keyname.toLowerCase()) > -1);
+                        res = res && data.category === this.supplyFilter.category ;
                    }
-                   return data.name.toLowerCase().indexOf(this.supplyFilter.keyname.toLowerCase()) > -1 || data.memo.toLowerCase().indexOf(this.supplyFilter.keyname.toLowerCase()) > -1;
+                   var keyname = ''
+                   if (this.supplyFilter.keyname)
+                       keyname = this.supplyFilter.keyname.trim().toLowerCase();
+                   if (keyname){
+                       res = res && (data.name.toLowerCase().indexOf(keyname) > -1 || data.memo.toLowerCase().indexOf(keyname) > -1)
+                   }
+                   return res;
                });
            },
            supplyDialogShow(i){
@@ -299,7 +311,7 @@
               })
            },
            supplyListAutoSave(){
-               UserApi("SupplyCustomSave", this.supply.custom)
+               UserApi("SupplyListSave", this.supply.custom)
                   .then((response)=> {
                       if (response.data.code === 1){ 
                           this.supply.custom = response.data.data.supplyCustom;

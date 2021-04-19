@@ -11,6 +11,7 @@
                   v-model="stockFilter.supplyCurrent"
                   :options="stockFilter.supplyCustom">
             <template v-slot:selected-item="scope">
+                <q-icon :name="supplyTypeOptions[1].icon" :color="supplyTypeOptions[1].color"></q-icon>
                 {{ scope.opt.name }}
                 <q-badge outline class="on-right" color="primary" v-if="scope.opt.category">
                     {{ scope.opt.category }}
@@ -21,6 +22,7 @@
                     v-bind="scope.itemProps"
                     v-on="scope.itemEvents">
                     <div>
+                        <q-icon :name="supplyTypeOptions[1].icon" :color="supplyTypeOptions[1].color"></q-icon>
                         {{ scope.opt.name }}
                         <q-badge outline class="on-right" color="primary" v-if="scope.opt.category">
                             {{ scope.opt.category }}
@@ -30,6 +32,7 @@
             </template>
         </q-select>
         <q-input outlined dense stack-label bg-color="white"
+                 clearable
                  class="col-shrink"
                  label="关键词"
                  v-model="stockFilter.keyname">
@@ -181,8 +184,6 @@
                    page: 1,
                    rowsPerPage: 25,
                    rowsNumber:0,
-                   sortBy: 'name',
-                   descending: true,
                },
            },
            stockData:[],
