@@ -59,10 +59,10 @@ namespace TinyStore.Model
         /// </summary>
         public int Quantity { get; set; }
 
-        /// <summary>
-        ///折扣
-        /// </summary>
-        public double Discount { get; set; }
+        // /// <summary>
+        // ///折扣
+        // /// </summary>
+        // public double Discount { get; set; }
 
         /// <summary>
         ///进货成本
@@ -103,28 +103,24 @@ namespace TinyStore.Model
         /// </summary>
         [SqlSugar.SugarColumn(Length = 100)]
         public string TranId { get; set; }
-
-        /// <summary>
-        ///到账金额-notify过来的金额
-        /// </summary>
-        public double Income { get; set; }
-
+        
         /// <summary>
         ///发货日期
         /// </summary>
         public DateTime DeliveryDate { get; set; }
 
         /// <summary>
-        ///联系方式 QQ或电话
+        ///联系方式 邮箱 或 电话
+        /// 用于发送卡密，默认邮箱
         /// </summary>
         [SqlSugar.SugarColumn(Length = 100)]
         public string Contact { get; set; }
 
         /// <summary>
-        ///通知账户 电话或邮箱，用来给客户发卡密
+        ///用户留言 一般留下qq或者其他即时联系方式
         /// </summary>
         [SqlSugar.SugarColumn(Length = 100)]
-        public string NoticeAccount { get; set; }
+        public string Message { get; set; }
 
         /// <summary>
         ///支付方式费用
@@ -170,6 +166,17 @@ namespace TinyStore.Model
         /// </summary>
         public DateTime SettleDate { get; set; }
 
+        /// <summary>
+        /// 最后变更状态时间
+        /// </summary>
+        [SqlSugar.SugarColumn(IndexGroupNameList = new[] {"LastUpdateDate"})]
+        public DateTime LastUpdateDate { get; set; }
+        
+        
+        /// <summary>
+        /// 提醒时间 用于续费提醒
+        /// </summary>
+        public DateTime NotifyDate { get; set; }
 
 
         [SugarColumn(IsIgnore = true)] 
@@ -177,12 +184,6 @@ namespace TinyStore.Model
 
         [SugarColumn(IsIgnore = true)] 
         public string StoreUniqueId { get; set; }
-
-        /// <summary>
-        /// 最后变更状态时间
-        /// </summary>
-        [SqlSugar.SugarColumn(IndexGroupNameList = new[] {"LastUpdateDate"})]
-        public DateTime LastUpdateDate { get; set; }
 
 
         [SugarColumn(IsIgnore = true)]

@@ -251,43 +251,47 @@ namespace TinyStore.Site
             });
             BLL.OrderBLL.Insert(new OrderModel()
             {
+                Name = "QQ币",
+                Memo = "请留下您的QQ号码方便我们来充值",
                 OrderId = "test",
-                StoreId = "StoreId",
                 UserId = 1,
-                ProductId = "ProductId",
+                StoreId = "StoreId",
                 SupplyId = "SupplyId",
+                ProductId = "ProductId",
+                
                 Amount = 18,
                 Quantity = 2,
                 Cost = 10,
-                Discount = 1,
-                Memo = "请留下您的QQ号码方便我们来充值",
-                Name = "QQ币",
-                AcceptLanguage = "",
-                UserAgent = "",
+                
                 CreateDate = DateTime.Now,
+                
+                
                 IsDelivery = false,
                 DeliveryDate = DateTime.Now,
+                StockList = new List<StockOrder>(),
 
                 IsPay = false,
-                Income = 0,
                 PaymentFee = 0,
                 PaymentType = "alipay",
                 TranId = "123456",
 
-                ReturnAmount = 0,
-                ReturnDate = DateTime.Now,
 
+
+                ClientIP = "127.0.0.1",
+                AcceptLanguage = "",
+                UserAgent = "",
+                
+                //客户输入数据
+                Message = "100088",
+                Contact = "test@qq.com",
 
                 IsSettle = false,
                 SettleDate = DateTime.Now,
-                ClientIP = "127.0.0.1",
                 
-                //客户输入数据
-                NoticeAccount = "test@qq.com",
-                Contact = "110110",
-
+                ReturnAmount = 0,
+                ReturnDate = DateTime.Now,
+                
                 LastUpdateDate = DateTime.Now,
-                StockList = new List<StockOrder>()
             });
         }
 
@@ -802,7 +806,6 @@ namespace TinyStore.Site
                         {
                             order.TranId = txnId;
                             order.IsPay = true;
-                            order.Income = incomme;
                             order.LastUpdateDate = DateTime.Now;
                             //if (order.IsNeedEmail2Supplyer)
                             //    order.SupplyerCode = Global.Generator.Password(); //8位有效数字
@@ -825,7 +828,6 @@ namespace TinyStore.Site
                 var store = BLL.StoreBLL.QueryModelByStoreId(order.StoreId);
                 if (store != null)
                 {
-                    order.Income = order.Amount;
                     var product = BLL.ProductBLL.QueryModelByProductIdAndStoreId(order.ProductId, order.StoreId);
                     var liststock = new List<Model.Extend.StockOrder>();
                     if (product != null)
@@ -928,9 +930,9 @@ namespace TinyStore.Site
 
                     msg_email = msg_email.Replace("{AddTemplate}", addtemplate);
                     var product = BLL.ProductBLL.QueryModelByProductIdAndStoreId(order.ProductId, order.StoreId);
-                    if (order.NoticeAccount.Contains("@"))
+                    if (order.Contact.Contains("@"))
                     {
-                        SiteContext.Email.Send(order.NoticeAccount,
+                        SiteContext.Email.Send(order.Contact,
                             store.Name + " 已收到你的订单（" + order.OrderId + "），欢迎您再次购买！", msg_email);
                     }
 
@@ -942,8 +944,8 @@ namespace TinyStore.Site
                     if (order.Quantity > 0)
                         msg_email += "售出份数:" + order.Quantity + "<br/><br/>";
                     msg_email += "销售金额:￥" + order.Amount.ToString("f2") + "<br/><br/>";
-                    msg_email += "买家" + (order.NoticeAccount.Contains("@") ? "邮箱" : "手机号") + ":" +
-                                 order.NoticeAccount + "<br/><br/>";
+                    msg_email += "买家" + (order.Contact.Contains("@") ? "邮箱" : "手机号") + ":" +
+                                 order.Contact + "<br/><br/>";
                     msg_email += "买家联系方式:" + order.Contact + "<br/><br/>";
                     if (order.StockList.Count > 0)
                     {

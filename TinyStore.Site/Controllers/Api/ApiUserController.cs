@@ -578,7 +578,47 @@ namespace TinyStore.Site.Controllers
 
             return ApiResult.RData(productData);
         }
+        
+        [HttpPost]
+        public IActionResult OrderPageList([FromForm] string storeId,[FromForm] string productId, 
+            [FromForm] string from, [FromForm] string to,
+            [FromForm] string keyname,[FromForm] string isPay, [FromForm] string isDelivery,
+            [FromForm] int pageIndex, [FromForm] int pageSize)
+        {
+            var user = UserCurrent(storeId, out Model.StoreModel store);
+            if (store == null)
+                return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
+            
+            bool? outIsPay = null;
+            if (bool.TryParse(isPay, out bool tempIsPay))
+            {
+                outIsPay = tempIsPay;
+            }  
+            
+            bool? outIsDelivery = null;
+            if (bool.TryParse(isDelivery, out bool tempIsDelivery))
+            {
+                outIsDelivery = tempIsDelivery;
+            }
 
+            DateTime? dateFrom = null;
+            if (DateTime.TryParse(from, out DateTime tempdateFrom))
+            {
+                dateFrom = tempdateFrom;
+            }  
+            
+            DateTime? dateTo = null;
+            if (DateTime.TryParse(to, out DateTime tempdateTo ))
+            {
+                dateTo = tempdateTo.AddDays(1) ;
+            }
+            
+            var res = BLL.OrderBLL.QueryPageListBySearch(store.StoreId, productId,dateFrom,dateTo, keyname,outIsPay, outIsDelivery, pageIndex, pageSize);
+            
+            return ApiResult.RData(res);
+        }
+        
+        
         public IActionResult Register([FromForm] string account, [FromForm] string password, [FromForm] string qq,
             [FromForm] string email, [FromForm] string telphone)
         {
@@ -648,41 +688,6 @@ namespace TinyStore.Site.Controllers
             return ApiResult.RCode("");
         }
 
-
-        public IActionResult OrderPageList([FromForm] string storeId, [FromForm] DateTime begin,
-            [FromForm] DateTime end, [FromForm] int state, [FromForm] int keykind, [FromForm] string key,
-            [FromForm] bool ishasreturn, [FromForm] int timetype, [FromForm] int pageIndex, [FromForm] int pageSize)
-        {
-            var user = UserCurrent(storeId, out Model.StoreModel store);
-            if (store != null)
-                return ApiResult.RCode("未知错误");
-            
-            begin = begin.Date;
-            end = end.Date.AddDays(1).AddSeconds(-1);
-
-            if (state == (int) EState.客户下单 && timetype == (int) EOrderTimeType.付款日期)
-            {
-                return ApiResult.RData(new GridData<Model.OrderModel>(new List<Model.OrderModel>(), 0, new
-                {
-                    Income = 0,
-                    ReturnAmount = 0,
-                    Cost = 0,
-                    CostNoClose = 0,
-                    PaymentFee = -0,
-                    //PaymentFeeReturn = paymentfeereturn,
-                    //ProfitGross = profilegross,
-                    Profit = 0
-                }));
-            }
-
-            var orderstat = OrderListStat(BLL.OrderBLL.QueryList(begin, end, state, keykind, key, store.StoreId,
-                ishasreturn, (EOrderTimeType) timetype));
-
-            var res = BLL.OrderBLL.QueryPageList(begin, end, state, keykind, key, store.StoreId, ishasreturn,
-                (EOrderTimeType) timetype, pageIndex, pageSize);
-            return ApiResult.RData(new GridData<Model.OrderModel>(res.Rows, (int) res.Total, orderstat));
-        }
-
         public dynamic OrderListStat(List<Model.OrderModel> orders)
         {
             double incomme = 0,
@@ -694,10 +699,10 @@ namespace TinyStore.Site.Controllers
                 //profilegross = 0,
                 profit = 0;
 
-            foreach (var item in orders.Where(p => p.IsPay && p.Income > 0))
+            foreach (var item in orders.Where(p => p.IsPay))
             {
                 //实际收款(退款金额)
-                incomme += item.Income;
+                incomme += item.Amount;
                 returnamount += item.ReturnAmount;
                 //合计成本(待结算)
                 cost += item.Cost + item.PaymentFee;
@@ -706,7 +711,7 @@ namespace TinyStore.Site.Controllers
                 //手续费(退款返还)
                 paymentfee += item.PaymentFee;
                 //毛利润（总收入-总支出） //纯利润（毛利润-总手续费）
-                profit += item.Income - item.ReturnAmount - item.Cost - item.PaymentFee;
+                profit += item.Amount - item.ReturnAmount - item.Cost - item.PaymentFee;
             }
 
             return new
@@ -726,7 +731,7 @@ namespace TinyStore.Site.Controllers
             [FromForm] string storeId)
         {
             var user = UserCurrent(storeId, out Model.StoreModel store);
-            if (store != null)
+            if (store == null)
                 return ApiResult.RCode("未知错误");
 
             var res = BLL.OrderBLL.QueryPageListIsPaidByStoreId(store.StoreId, pageIndex, pageSize);
@@ -738,7 +743,7 @@ namespace TinyStore.Site.Controllers
             [FromForm] int pageSize)
         {
             var user = UserCurrent(storeId, out Model.StoreModel store);
-            if (store != null)
+            if (store == null)
                 return ApiResult.RCode("未知错误");
 
             var orderstat =
@@ -753,7 +758,7 @@ namespace TinyStore.Site.Controllers
         public IActionResult OrderInsert([FromForm] string storeId, [FromForm] string order)
         {
             var user = UserCurrent(storeId, out Model.StoreModel store);
-            if (store != null)
+            if (store == null)
                 return ApiResult.RCode("未知错误");
             if (!string.IsNullOrWhiteSpace(order))
                 return ApiResult.RCode("传参错误");
@@ -778,8 +783,11 @@ namespace TinyStore.Site.Controllers
             else if (orderMpdel.Quantity < product.QuantityMin)
                 return ApiResult.RCode("下单数量不能小于最小下单量");
 
-            if (string.IsNullOrEmpty(orderMpdel.NoticeAccount))
-                return ApiResult.RCode("手机号或电子邮箱不能为空");
+            if (string.IsNullOrEmpty(orderMpdel.Contact))
+                return ApiResult.RCode("电子邮箱不能为空");
+            
+            // if (string.IsNullOrEmpty(orderMpdel.Message))
+            //     return ApiResult.RCode("留言信息不能为空");
 
             Model.Extend.Payment payment = store.PaymentList.FirstOrDefault(p =>
                 p.IsEnable && string.Equals(p.Name, orderMpdel.PaymentType, StringComparison.OrdinalIgnoreCase));
@@ -791,7 +799,7 @@ namespace TinyStore.Site.Controllers
                 return ApiResult.RCode("交易编号已存在");
             //var price = product.Amount;
             double discount = 0;
-            var orderfee = orderMpdel.NoticeAccount.Contains("@") ? 0 : 0;
+            var orderfee = orderMpdel.Contact.Contains("@") ? 0 : 0;
             // var supplier = string.IsNullOrEmpty(product.SupplierId)
             //     ? null
             //     : BLL.SupplierBLL.QueryModelBySId(product.SupplierId);
@@ -803,34 +811,45 @@ namespace TinyStore.Site.Controllers
 
             var data = new Model.OrderModel
             {
+                OrderId = Global.Generator.DateId(2),
+                UserId = user.UserId,
+                StoreId = store.StoreId,
+                SupplyId = product.SupplyId,
+                ProductId = product.ProductId,
+                Name = product.Name,
+                Memo = product.Memo,
+                
+                Quantity = orderMpdel.Quantity,
                 Amount = orderMpdel.Amount,
-                ClientIP = ip,
-                Contact = orderMpdel.Contact,
                 Cost = product.Cost * orderMpdel.Quantity,
                 CreateDate = orderMpdel.CreateDate,
-                Discount = discount,
-                Income = string.IsNullOrEmpty(orderMpdel.TranId) ? 0 : orderMpdel.Amount,
+                //Discount = discount,
+                //Income = string.IsNullOrEmpty(orderMpdel.TranId) ? 0 : orderMpdel.Amount,
+                
                 IsPay = orderMpdel.IsPay,
                 IsDelivery = orderMpdel.IsPay && orderMpdel.IsDelivery,
-                Memo = product.Memo,
-                Name = product.Name,
-                NoticeAccount = orderMpdel.NoticeAccount,
-                OrderId = Global.Generator.DateId(2),
+                
                 PaymentFee = orderMpdel.Amount * payment.Rate,
                 PaymentType = payment.Name,
-                ProductId = product.ProductId,
-                Quantity = orderMpdel.Quantity,
-                ReturnAmount = 0,
-                ReturnDate = DateTime.Now,
+                
                 DeliveryDate = DateTime.Now,
                 StockList = new List<StockOrder>(),
-                StoreId = store.StoreId,
                 TranId = orderMpdel.IsPay ? orderMpdel.TranId : string.Empty,
+                
+                
+                
+                Contact = orderMpdel.Contact,
+                Message = orderMpdel.Message,
+                ClientIP = ip,
                 UserAgent = useragent,
                 AcceptLanguage = acceptlanguage,
+                 
                 IsSettle = false,
                 SettleDate = DateTime.Now,
-                SupplyId = product.SupplyId,
+                
+                ReturnAmount = 0,
+                ReturnDate = DateTime.Now,
+                
                 LastUpdateDate = DateTime.Now,
             };
 
@@ -845,7 +864,7 @@ namespace TinyStore.Site.Controllers
         public IActionResult OrderDelivery([FromForm] string storeId, [FromForm] string orderId) // 保存了两次订单
         {
             var user = UserCurrent(storeId, out Model.StoreModel store);
-            if (store != null)
+            if (store == null)
                 return ApiResult.RCode("未知错误");
 
             if (string.IsNullOrEmpty(orderId))
@@ -868,7 +887,7 @@ namespace TinyStore.Site.Controllers
         public IActionResult OrderEmail([FromForm] string storeId, [FromForm] string orderId)
         {
             var user = UserCurrent(storeId, out Model.StoreModel store);
-            if (store != null)
+            if (store == null)
                 return ApiResult.RCode("未知错误");
 
             if (string.IsNullOrEmpty(orderId))
@@ -890,14 +909,14 @@ namespace TinyStore.Site.Controllers
             [FromForm] double costUpdate, [FromForm] double returnAmount)
         {
             var user = UserCurrent(storeId, out Model.StoreModel store);
-            if (store != null)
+            if (store == null)
                 return ApiResult.RCode("未知错误");
             if (string.IsNullOrEmpty(orderId))
                 return ApiResult.RCode("订单ID不能为空");
             var order = BLL.OrderBLL.QueryModelByOrderIdAndStoreId(orderId, store.StoreId);
             if (order == null)
                 return ApiResult.RCode("订单不存在");
-            if (order.Income < returnAmount)
+            if (order.Amount < returnAmount)
                 return ApiResult.RCode("退款金额应不大于到账金额");
             if (!order.IsPay)
                 return ApiResult.RCode("订单尚未付款，不能操作");
@@ -930,7 +949,7 @@ namespace TinyStore.Site.Controllers
         public IActionResult OrderUpdateIsSettle([FromForm] string storeId, [FromForm] string orderIds)
         {
             var user = UserCurrent(storeId, out Model.StoreModel store);
-            if (store != null)
+            if (store == null)
                 return ApiResult.RCode("未知错误");
             if (string.IsNullOrWhiteSpace(orderIds))
                 return ApiResult.RCode("订单编号错误");
@@ -947,7 +966,7 @@ namespace TinyStore.Site.Controllers
             [FromForm] int pagesize, [FromForm] int userLogType, [FromForm] DateTime begin, [FromForm] DateTime end)
         {
             var user = UserCurrent(storeId, out Model.StoreModel store);
-            if (store != null)
+            if (store == null)
                 return ApiResult.RCode("未知错误");
 
             begin = begin.Date;
@@ -963,7 +982,7 @@ namespace TinyStore.Site.Controllers
 // public IActionResult SupplierList([FromForm] string StoreId)
 // {
 //     var user = User(StoreId, out Model.Store store);
-//     if (store != null)
+//     if (store == null)
 //         return ApiResult.RCode("未知错误");
 //
 //     return new JsonResult(Api.UserApi.Supplier.GetAllList(store));
@@ -976,7 +995,7 @@ namespace TinyStore.Site.Controllers
             [FromForm] string category)
         {
             var user = UserCurrent(storeId, out Model.StoreModel store);
-            if (store != null)
+            if (store == null)
                 return ApiResult.RCode("未知错误");
             if (string.IsNullOrWhiteSpace(ids))
                 return ApiResult.RCode("商品编号错误");
@@ -1017,7 +1036,7 @@ namespace TinyStore.Site.Controllers
         public IActionResult ProductSave([FromForm] string storeId, [FromForm] string product)
         {
             var user = UserCurrent(storeId, out Model.StoreModel store);
-            if (store != null)
+            if (store == null)
                 return ApiResult.RCode("未知错误");
 
 
@@ -1077,7 +1096,7 @@ namespace TinyStore.Site.Controllers
         public IActionResult ProductDelete([FromForm] string storeId, [FromForm] string productId)
         {
             var user = UserCurrent(storeId, out Model.StoreModel store);
-            if (store != null)
+            if (store == null)
                 return ApiResult.RCode("未知错误");
 
             if (string.IsNullOrEmpty(productId))
@@ -1095,7 +1114,7 @@ namespace TinyStore.Site.Controllers
             [FromForm] bool isShow)
         {
             var user = UserCurrent(storeId, out Model.StoreModel store);
-            if (store != null)
+            if (store == null)
                 return ApiResult.RCode("未知错误");
 
 
@@ -1123,7 +1142,7 @@ namespace TinyStore.Site.Controllers
             [FromForm] int pagesize)
         {
             var user = UserCurrent(storeId, out Model.StoreModel store);
-            if (store != null)
+            if (store == null)
                 return ApiResult.RCode("未知错误");
 
             begin = begin.Date;
@@ -1215,7 +1234,7 @@ namespace TinyStore.Site.Controllers
         public IActionResult ProductListIsStock([FromForm] string storeId, [FromForm] string category)
         {
             var user = UserCurrent(storeId, out Model.StoreModel store);
-            if (store != null)
+            if (store == null)
                 return ApiResult.RCode("未知错误");
             return ApiResult.RData(BLL.ProductBLL
                 .QueryListByCategoryIdAndStoreIdIsStock(category, store.StoreId));
@@ -1226,7 +1245,7 @@ namespace TinyStore.Site.Controllers
 //     [FromForm] int Pagesize)
 // {
 //     var user = User(StoreId, out Model.Store store);
-//     if (store != null)
+//     if (store == null)
 //         return ApiResult.RCode("未知错误");
 //     return new JsonResult(Api.UserApi.Supplier.GetPageList(user, StoreId, PageIndex, Pagesize));
 // }
@@ -1236,7 +1255,7 @@ namespace TinyStore.Site.Controllers
 //     [FromForm] double Feerate)
 // {
 //     var user = User(StoreId, out Model.Store store);
-//     if (store != null)
+//     if (store == null)
 //         return ApiResult.RCode("未知错误");
 //     if (string.IsNullOrEmpty(Name))
 //         return ApiResult.RCode("供货商名称不能为空");
@@ -1291,7 +1310,7 @@ namespace TinyStore.Site.Controllers
 // public IActionResult SupplierDelete([FromForm] string StoreId, [FromForm] string Sid)
 // {
 //     var user = User(StoreId, out Model.Store store);
-//     if (store != null)
+//     if (store == null)
 //         return ApiResult.RCode("未知错误");
 //     return new JsonResult(Api.UserApi.Supplier.Delete(user, StoreId, Sid,
 //         SiteContext.RequestInfo._ClientIP(HttpContext).ToString(),

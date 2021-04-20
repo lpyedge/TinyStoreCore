@@ -179,7 +179,15 @@
          stockIsShowOptions:[
              { icon:'pause',name:'下架',color:'warning',value :false},
              { icon:'play_circle_filled',name:'上架',color:'primary',value :true},
-         ]
+         ],
+       orderIsPayOptions:[
+          { icon:'fas fa-yen-sign',name:'未付款',color:'warning',value :false},
+          { icon:'fas fa-yen-sign',name:'已付款',color:'accent',value :true},
+       ],
+       orderIsDeliveryOptions:[
+          { icon:'send',name:'未发货',color:'warning',value :false},
+          { icon:'send',name:'已发货',color:'accent',value :true},
+       ]
      },
      beforeCreate(){
          if(!Store.Token()){

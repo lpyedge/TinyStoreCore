@@ -1,48 +1,50 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using SqlSugar;
+using TinyStore.Model;
 
 namespace TinyStore.BLL
 {
-    public class OrderBLL : BaseBLL<Model.OrderModel>
+    public class OrderBLL : BaseBLL<OrderModel>
     {
-        private static SortDic<Model.OrderModel> SortCreateDateDesc = new SortDic<Model.OrderModel>()
+        private static readonly SortDic<OrderModel> SortCreateDateDesc = new()
         {
-            [p => p.CreateDate] = SqlSugar.OrderByType.Desc,
+            [p => p.CreateDate] = OrderByType.Desc
         };
 
-        private static SortDic<Model.OrderModel> SortLastUpdateDateDesc = new SortDic<Model.OrderModel>()
+        private static readonly SortDic<OrderModel> SortLastUpdateDateDesc = new()
         {
-            [p => p.LastUpdateDate] = SqlSugar.OrderByType.Desc,
+            [p => p.LastUpdateDate] = OrderByType.Desc
         };
 
-        public static List<Model.OrderModel> QueryListIsBalanceNo(DateTime time)
+        public static List<OrderModel> QueryListIsBalanceNo(DateTime time)
         {
             //return QueryList(-1, p => p.IsDelivery == true && p.IsBalance == false && p.ReturnAmount == 0 && p.DeliveryDate <= time);
-            return new List<Model.OrderModel>();
+            return new();
         }
 
-        public static Model.OrderModel QueryModelByTranId(string tranId)
+        public static OrderModel QueryModelByTranId(string tranId)
         {
             return QueryModel(p => p.TranId == tranId);
         }
 
-        public static Model.OrderModel QueryModelByOrderId(string orderid)
+        public static OrderModel QueryModelByOrderId(string orderid)
         {
             return QueryModel(p => p.OrderId == orderid);
         }
 
-        public static Model.OrderModel QueryModelByOrderIdAndStoreId(string orderid, string storeId)
+        public static OrderModel QueryModelByOrderIdAndStoreId(string orderid, string storeId)
         {
             return QueryModel(p => p.OrderId == orderid && p.StoreId == storeId);
         }
 
-        public static List<Model.OrderModel> QueryListBenifitByStoreId(string suppliyid, DateTime begin, DateTime end,
+
+        public static List<OrderModel> QueryListBenifitByStoreId(string suppliyid, DateTime begin, DateTime end,
             string storeId, bool ishasreturn)
         {
-            var expr = SqlSugar.Expressionable.Create<Model.OrderModel>().And(p =>
-                p.StoreId == storeId && p.IsSettle == true && p.LastUpdateDate >= begin && p.LastUpdateDate <= end);
+            var expr = Expressionable.Create<OrderModel>().And(p =>
+                p.StoreId == storeId && p.IsSettle && p.LastUpdateDate >= begin && p.LastUpdateDate <= end);
             if (ishasreturn)
                 expr = expr.And(p => p.ReturnAmount > 0);
             if (!string.IsNullOrEmpty(suppliyid))
@@ -50,11 +52,11 @@ namespace TinyStore.BLL
             return QueryList(-1, expr.ToExpression(), SortLastUpdateDateDesc);
         }
 
-        public static PageList<Model.OrderModel> QueryPageListBenifitByStoreId(string supplierid, DateTime begin,
+        public static PageList<OrderModel> QueryPageListBenifitByStoreId(string supplierid, DateTime begin,
             DateTime end, string storeId, bool ishasreturn, int pageindex, int pagesize)
         {
-            var expr = SqlSugar.Expressionable.Create<Model.OrderModel>().And(p =>
-                p.StoreId == storeId && p.IsSettle == true && p.LastUpdateDate >= begin && p.LastUpdateDate <= end);
+            var expr = Expressionable.Create<OrderModel>().And(p =>
+                p.StoreId == storeId && p.IsSettle && p.LastUpdateDate >= begin && p.LastUpdateDate <= end);
             if (ishasreturn)
                 expr = expr.And(p => p.ReturnAmount > 0);
             if (!string.IsNullOrEmpty(supplierid))
@@ -62,13 +64,28 @@ namespace TinyStore.BLL
             return QueryPageList(pageindex, pagesize, expr.ToExpression(), SortLastUpdateDateDesc);
         }
 
-        public static PageList<Model.OrderModel> QueryPageListIsPaidByStoreId(string storeId, int pageindex, int pagesize)
+        public static PageList<OrderModel> QueryPageListIsPaidByStoreId(string storeId, int pageindex, int pagesize)
         {
-            return QueryPageList(pageindex, pagesize, p => p.StoreId == storeId && p.IsPay == true && !p.IsDelivery,
+            return QueryPageList(pageindex, pagesize, p => p.StoreId == storeId && p.IsPay && !p.IsDelivery,
                 SortLastUpdateDateDesc);
         }
 
-        public static PageList<Model.OrderModel> QueryPageList(DateTime begin, DateTime end, int state, int keykind,
+        public static PageList<OrderModel> QueryPageListBySearch(string storeId, string productId, DateTime? datefrom,
+            DateTime? dateto, string keyname, bool? isPay, bool? isDelivery, int pageindex, int pagesize)
+        {
+            var expr = Expressionable.Create<OrderModel>()
+                .And(p => p.StoreId == storeId)
+                .AndIF(!string.IsNullOrWhiteSpace(productId), p => p.ProductId == productId)
+                .AndIF(isPay != null, p => p.IsPay == isPay)
+                .AndIF(isDelivery != null, p => p.IsDelivery == isDelivery)
+                .AndIF(datefrom != null && dateto != null, p => SqlFunc.Between(p.CreateDate, datefrom, dateto))
+                .AndIF(!string.IsNullOrWhiteSpace(keyname),
+                    p => p.Contact.Contains(keyname) || p.Name.Contains(keyname) || p.Message.Contains(keyname));
+
+            return QueryPageList(pageindex, pagesize, expr.ToExpression(), SortLastUpdateDateDesc);
+        }
+
+        public static PageList<OrderModel> QueryPageList(DateTime begin, DateTime end, int state, int keykind,
             string key, string storeId, bool ishasreturn, EOrderTimeType timetype, int pageindex, int pagesize)
         {
             if (!string.IsNullOrEmpty(key))
@@ -78,32 +95,32 @@ namespace TinyStore.BLL
                     return string.IsNullOrEmpty(storeId)
                         ? QueryPageList(pageindex, pagesize, p => p.OrderId == key)
                         : QueryPageList(pageindex, pagesize, p => p.OrderId == key && p.StoreId == storeId);
-                else if (ekeykind == EOrderSearchKey.交易编号)
+                if (ekeykind == EOrderSearchKey.交易编号)
                     return string.IsNullOrEmpty(storeId)
                         ? QueryPageList(pageindex, pagesize, p => p.TranId == key)
                         : QueryPageList(pageindex, pagesize, p => p.TranId == key && p.StoreId == storeId);
             }
 
-            var expr = SqlSugar.Expressionable.Create<Model.OrderModel>()
+            var expr = Expressionable.Create<OrderModel>()
                 .And(p => p.CreateDate >= begin && p.CreateDate <= end);
             if (timetype == EOrderTimeType.最后变动日期)
-                expr = SqlSugar.Expressionable.Create<Model.OrderModel>()
+                expr = Expressionable.Create<OrderModel>()
                     .And(p => p.LastUpdateDate >= begin && p.LastUpdateDate <= end);
             //else if (timetype == EOrderTimeType.根据到期时间)
             //    expr = SqlSugar.Expressionable.Create<Model.Order>().And(p => p.DueDate >= begin && p.DueDate <= end);
             if (!string.IsNullOrEmpty(storeId))
                 expr = expr.And(p => p.StoreId == storeId);
             if (timetype == EOrderTimeType.付款日期)
-                expr = expr.And(p => p.IsPay == true);
+                expr = expr.And(p => p.IsPay);
             if (state > 0)
             {
                 var estate = (EState) state;
                 if (estate == EState.客户下单)
                     expr = expr.And(p => p.IsPay == false);
                 else if (estate == EState.等待发货)
-                    expr = expr.And(p => p.IsPay == true && p.IsDelivery == false);
+                    expr = expr.And(p => p.IsPay && p.IsDelivery == false);
                 else if (estate == EState.完成订单)
-                    expr = expr.And(p => p.IsPay == true && p.IsDelivery == true);
+                    expr = expr.And(p => p.IsPay && p.IsDelivery);
             }
 
             if (!string.IsNullOrEmpty(key))
@@ -111,24 +128,27 @@ namespace TinyStore.BLL
                 var ekeykind = (EOrderSearchKey) keykind;
                 if (ekeykind == EOrderSearchKey.订单号)
                 {
-                    expr = SqlSugar.Expressionable.Create<Model.OrderModel>().And(p => p.OrderId == key);
+                    expr = Expressionable.Create<OrderModel>().And(p => p.OrderId == key);
                     if (!string.IsNullOrEmpty(storeId))
                         expr = expr.And(p => p.StoreId == storeId);
                 }
                 //else if (ekeykind == EOrderSearchKey.备注)
                 //    expr = expr.And(p => p.Remark.Contains(key));
                 else if (ekeykind == EOrderSearchKey.联系方式)
+                {
                     expr = expr.And(p => p.Contact.Contains(key));
+                }
                 else if (ekeykind == EOrderSearchKey.商品名称)
+                {
                     expr = expr.And(p => p.Name.Contains(key));
+                }
                 else if (ekeykind == EOrderSearchKey.商品卡号)
+                {
                     expr = expr.And(p => p.StockList.Any(s => s.Name == key));
+                }
             }
 
-            if (ishasreturn)
-            {
-                expr = expr.And(p => p.ReturnAmount > 0);
-            }
+            if (ishasreturn) expr = expr.And(p => p.ReturnAmount > 0);
 
             //if (ishasduealert)
             //{
@@ -141,7 +161,7 @@ namespace TinyStore.BLL
             return QueryPageList(pageindex, pagesize, expr.ToExpression(), SortLastUpdateDateDesc);
         }
 
-        public static PageList<Model.OrderModel> QueryPageListBySid(string sid, int state, int keykind, string key,
+        public static PageList<OrderModel> QueryPageListBySid(string sid, int state, int keykind, string key,
             string storeId, bool ishasreturn, int pageindex, int pagesize)
         {
             if (!string.IsNullOrEmpty(key))
@@ -151,23 +171,23 @@ namespace TinyStore.BLL
                     return string.IsNullOrEmpty(storeId)
                         ? QueryPageList(pageindex, pagesize, p => p.OrderId == key)
                         : QueryPageList(pageindex, pagesize, p => p.OrderId == key && p.StoreId == storeId);
-                else if (ekeykind == EOrderSearchKey.交易编号)
+                if (ekeykind == EOrderSearchKey.交易编号)
                     return string.IsNullOrEmpty(storeId)
                         ? QueryPageList(pageindex, pagesize, p => p.TranId == key)
                         : QueryPageList(pageindex, pagesize, p => p.TranId == key && p.StoreId == storeId);
             }
 
-            var expr = SqlSugar.Expressionable.Create<Model.OrderModel>().And(p =>
-                p.SupplyId == sid && p.IsSettle == false && p.IsPay == true && p.Income > p.ReturnAmount);
+            var expr = Expressionable.Create<OrderModel>().And(p =>
+                p.SupplyId == sid && p.IsSettle == false && p.IsPay && p.Amount > p.ReturnAmount);
             if (!string.IsNullOrEmpty(storeId))
                 expr = expr.And(p => p.StoreId == storeId);
             if (state > 0)
             {
                 var estate = (EState) state;
                 if (estate == EState.等待发货)
-                    expr = expr.And(p => p.IsPay == true && p.IsDelivery == false);
+                    expr = expr.And(p => p.IsPay && p.IsDelivery == false);
                 else if (estate == EState.完成订单)
-                    expr = expr.And(p => p.IsPay == true && p.IsDelivery == true);
+                    expr = expr.And(p => p.IsPay && p.IsDelivery);
             }
 
             if (!string.IsNullOrEmpty(key))
@@ -175,24 +195,27 @@ namespace TinyStore.BLL
                 var ekeykind = (EOrderSearchKey) keykind;
                 if (ekeykind == EOrderSearchKey.订单号)
                 {
-                    expr = SqlSugar.Expressionable.Create<Model.OrderModel>().And(p => p.OrderId == key);
+                    expr = Expressionable.Create<OrderModel>().And(p => p.OrderId == key);
                     if (!string.IsNullOrEmpty(storeId))
                         expr = expr.And(p => p.StoreId == storeId);
                 }
                 //else if (ekeykind == EOrderSearchKey.备注)
                 //    expr = expr.And(p => p.Remark.Contains(key));
                 else if (ekeykind == EOrderSearchKey.联系方式)
+                {
                     expr = expr.And(p => p.Contact.Contains(key));
+                }
                 else if (ekeykind == EOrderSearchKey.商品名称)
+                {
                     expr = expr.And(p => p.Name.Contains(key));
+                }
                 else if (ekeykind == EOrderSearchKey.商品卡号)
+                {
                     expr = expr.And(p => p.StockList.Any(s => s.Name == key));
+                }
             }
 
-            if (ishasreturn)
-            {
-                expr = expr.And(p => p.ReturnAmount > 0);
-            }
+            if (ishasreturn) expr = expr.And(p => p.ReturnAmount > 0);
 
             //if (ishasduealert)
             //{
@@ -201,7 +224,7 @@ namespace TinyStore.BLL
             return QueryPageList(pageindex, pagesize, expr.ToExpression(), SortLastUpdateDateDesc);
         }
 
-        public static List<Model.OrderModel> QueryList(DateTime begin, DateTime end, int state, int keykind, string key,
+        public static List<OrderModel> QueryList(DateTime begin, DateTime end, int state, int keykind, string key,
             string storeId, bool ishasreturn, EOrderTimeType timetype)
         {
             if (!string.IsNullOrEmpty(key))
@@ -209,30 +232,30 @@ namespace TinyStore.BLL
                 var ekeykind = (EOrderSearchKey) keykind;
                 if (ekeykind == EOrderSearchKey.订单号)
                     return QueryList(-1, p => p.OrderId == key && p.StoreId == storeId);
-                else if (ekeykind == EOrderSearchKey.交易编号)
+                if (ekeykind == EOrderSearchKey.交易编号)
                     return QueryList(-1, p => p.TranId == key && p.StoreId == storeId);
             }
 
-            var expr = SqlSugar.Expressionable.Create<Model.OrderModel>()
+            var expr = Expressionable.Create<OrderModel>()
                 .And(p => p.CreateDate >= begin && p.CreateDate <= end);
             if (timetype == EOrderTimeType.最后变动日期)
-                expr = SqlSugar.Expressionable.Create<Model.OrderModel>()
+                expr = Expressionable.Create<OrderModel>()
                     .And(p => p.LastUpdateDate >= begin && p.LastUpdateDate <= end);
             //else if (timetype == EOrderTimeType.根据到期时间)
             //    expr = SqlSugar.Expressionable.Create<Model.Order>().And(p => p.DueDate >= begin && p.DueDate <= end);
             if (!string.IsNullOrEmpty(storeId))
                 expr = expr.And(p => p.StoreId == storeId);
             if (timetype == EOrderTimeType.付款日期)
-                expr = expr.And(p => p.IsPay == true);
+                expr = expr.And(p => p.IsPay);
             if (state > 0)
             {
                 var estate = (EState) state;
                 if (estate == EState.客户下单)
                     expr = expr.And(p => p.IsPay == false);
                 else if (estate == EState.等待发货)
-                    expr = expr.And(p => p.IsPay == true && p.IsDelivery == false);
+                    expr = expr.And(p => p.IsPay && p.IsDelivery == false);
                 else if (estate == EState.完成订单)
-                    expr = expr.And(p => p.IsPay == true && p.IsDelivery == true);
+                    expr = expr.And(p => p.IsPay && p.IsDelivery);
             }
 
             if (!string.IsNullOrEmpty(key))
@@ -248,10 +271,7 @@ namespace TinyStore.BLL
                     expr = expr.And(p => p.StockList.Any(s => s.Name == key));
             }
 
-            if (ishasreturn)
-            {
-                expr = expr.And(p => p.ReturnAmount > 0);
-            }
+            if (ishasreturn) expr = expr.And(p => p.ReturnAmount > 0);
 
             //if (ishasduealert)
             //{
@@ -264,7 +284,7 @@ namespace TinyStore.BLL
             return QueryList(-1, expr.ToExpression(), SortCreateDateDesc);
         }
 
-        public static List<Model.OrderModel> QueryListBySid(string sid, int state, int keykind, string key, string storeId,
+        public static List<OrderModel> QueryListBySid(string sid, int state, int keykind, string key, string storeId,
             bool ishasreturn)
         {
             if (!string.IsNullOrEmpty(key))
@@ -272,21 +292,21 @@ namespace TinyStore.BLL
                 var ekeykind = (EOrderSearchKey) keykind;
                 if (ekeykind == EOrderSearchKey.订单号)
                     return QueryList(-1, p => p.OrderId == key && p.StoreId == storeId);
-                else if (ekeykind == EOrderSearchKey.交易编号)
+                if (ekeykind == EOrderSearchKey.交易编号)
                     return QueryList(-1, p => p.TranId == key && p.StoreId == storeId);
             }
 
-            var expr = SqlSugar.Expressionable.Create<Model.OrderModel>().And(p =>
-                p.SupplyId == sid && p.IsSettle == false && p.IsPay == true && p.ReturnAmount < p.Income);
+            var expr = Expressionable.Create<OrderModel>().And(p =>
+                p.SupplyId == sid && p.IsSettle == false && p.IsPay && p.ReturnAmount < p.Amount);
             if (!string.IsNullOrEmpty(storeId))
                 expr = expr.And(p => p.StoreId == storeId);
             if (state > 0)
             {
                 var estate = (EState) state;
                 if (estate == EState.等待发货)
-                    expr = expr.And(p => p.IsPay == true && p.IsDelivery == false);
+                    expr = expr.And(p => p.IsPay && p.IsDelivery == false);
                 else if (estate == EState.完成订单)
-                    expr = expr.And(p => p.IsPay == true && p.IsDelivery == true);
+                    expr = expr.And(p => p.IsPay && p.IsDelivery);
             }
 
             if (!string.IsNullOrEmpty(key))
@@ -302,10 +322,7 @@ namespace TinyStore.BLL
                     expr = expr.And(p => p.StockList.Any(s => s.Name == key));
             }
 
-            if (ishasreturn)
-            {
-                expr = expr.And(p => p.ReturnAmount > 0);
-            }
+            if (ishasreturn) expr = expr.And(p => p.ReturnAmount > 0);
 
             //if (ishasduealert)
             //{
@@ -330,12 +347,12 @@ namespace TinyStore.BLL
 
         public static void UpdateIsSettle(List<string> ids, string storeId, bool isclose, DateTime closedate)
         {
-            var expr = SqlSugar.Expressionable.Create<Model.OrderModel>()
-                .And(p => p.IsPay == true && ids.Contains(p.OrderId));
+            var expr = Expressionable.Create<OrderModel>()
+                .And(p => p.IsPay && ids.Contains(p.OrderId));
             if (!string.IsNullOrEmpty(storeId))
                 expr = expr.And(p => p.StoreId == storeId);
             Update(expr.ToExpression(),
-                p => new Model.OrderModel() {IsSettle = isclose, LastUpdateDate = closedate, SettleDate = closedate});
+                p => new OrderModel {IsSettle = isclose, LastUpdateDate = closedate, SettleDate = closedate});
         }
         //public static void UpdateDueDate(List<string> ids, string storeId, DateTime duedate)
         //{
@@ -357,27 +374,16 @@ namespace TinyStore.BLL
         //    return QueryList(-1, p => p.IsPay == true && p.IsShouldNotice == true);
         //}
 
-        public static void UpdateAmountCostIncomme(string orderId, string storeId, double amount, double cost,
-            double incomme)
-        {
-            Update(p => p.OrderId == orderId && p.StoreId == storeId,
-                p => new Model.OrderModel {Amount = amount, Cost = cost, Income = incomme});
-        }
+       
 
         public static void UpdateCost(string orderId, double cost)
         {
             Update(p => p.OrderId == orderId, p => p.Cost == cost);
         }
 
-        public static int QueryCountBySuppliersNotClose(string supplyId)
-        {
-            return QueryCount(p =>
-                p.SupplyId == supplyId && p.IsSettle == false && p.IsPay == true && p.ReturnAmount < p.Income);
-        }
-
         public static int QueryCountByOrderIdIsPaid(string orderid, string storeId)
         {
-            return QueryCount(p => p.OrderId == orderid && p.StoreId == storeId && p.IsPay == true);
+            return QueryCount(p => p.OrderId == orderid && p.StoreId == storeId && p.IsPay);
         }
     }
 }
