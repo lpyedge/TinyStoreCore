@@ -81,7 +81,7 @@
             </q-item>
             <q-separator ></q-separator>
             <q-card-section style="height: 4.7rem;width: 18rem;">
-                <label class="ellipsis-2-lines">{{item.memo}}</label>
+                <label class="ellipsis-2-lines" v-html="item.memo"></label>
             </q-card-section>
             <q-icon class="absolute-bottom-right q-ma-xs" color="primary" size="1.4rem" name="zoom_out_map" @@click="productDialogShow(i)"></q-icon>
         </q-card>
@@ -180,43 +180,132 @@
                 </q-select>
             </div>
             <div class="row">
-                <q-input outlined dense stack-label bg-color="white"
-                         class="col"
-                         label="售价"
-                         hint="销售价格"
-                         v-model.number="productCurrent.amount"
-                         ref="productCurrent_amount"
-                         :rules="[val => !!val || '必须输入售价']">
-                </q-input>
+                <div class="col column">
+                    <div class="col row">
+                        <q-input outlined dense stack-label bg-color="white"
+                                 class="col"
+                                 label="售价"
+                                 hint="销售价格"
+                                 v-model.number="productCurrent.amount"
+                                 ref="productCurrent_amount"
+                                 :rules="[val => !!val || '必须输入售价']">
+                        </q-input>
+                        <q-space class="col-auto q-mx-xs"></q-space>
+                        <q-input outlined dense stack-label bg-color="white"
+                                 class="col"
+                                 label="成本"
+                                 hint="结算价格"
+                                 v-model.number="productCurrent.cost"
+                                 :readonly="productDialogReadonly"
+                                 ref="productCurrent_cost"
+                                 :rules="[val => !!val || '必须输入成本']">
+                        </q-input>
+                    </div>
+                    <div class="col row">
+                        <q-input outlined dense stack-label bg-color="white"
+                                 class="col"
+                                 label="最小购买数量"
+                                 v-model.number="productCurrent.quantityMin"
+                                 ref="productCurrent_quantityMin"
+                                 :rules="[val => !!val || '必须输入最小购买数量',val => val > 0 || '最小购买数量必须大于0']">
+                        </q-input>
+                        <q-space class="col-auto q-mx-xs"></q-space>
+                        <div class="col">
+                            <q-toggle v-model="productCurrent.isShow" color="primary" :label="stockIsShowOptions[1].name" left-label></q-toggle>
+                        </div>
+                    </div>
+                </div>
                 <q-space class="col-auto q-mx-xs"></q-space>
-                <q-input outlined dense stack-label bg-color="white"
-                         class="col"
-                         label="成本"
-                         hint="结算价格"
-                         v-model.number="productCurrent.cost"
-                         :readonly="productDialogReadonly"
-                         ref="productCurrent_cost"
-                         :rules="[val => !!val || '必须输入成本']">
-                </q-input>
-            </div>
-            <div class="row">
-                <q-input outlined dense stack-label bg-color="white"
-                         class="col"
-                         label="最小购买数量"
-                         v-model.number="productCurrent.quantityMin"
-                         ref="productCurrent_quantityMin"
-                         :rules="[val => !!val || '必须输入最小购买数量',val => val > 0 || '最小购买数量必须大于0']">
-                </q-input>
-                <q-space class="col-auto q-mx-xs"></q-space>
-                <div class="col">
-                    <q-toggle v-model="productCurrent.isShow" color="primary" :label="stockIsShowOptions[1].name" left-label></q-toggle>    
+                <div class="col-auto">
+                    <q-img basic style="border:1px solid grey;border-radius: 0.8rem; height: 6.5rem; width: 6.5rem"
+                           :src="productCurrent.icon"
+                           spinner-color="white"
+                           @@click="$refs.product_icon_pick.click()">
+                        <q-icon class="absolute-top-right" color="orange-9" name="backup" size="sm"></q-icon>
+                        @* <template v-slot:loading> *@
+                        @*     <div class="text-subtitle1 text-white"> *@
+                        @*         Loading... *@
+                        @*     </div> *@
+                        @* </template> *@
+                        <template v-slot:error>
+                            <div class="absolute-full flex flex-center bg-grey-2 text-primary">
+                                暂无图片
+                                <q-icon class="absolute-top-right" color="orange-9" name="backup" size="sm"></q-icon>
+                            </div>
+                        </template>
+                    </q-img>
+                    <input class="hidden" type="file" accept="image/*" ref="product_icon_pick" @@change="productIconUpload">
                 </div>
             </div>
-            <q-input outlined dense stack-label bg-color="white"
-                     autogrow
-                     label="商品说明"
-                     v-model.trim="productCurrent.memo">
-            </q-input>
+            @* <q-input outlined dense stack-label bg-color="white" *@
+            @*          autogrow *@
+            @*          label="商品说明" *@
+            @*          v-model.trim="productCurrent.memo" *@
+            @*          maxlength="4000"> *@
+            @* </q-input> *@
+            <q-editor v-model="productCurrent.memo" min-height="5rem" dense
+                      placeholder="商品说明" 
+                      :toolbar="[
+                              [
+                                {
+                                  label: $q.lang.editor.align,
+                                  icon: $q.iconSet.editor.align,
+                                  fixedLabel: true,
+                                  options: ['left', 'center', 'right', 'justify']
+                                }
+                              ],
+                              ['bold', 'italic', 'strike', 'underline'],
+                              [ 'hr', 'link'],
+                              [
+                                {
+                                  label: $q.lang.editor.fontSize,
+                                  icon: $q.iconSet.editor.fontSize,
+                                  fixedLabel: true,
+                                  fixedIcon: true,
+                                  list: 'no-icons',
+                                  options: [
+                                    'size-1',
+                                    'size-2',
+                                    'size-3',
+                                    'size-4',
+                                    'size-5',
+                                    'size-6',
+                                    'size-7'
+                                  ]
+                                },
+                                {
+                                  label: $q.lang.editor.defaultFont,
+                                  icon: $q.iconSet.editor.font,
+                                  fixedIcon: true,
+                                  list: 'no-icons',
+                                  options: [
+                                    'default_font',
+                                    'arial',
+                                    'arial_black',
+                                    'comic_sans',
+                                    'courier_new',
+                                    'impact',
+                                    'lucida_grande',
+                                    'times_new_roman',
+                                    'verdana'
+                                  ]
+                                }
+                              ],
+                                ['unordered', 'ordered'],
+                                ['removeFormat']
+                            ]"
+                      :fonts="{
+                              arial: 'Arial',
+                              arial_black: 'Arial Black',
+                              comic_sans: 'Comic Sans MS',
+                              courier_new: 'Courier New',
+                              impact: 'Impact',
+                              lucida_grande: 'Lucida Grande',
+                              times_new_roman: 'Times New Roman',
+                              verdana: 'Verdana'
+                            }"
+                      >
+            </q-editor>
         </q-card-section>
         <q-card-section>
             <q-btn class="float-left" color="negative" icon="delete_forever" label="移除" @@click="productDialogRemove" v-if="productIndex >= 0"></q-btn>
@@ -409,10 +498,25 @@
                        }
                    }
                }else{
-                   this.productCurrent = {userId:this.userExtend.userId,supplyId:this.userExtend.userId.toString(),category:'',quantityMin:1, deliveryType:this.deliveryTypeOptions[0].value, isShow:true};
+                   //默认productId前端初始化然后向后端获取，获取成功使用后端获取的值，获取失败则用前端初始化的值
+                   this.productCurrent = {productId:Date.now().toString(),userId:this.userExtend.userId,supplyId:this.userExtend.userId.toString(),category:'',quantityMin:1, deliveryType:this.deliveryTypeOptions[0].value, isShow:true};
+                   UserApi('NewDateId',{ state:1 },true)
+                        .then((response)=> {
+                            if (response.data.code === 1){ 
+                                this.productCurrent.productId = response.data.data;
+                            }
+                        })
+                        .catch( (error)=> {
+                            Notify.Warning('接口通信错误');
+                            console.error(error);
+                        });
                }
            },
            productDialogEdit(){
+               if (this.productCurrent.memo.length > 4000){
+                   Notify.Warning('商品说明内容过长');
+                   return;
+               }
                this.$refs.productCurrent_name.validate();
                this.$refs.productCurrent_amount.validate();
                this.$refs.productCurrent_cost.validate();
@@ -476,6 +580,30 @@
                       Notify.Warning('接口通信错误');
                       console.error(error);
                   });
+           },
+           productIconUpload(){
+               if (arguments.length === 1 && arguments[0].target && arguments[0].target.files && arguments[0].target.files.length === 1){                   
+                   var file = arguments[0].target.files[0];                   
+                   UserApi("UploadFormFile",{model:'Product',id:this.productCurrent.productId,name:'Icon', file},true)
+                       .then((response)=> {
+                             if (response.data.code === 1){                
+                                 this.productCurrent.icon = response.data.data;
+                             }
+                             else if(response.data.code === 0){
+                              Notify.Warning('未上传任何文件');
+                           }else if(response.data.code === 15){
+                              Notify.Warning('上传参数错误');
+                           }else {
+                              Notify.Warning('未知错误');
+                           }
+                           this.$refs.product_icon_pick.value = '';
+                         })
+                         .catch( (error)=> {
+                             Notify.Warning('接口通信错误');
+                             console.error(error);
+                           this.$refs.store_logo_pick.value = '';
+                         });
+              }
            }
        }
    };

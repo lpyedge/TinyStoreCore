@@ -58,7 +58,7 @@ namespace TinyStore.Model
         /// <summary>
         /// 店铺说明
         /// </summary>
-        [SqlSugar.SugarColumn(Length = 500)] 
+        [SqlSugar.SugarColumn(Length = 4000)] 
         public string Memo { get; set; } = "";
 
         /// <summary>

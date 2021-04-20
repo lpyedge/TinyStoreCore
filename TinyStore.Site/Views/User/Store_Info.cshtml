@@ -54,11 +54,7 @@
                 <input class="hidden" type="file" accept="image/*" ref="store_logo_pick" @@change="storeLogoUpload">
             </div>
         </div>
-        <q-input outlined dense stack-label bg-color="white"
-                 label="店铺介绍"
-                 v-model.trim="storeCurrent.memo"
-                 autogrow>
-        </q-input>
+     
         <q-input outlined dense stack-label bg-color="white"
                  label="联系邮箱"
                  v-model.trim="storeCurrent.email"
@@ -72,8 +68,76 @@
                  label="联系QQ"
                  v-model.trim="storeCurrent.qq"
                  maxlength="16">
-        </q-input>
-
+        </q-input>  
+        @* <q-input outlined dense stack-label bg-color="white" *@
+        @*            label="店铺介绍" *@
+        @*            v-model.trim="storeCurrent.memo" *@
+        @*            maxlength="4000" *@
+        @*            autogrow> *@
+        @*   </q-input> *@
+        <q-editor v-model="storeCurrent.memo" min-height="5rem" dense
+                  placeholder="店铺介绍" 
+                  :toolbar="[
+                          [
+                            {
+                              label: $q.lang.editor.align,
+                              icon: $q.iconSet.editor.align,
+                              fixedLabel: true,
+                              options: ['left', 'center', 'right', 'justify']
+                            }
+                          ],
+                          ['bold', 'italic', 'strike', 'underline'],
+                          [ 'hr', 'link'],
+                          [
+                            {
+                              label: $q.lang.editor.fontSize,
+                              icon: $q.iconSet.editor.fontSize,
+                              fixedLabel: true,
+                              fixedIcon: true,
+                              list: 'no-icons',
+                              options: [
+                                'size-1',
+                                'size-2',
+                                'size-3',
+                                'size-4',
+                                'size-5',
+                                'size-6',
+                                'size-7'
+                              ]
+                            },
+                            {
+                              label: $q.lang.editor.defaultFont,
+                              icon: $q.iconSet.editor.font,
+                              fixedIcon: true,
+                              list: 'no-icons',
+                              options: [
+                                'default_font',
+                                'arial',
+                                'arial_black',
+                                'comic_sans',
+                                'courier_new',
+                                'impact',
+                                'lucida_grande',
+                                'times_new_roman',
+                                'verdana'
+                              ]
+                            }
+                          ],
+                            ['unordered', 'ordered'],
+                            ['removeFormat']
+                        ]"
+                  :fonts="{
+                          arial: 'Arial',
+                          arial_black: 'Arial Black',
+                          comic_sans: 'Comic Sans MS',
+                          courier_new: 'Courier New',
+                          impact: 'Impact',
+                          lucida_grande: 'Lucida Grande',
+                          times_new_roman: 'Times New Roman',
+                          verdana: 'Verdana'
+                        }"
+                  >
+        </q-editor>
         <q-btn :loading="btnSaveLoading" class="float-right" color="primary" icon="save" label="保存" @@click="storeSave"></q-btn>
     </q-form>
 </q-page>
@@ -90,6 +154,10 @@
        },
        methods: {
            storeSave(){
+               if (this.storeCurrent.memo.length > 4000){
+                   Notify.Warning('店铺介绍内容过长');
+                   return;
+               }
                this.$refs.store_name.validate();
                this.$refs.store_uniqueId.validate();
                

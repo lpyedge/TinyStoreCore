@@ -25,7 +25,7 @@ namespace TinyStore.Model
         /// <summary>
         /// 密码 / 说明
         /// </summary>
-        [SqlSugar.SugarColumn(Length = 500)] 
+        [SqlSugar.SugarColumn(Length = 4000)] 
         public string Memo { get; set; }
         
         [SqlSugar.SugarColumn(IndexGroupNameList = new []{"IsDelivery"})]

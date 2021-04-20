@@ -149,6 +149,12 @@ namespace TinyStore.Site.Controllers
         }
 
         [HttpPost]
+        public IActionResult NewDateId([FromForm] int state)
+        {
+            return ApiResult.RData(Global.Generator.DateId(state));
+        }
+
+        [HttpPost]
         public async Task<IActionResult> UploadFormFile([FromForm] string model, [FromForm] string id,
             [FromForm] string name)
         {
@@ -218,7 +224,7 @@ namespace TinyStore.Site.Controllers
             storeOrigin.Initial = Global.Initial(store.Name);
             storeOrigin.UniqueId = store.UniqueId;
             storeOrigin.Template = store.Template;
-            storeOrigin.Memo = store.Memo;
+            storeOrigin.Memo =  string.IsNullOrWhiteSpace(store.Memo) || store.Memo.Length > 4000 ? "" : store.Memo;
             storeOrigin.Email = store.Email;
             storeOrigin.TelPhone = store.TelPhone;
             storeOrigin.QQ = store.QQ;
@@ -296,7 +302,7 @@ namespace TinyStore.Site.Controllers
                     supplyModel.IsShow = true;
                     supplyModel.UserId = user.UserId;
                     supplyModel.Category = string.IsNullOrWhiteSpace(supplyModel.Category) ? "" : supplyModel.Category;
-                    supplyModel.Memo = string.IsNullOrWhiteSpace(supplyModel.Memo) ? "" : supplyModel.Memo;
+                    supplyModel.Memo = string.IsNullOrWhiteSpace(supplyModel.Memo) || supplyModel.Memo.Length > 4000 ? "" : supplyModel.Memo;
 
                     BLL.SupplyBLL.Insert(supplyModel);
 
@@ -309,7 +315,7 @@ namespace TinyStore.Site.Controllers
                     data.Category = supplyModel.Category;
                     data.FaceValue = supplyModel.FaceValue;
                     data.Cost = supplyModel.Cost;
-                    data.Memo = supplyModel.Memo;
+                    data.Memo = string.IsNullOrWhiteSpace(supplyModel.Memo) || supplyModel.Memo.Length > 4000 ? "" : supplyModel.Memo;
                     data.IsShow = true;
                     data.UserId = user.UserId;
 
@@ -525,13 +531,17 @@ namespace TinyStore.Site.Controllers
                 var data = productData.FirstOrDefault(p => p.ProductId == productModel.ProductId);
                 if (data == null)
                 {
-                    productModel.ProductId = Global.Generator.DateId(1);
+                    //ProductId商品编号会在前端生成，这里仅做特殊情况下的处理
+                    if(string.IsNullOrWhiteSpace(productModel.ProductId))
+                        productModel.ProductId = Global.Generator.DateId(1);
                     productModel.UserId = user.UserId;
                     productModel.StoreId = store.StoreId;
                     productModel.Category = string.IsNullOrWhiteSpace(productModel.Category) ? "" : productModel.Category;
-                    productModel.Memo = string.IsNullOrWhiteSpace(productModel.Memo) ? "" : productModel.Memo;
+                    productModel.Memo = string.IsNullOrWhiteSpace(productModel.Memo) || productModel.Memo.Length > 4000 ? "" : productModel.Memo;
                     productModel.Icon = string.IsNullOrWhiteSpace(productModel.Icon) ? "" : productModel.Icon;
-
+                    
+                    productModel.Icon = SiteContext.Resource.MoveTempFile(productModel.Icon);
+                    
                     BLL.ProductBLL.Insert(productModel);
 
                     productData.Add(productModel);
@@ -546,9 +556,10 @@ namespace TinyStore.Site.Controllers
                     data.FaceValue = productModel.FaceValue;
                     data.Cost = productModel.Cost;
                     data.IsShow = productModel.IsShow;
-                    data.Icon = productModel.Icon;
                     data.DeliveryType = productModel.DeliveryType;
-                    data.Memo = productModel.Memo;
+                    data.Memo = string.IsNullOrWhiteSpace(productModel.Memo) || productModel.Memo.Length > 4000 ? "" : productModel.Memo;
+                    
+                    data.Icon = SiteContext.Resource.MoveTempFile(productModel.Icon);
 
                     BLL.ProductBLL.Update(data);
                 }
