@@ -1,12 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Org.BouncyCastle.Crypto.Tls;
+using TinyStore.BLL;
+using TinyStore.Model;
 using TinyStore.Model.Extend;
+using TinyStore.Utils;
 
 namespace TinyStore.Site.Controllers
 {
@@ -17,43 +22,37 @@ namespace TinyStore.Site.Controllers
     [Route("ApiUser/[action]")]
     public class ApiUserController : ControllerBase
     {
-        private Model.UserModel UserCurrent(string storeid, out Model.StoreModel store)
+        private UserModel UserCurrent(string storeid, out StoreModel store)
         {
-            var user = UserCurrent();
-            if (string.IsNullOrWhiteSpace(storeid))
-            {
-                store = null;
-            }
+            UserModel user = UserCurrent();
+            if (string.IsNullOrWhiteSpace(storeid)) store = null;
 
-            store = BLL.StoreBLL.QueryModelByStoreId(storeid);
+            store = StoreBLL.QueryModelByStoreId(storeid);
 
-            if (store != null && store.UserId != user.UserId)
-            {
-                store = null;
-            }
+            if (store != null && store.UserId != user.UserId) store = null;
 
             return user;
         }
 
-        private Model.UserModel UserCurrent()
+        private UserModel UserCurrent()
         {
-            return HttpContext.Items[HeaderToken.HeaderKey] as Model.UserModel;
+            return HttpContext.Items[HeaderToken.HeaderKey] as UserModel;
         }
 
         private void UserLog(int userId, EUserLogType type, HttpRequest request, string storeId = "",
             string memo = "")
         {
-            BLL.UserLogBLL.Insert(new Model.UserLogModel
+            UserLogBLL.Insert(new UserLogModel
             {
                 UserLogId = Global.Generator.DateId(2),
                 UserLogType = type,
                 UserId = userId,
-                ClientIP = Utils.RequestInfo._ClientIP(request).ToString(),
+                ClientIP = RequestInfo._ClientIP(request).ToString(),
                 UserAgent = request.Headers["User-Agent"].ToString(),
                 AcceptLanguage = request.Headers["Accept-Language"].ToString(),
                 Memo = memo,
                 StoreId = storeId,
-                CreateDate = DateTime.Now,
+                CreateDate = DateTime.Now
             });
         }
 
@@ -63,11 +62,11 @@ namespace TinyStore.Site.Controllers
         {
             if (string.IsNullOrWhiteSpace(account) || string.IsNullOrWhiteSpace(password))
                 return ApiResult.RCode(ApiResult.ECode.DataFormatError);
-            var user = BLL.UserBLL.QueryModelByAccount(account);
+            UserModel user = UserBLL.QueryModelByAccount(account);
             if (user != null && string.Equals(user.Password, Global.Hash(password, user.Salt)))
             {
                 user.ClientKey = Global.Generator.Guid();
-                BLL.UserBLL.Update(user);
+                UserBLL.Update(user);
 
                 HeaderToken.SetHeaderToken(HttpContext, user.UserId.ToString(), user.ClientKey);
 
@@ -75,32 +74,30 @@ namespace TinyStore.Site.Controllers
                 user.Salt = "";
                 user.Password = "";
 
-                var storelist = BLL.StoreBLL.QueryListByUserId(user.UserId);
-                var userextra = BLL.UserExtendBLL.QueryModelByUserId(user.UserId);
+                var storelist = StoreBLL.QueryListByUserId(user.UserId);
+                UserExtendModel userextra = UserExtendBLL.QueryModelByUserId(user.UserId);
 
                 UserLog(user.UserId, EUserLogType.登录, Request);
 
-                return ApiResult.RData(new {user = user, storeList = storelist, userExtend = userextra});
+                return ApiResult.RData(new {user, storeList = storelist, userExtend = userextra});
             }
-            else
-            {
-                return ApiResult.RCode(ApiResult.ECode.AuthorizationFailed);
-            }
+
+            return ApiResult.RCode(ApiResult.ECode.AuthorizationFailed);
         }
 
         [HttpPost]
-        public IActionResult UserExtendSave(Model.UserExtendModel userExtend)
+        public IActionResult UserExtendSave(UserExtendModel userExtend)
         {
-            var user = UserCurrent();
+            UserModel user = UserCurrent();
 
-            if (!string.IsNullOrEmpty(userExtend.IdCard) && !Utils.IDCard.IsIDCard(userExtend.IdCard))
+            if (!string.IsNullOrEmpty(userExtend.IdCard) && !IDCard.IsIDCard(userExtend.IdCard))
                 return ApiResult.RCode(ApiResult.ECode.DataFormatError);
 
             if (!string.IsNullOrEmpty(userExtend.Email) && !userExtend.Email.Contains("@"))
                 return ApiResult.RCode(ApiResult.ECode.DataFormatError);
 
 
-            var userExtendOrigin = BLL.UserExtendBLL.QueryModelByUserId(user.UserId);
+            UserExtendModel userExtendOrigin = UserExtendBLL.QueryModelByUserId(user.UserId);
 
             // if (!string.IsNullOrEmpty(Email))
             // {
@@ -127,7 +124,7 @@ namespace TinyStore.Site.Controllers
             userExtendOrigin.Email = userExtend.Email;
             userExtendOrigin.IdCard = userExtend.IdCard;
 
-            BLL.UserExtendBLL.Update(userExtendOrigin);
+            UserExtendBLL.Update(userExtendOrigin);
             UserLog(userExtendOrigin.UserId, EUserLogType.修改商户信息, Request, "", "个人信息修改");
 
             return ApiResult.RData(userExtendOrigin);
@@ -137,13 +134,13 @@ namespace TinyStore.Site.Controllers
         [HttpPost]
         public IActionResult UserPasswordModify([FromForm] string passwordOld, [FromForm] string passwordNew)
         {
-            var user = UserCurrent();
+            UserModel user = UserCurrent();
             if (!string.Equals(Global.Hash(passwordOld, user.Salt), user.Password,
                 StringComparison.OrdinalIgnoreCase))
                 return ApiResult.RCode(ApiResult.ECode.AuthorizationFailed);
 
             user.Password = Global.Hash(passwordNew, user.Salt);
-            BLL.UserBLL.Update(user);
+            UserBLL.Update(user);
             UserLog(user.UserId, EUserLogType.修改商户信息, Request, "", "密码修改");
             return ApiResult.RCode();
         }
@@ -167,22 +164,17 @@ namespace TinyStore.Site.Controllers
             {
                 var files = new Dictionary<string, byte[]>();
                 for (var i = 0; i < Request.Form.Files.Count; i++)
-                {
-                    using (var stream = Request.Form.Files[i].OpenReadStream())
+                    using (Stream stream = Request.Form.Files[i].OpenReadStream())
                     {
-                        byte[] buffer = new byte[Request.Form.Files[i].Length];
+                        var buffer = new byte[Request.Form.Files[i].Length];
                         await stream.ReadAsync(buffer, 0, buffer.Length);
                         files.Add(Request.Form.Files[i].ContentType,
                             buffer); //  {name: {key:contenttype,value:byte[]},}
                     }
-                }
 
-                if (string.IsNullOrWhiteSpace(id))
-                {
-                    id = Global.Generator.DateId(2);
-                }
+                if (string.IsNullOrWhiteSpace(id)) id = Global.Generator.DateId(2);
 
-                var res = SiteContext.Resource.UploadFiles(model, id, name, files);
+                ApiResult res = SiteContext.Resource.UploadFiles(model, id, name, files);
                 return new JsonResult(res);
             }
             catch
@@ -192,11 +184,11 @@ namespace TinyStore.Site.Controllers
         }
 
         [HttpPost]
-        public IActionResult StoreSave(Model.StoreModel store)
+        public IActionResult StoreSave(StoreModel store)
         {
             if (store == null)
                 return ApiResult.RCode(ApiResult.ECode.AuthorizationFailed);
-            var user = UserCurrent(store.StoreId, out Model.StoreModel storeOrigin);
+            UserModel user = UserCurrent(store.StoreId, out StoreModel storeOrigin);
             if (storeOrigin == null)
                 return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
 
@@ -212,7 +204,7 @@ namespace TinyStore.Site.Controllers
 
             if (!string.IsNullOrWhiteSpace(store.UniqueId))
             {
-                var compare = BLL.StoreBLL.QueryModelByUniqueId(store.UniqueId);
+                StoreModel compare = StoreBLL.QueryModelByUniqueId(store.UniqueId);
                 if (compare != null && !string.Equals(compare.StoreId, store.StoreId,
                     StringComparison.OrdinalIgnoreCase))
                     return ApiResult.RCode(ApiResult.ECode.TargetExist);
@@ -224,87 +216,87 @@ namespace TinyStore.Site.Controllers
             storeOrigin.Initial = Global.Initial(store.Name);
             storeOrigin.UniqueId = store.UniqueId;
             storeOrigin.Template = store.Template;
-            storeOrigin.Memo =  string.IsNullOrWhiteSpace(store.Memo) || store.Memo.Length > 4000 ? "" : store.Memo;
+            storeOrigin.Memo = string.IsNullOrWhiteSpace(store.Memo) || store.Memo.Length > 4000 ? "" : store.Memo;
             storeOrigin.Email = store.Email;
             storeOrigin.TelPhone = store.TelPhone;
             storeOrigin.QQ = store.QQ;
 
-            BLL.StoreBLL.Update(storeOrigin);
+            StoreBLL.Update(storeOrigin);
 
             UserLog(user.UserId, EUserLogType.修改店铺信息, Request, store.StoreId, "店铺信息修改");
 
-            return ApiResult.RData(BLL.StoreBLL.QueryListByUserId(user.UserId));
+            return ApiResult.RData(StoreBLL.QueryListByUserId(user.UserId));
         }
 
 
         [HttpPost]
-        public IActionResult StorePaymentListSave(Model.StoreModel store)
+        public IActionResult StorePaymentListSave(StoreModel store)
         {
             if (store == null)
                 return ApiResult.RCode(ApiResult.ECode.AuthorizationFailed);
-            var user = UserCurrent(store.StoreId, out Model.StoreModel storeOrigin);
+            UserModel user = UserCurrent(store.StoreId, out StoreModel storeOrigin);
             if (storeOrigin == null)
                 return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
 
             var systemPaymentList = SiteContext.SystemPaymentList();
-            foreach (var item in store.PaymentList.Where(p => p.IsSystem))
-            {
+            foreach (Payment item in store.PaymentList.Where(p => p.IsSystem))
                 // ReSharper disable once PossibleNullReferenceException
                 systemPaymentList.FirstOrDefault(p => p.Name == item.Name).IsEnable = item.IsEnable;
-            }
 
-            var paymentList = new List<Model.Extend.Payment>(systemPaymentList);
+            var paymentList = new List<Payment>(systemPaymentList);
             paymentList.AddRange(store.PaymentList.Where(p => !p.IsSystem));
             storeOrigin.PaymentList = paymentList;
 
-            BLL.StoreBLL.Update(storeOrigin);
+            StoreBLL.Update(storeOrigin);
 
             UserLog(user.UserId, EUserLogType.修改店铺信息, Request, store.StoreId, "店铺收款方式修改");
 
-            return ApiResult.RData(BLL.StoreBLL.QueryListByUserId(user.UserId));
+            return ApiResult.RData(StoreBLL.QueryListByUserId(user.UserId));
         }
 
         [HttpPost]
         public IActionResult SupplyList([FromForm] string type)
         {
-            var user = UserCurrent();
-            var supplyCustom = new List<Model.SupplyModel>();
-            var supplySystem = new List<Model.SupplyModel>();
+            UserModel user = UserCurrent();
+            var supplyCustom = new List<SupplyModel>();
+            var supplySystem = new List<SupplyModel>();
             if (string.IsNullOrWhiteSpace(type))
             {
-                supplyCustom = BLL.SupplyBLL.QueryListByUserId(user.UserId);
-                supplySystem = BLL.SupplyBLL.QueryListByUserId(SiteContext.Config.SupplyUserIdSys);
+                supplyCustom = SupplyBLL.QueryListByUserId(user.UserId);
+                supplySystem = SupplyBLL.QueryListByUserId(SiteContext.Config.SupplyUserIdSys);
             }
             else if (string.Equals(type, "custom", StringComparison.OrdinalIgnoreCase))
             {
-                supplyCustom = BLL.SupplyBLL.QueryListByUserId(user.UserId);
+                supplyCustom = SupplyBLL.QueryListByUserId(user.UserId);
             }
             else if (string.Equals(type, "system", StringComparison.OrdinalIgnoreCase))
             {
-                supplySystem = BLL.SupplyBLL.QueryListByUserId(SiteContext.Config.SupplyUserIdSys);
+                supplySystem = SupplyBLL.QueryListByUserId(SiteContext.Config.SupplyUserIdSys);
             }
 
             return ApiResult.RData(new {supplySystem, supplyCustom});
         }
 
         [HttpPost]
-        public IActionResult SupplyListSave(List<Model.SupplyModel> supplyList)
+        public IActionResult SupplyListSave(List<SupplyModel> supplyList)
         {
-            var user = UserCurrent();
+            UserModel user = UserCurrent();
 
-            var supplyCustom = BLL.SupplyBLL.QueryListByUserId(user.UserId);
-            foreach (var supplyModel in supplyList)
+            var supplyCustom = SupplyBLL.QueryListByUserId(user.UserId);
+            foreach (SupplyModel supplyModel in supplyList)
             {
-                var data = supplyCustom.FirstOrDefault(p => p.SupplyId == supplyModel.SupplyId);
+                SupplyModel? data = supplyCustom.FirstOrDefault(p => p.SupplyId == supplyModel.SupplyId);
                 if (data == null)
                 {
                     supplyModel.SupplyId = Global.Generator.DateId(1);
                     supplyModel.IsShow = true;
                     supplyModel.UserId = user.UserId;
                     supplyModel.Category = string.IsNullOrWhiteSpace(supplyModel.Category) ? "" : supplyModel.Category;
-                    supplyModel.Memo = string.IsNullOrWhiteSpace(supplyModel.Memo) || supplyModel.Memo.Length > 4000 ? "" : supplyModel.Memo;
+                    supplyModel.Memo = string.IsNullOrWhiteSpace(supplyModel.Memo) || supplyModel.Memo.Length > 4000
+                        ? ""
+                        : supplyModel.Memo;
 
-                    BLL.SupplyBLL.Insert(supplyModel);
+                    SupplyBLL.Insert(supplyModel);
 
                     supplyCustom.Add(supplyModel);
                 }
@@ -315,11 +307,13 @@ namespace TinyStore.Site.Controllers
                     data.Category = supplyModel.Category;
                     data.FaceValue = supplyModel.FaceValue;
                     data.Cost = supplyModel.Cost;
-                    data.Memo = string.IsNullOrWhiteSpace(supplyModel.Memo) || supplyModel.Memo.Length > 4000 ? "" : supplyModel.Memo;
+                    data.Memo = string.IsNullOrWhiteSpace(supplyModel.Memo) || supplyModel.Memo.Length > 4000
+                        ? ""
+                        : supplyModel.Memo;
                     data.IsShow = true;
                     data.UserId = user.UserId;
 
-                    BLL.SupplyBLL.Update(data);
+                    SupplyBLL.Update(data);
                 }
             }
 
@@ -327,14 +321,12 @@ namespace TinyStore.Site.Controllers
                 .Select(p => p.SupplyId).ToList();
             if (supplyIds2Remove.Count > 0)
             {
-                BLL.SupplyBLL.DeleteByIdsAndUserId(supplyIds2Remove, user.UserId);
+                SupplyBLL.DeleteByIdsAndUserId(supplyIds2Remove, user.UserId);
                 foreach (var supplyId in supplyIds2Remove)
-                {
                     supplyCustom.Remove(supplyCustom.FirstOrDefault(p => p.SupplyId == supplyId));
-                }
             }
 
-            var supplySystem = BLL.SupplyBLL.QueryListByUserId(SiteContext.Config.SupplyUserIdSys);
+            var supplySystem = SupplyBLL.QueryListByUserId(SiteContext.Config.SupplyUserIdSys);
 
             return ApiResult.RData(new {supplySystem, supplyCustom});
         }
@@ -344,57 +336,52 @@ namespace TinyStore.Site.Controllers
             [FromForm] string isShow,
             [FromForm] int pageIndex, [FromForm] int pageSize)
         {
-            var user = UserCurrent();
+            UserModel user = UserCurrent();
 
-            var supplyModel = BLL.SupplyBLL.QueryModelById(supplyId);
+            SupplyModel supplyModel = SupplyBLL.QueryModelById(supplyId);
             if (supplyModel == null)
                 return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
 
             bool? outIsShow = null;
-            if (bool.TryParse(isShow, out bool tempIsShow))
-            {
-                outIsShow = tempIsShow;
-            }
+            if (bool.TryParse(isShow, out var tempIsShow)) outIsShow = tempIsShow;
 
-            var res = BLL.StockBLL.QueryPageListByUserSearch(supplyId, user.UserId, keyname, outIsShow, pageIndex,
+            var res = StockBLL.QueryPageListByUserSearch(supplyId, user.UserId, keyname, outIsShow, pageIndex,
                 pageSize);
 
-            return ApiResult.RData(new GridData<Model.StockModel>(res.Rows, res.Total));
+            return ApiResult.RData(new GridData<StockModel>(res.Rows, res.Total));
         }
 
         [HttpPost]
         public IActionResult StockMultipleAction([FromForm] string stockIds, [FromForm] int action)
         {
-            var user = UserCurrent();
+            UserModel user = UserCurrent();
 
             var stockIdList = Global.Json.Deserialize<List<string>>(stockIds);
 
             if (stockIdList != null && stockIdList.Count > 0)
-            {
                 switch (action)
                 {
                     case 0:
                     {
                         //删除
-                        BLL.StockBLL.Delete(p => p.UserId == user.UserId && stockIdList.Contains(p.StockId));
+                        StockBLL.Delete(p => p.UserId == user.UserId && stockIdList.Contains(p.StockId));
                     }
                         break;
                     case 1:
                     {
                         //下架 isShow = false
-                        BLL.StockBLL.Update(p => p.UserId == user.UserId && stockIdList.Contains(p.StockId),
+                        StockBLL.Update(p => p.UserId == user.UserId && stockIdList.Contains(p.StockId),
                             p => p.IsShow == false);
                     }
                         break;
                     case 2:
                     {
                         //上架 isShow = true
-                        BLL.StockBLL.Update(p => p.UserId == user.UserId && stockIdList.Contains(p.StockId),
-                            p => p.IsShow == true);
+                        StockBLL.Update(p => p.UserId == user.UserId && stockIdList.Contains(p.StockId),
+                            p => p.IsShow);
                     }
                         break;
                 }
-            }
 
             return ApiResult.RCode();
         }
@@ -403,24 +390,21 @@ namespace TinyStore.Site.Controllers
         public IActionResult StockExport([FromForm] string supplyId, [FromForm] string keyname,
             [FromForm] string isShow)
         {
-            var user = UserCurrent();
+            UserModel user = UserCurrent();
 
-            var supplyModel = BLL.SupplyBLL.QueryModelById(supplyId);
+            SupplyModel supplyModel = SupplyBLL.QueryModelById(supplyId);
             if (supplyModel == null)
                 return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
 
             bool? outIsShow = null;
-            if (bool.TryParse(isShow, out bool tempIsShow))
-            {
-                outIsShow = tempIsShow;
-            }
+            if (bool.TryParse(isShow, out var tempIsShow)) outIsShow = tempIsShow;
 
-            var res = BLL.StockBLL.QueryListByUserSearch(supplyId, user.UserId, keyname, outIsShow);
+            var res = StockBLL.QueryListByUserSearch(supplyId, user.UserId, keyname, outIsShow);
 
             if (res.Count > 0)
             {
-                StringBuilder sb = new StringBuilder("卡号" + Environment.NewLine);
-                foreach (var item in res)
+                var sb = new StringBuilder("卡号" + Environment.NewLine);
+                foreach (StockModel item in res)
                 {
                     sb.Append(item.Name);
                     sb.Append(Environment.NewLine);
@@ -428,10 +412,8 @@ namespace TinyStore.Site.Controllers
 
                 return ApiResult.RData(sb.ToString());
             }
-            else
-            {
-                return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
-            }
+
+            return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
         }
 
 
@@ -439,20 +421,19 @@ namespace TinyStore.Site.Controllers
         public IActionResult StockImport([FromForm] string supplyId, [FromForm] string content,
             [FromForm] bool isShow, [FromForm] bool isAllowRepeat)
         {
-            var user = UserCurrent();
+            UserModel user = UserCurrent();
 
-            var supplyModel = BLL.SupplyBLL.QueryModelById(supplyId);
+            SupplyModel supplyModel = SupplyBLL.QueryModelById(supplyId);
             if (supplyModel == null)
                 return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
 
-            var datas = new List<Model.StockModel>();
+            var datas = new List<StockModel>();
             var repeatNameList = new List<string>();
 
             if (!string.IsNullOrWhiteSpace(content))
             {
                 var stockPairList = content.Split(Environment.NewLine);
                 if (stockPairList.Length > 0)
-                {
                     foreach (var item in stockPairList)
                     {
                         var stockName = Regex.Replace(item.Trim(), @"[\s\u00A0\u0020\u3000]+", " ");
@@ -465,7 +446,7 @@ namespace TinyStore.Site.Controllers
                                 continue;
                             }
 
-                            datas.Add(new Model.StockModel()
+                            datas.Add(new StockModel
                             {
                                 Name = stockName,
                                 Memo = "",
@@ -480,7 +461,6 @@ namespace TinyStore.Site.Controllers
                             });
                         }
                     }
-                }
             }
 
             if (datas.Count > 0)
@@ -488,7 +468,7 @@ namespace TinyStore.Site.Controllers
                 if (!isAllowRepeat)
                 {
                     var namelist = datas.Select(p => p.Name).ToList();
-                    var stockRepeatList = BLL.StockBLL.QueryList(p =>
+                    var stockRepeatList = StockBLL.QueryList(p =>
                         p.UserId == user.UserId && p.SupplyId == supplyId && namelist.Contains(p.Name));
                     if (stockRepeatList.Count > 0)
                     {
@@ -498,51 +478,52 @@ namespace TinyStore.Site.Controllers
                     }
                 }
 
-                BLL.StockBLL.InsertRange(datas);
+                StockBLL.InsertRange(datas);
                 return ApiResult.RData(repeatNameList);
             }
-            else
-            {
-                return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
-            }
+
+            return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
         }
 
         [HttpPost]
         public IActionResult ProductList([FromForm] string storeId)
         {
-            var user = UserCurrent(storeId, out Model.StoreModel store);
+            UserModel user = UserCurrent(storeId, out StoreModel store);
             if (store == null)
                 return ApiResult.RCode(ApiResult.ECode.AuthorizationFailed);
 
-            var res = BLL.ProductBLL.QueryListByStoreId(store.StoreId);
+            var res = ProductBLL.QueryListByStoreId(store.StoreId);
             return ApiResult.RData(res);
         }
-        
+
         [HttpPost]
-        public IActionResult ProductListSave([FromQuery] string storeId,List<Model.ProductModel> productList)
+        public IActionResult ProductListSave([FromQuery] string storeId, List<ProductModel> productList)
         {
-            var user = UserCurrent(storeId, out Model.StoreModel store);
+            UserModel user = UserCurrent(storeId, out StoreModel store);
             if (store == null)
                 return ApiResult.RCode(ApiResult.ECode.AuthorizationFailed);
 
-            var productData = BLL.ProductBLL.QueryListByStoreId(store.StoreId);
-            foreach (var productModel in productList)
+            var productData = ProductBLL.QueryListByStoreId(store.StoreId);
+            foreach (ProductModel productModel in productList)
             {
-                var data = productData.FirstOrDefault(p => p.ProductId == productModel.ProductId);
+                ProductModel? data = productData.FirstOrDefault(p => p.ProductId == productModel.ProductId);
                 if (data == null)
                 {
                     //ProductId商品编号会在前端生成，这里仅做特殊情况下的处理
-                    if(string.IsNullOrWhiteSpace(productModel.ProductId))
+                    if (string.IsNullOrWhiteSpace(productModel.ProductId))
                         productModel.ProductId = Global.Generator.DateId(1);
                     productModel.UserId = user.UserId;
                     productModel.StoreId = store.StoreId;
-                    productModel.Category = string.IsNullOrWhiteSpace(productModel.Category) ? "" : productModel.Category;
-                    productModel.Memo = string.IsNullOrWhiteSpace(productModel.Memo) || productModel.Memo.Length > 4000 ? "" : productModel.Memo;
+                    productModel.Category =
+                        string.IsNullOrWhiteSpace(productModel.Category) ? "" : productModel.Category;
+                    productModel.Memo = string.IsNullOrWhiteSpace(productModel.Memo) || productModel.Memo.Length > 4000
+                        ? ""
+                        : productModel.Memo;
                     productModel.Icon = string.IsNullOrWhiteSpace(productModel.Icon) ? "" : productModel.Icon;
-                    
+
                     productModel.Icon = SiteContext.Resource.MoveTempFile(productModel.Icon);
-                    
-                    BLL.ProductBLL.Insert(productModel);
+
+                    ProductBLL.Insert(productModel);
 
                     productData.Add(productModel);
                 }
@@ -557,11 +538,13 @@ namespace TinyStore.Site.Controllers
                     data.Cost = productModel.Cost;
                     data.IsShow = productModel.IsShow;
                     data.DeliveryType = productModel.DeliveryType;
-                    data.Memo = string.IsNullOrWhiteSpace(productModel.Memo) || productModel.Memo.Length > 4000 ? "" : productModel.Memo;
-                    
+                    data.Memo = string.IsNullOrWhiteSpace(productModel.Memo) || productModel.Memo.Length > 4000
+                        ? ""
+                        : productModel.Memo;
+
                     data.Icon = SiteContext.Resource.MoveTempFile(productModel.Icon);
 
-                    BLL.ProductBLL.Update(data);
+                    ProductBLL.Update(data);
                 }
             }
 
@@ -569,86 +552,191 @@ namespace TinyStore.Site.Controllers
                 .Select(p => p.ProductId).ToList();
             if (productIds2Remove.Count > 0)
             {
-                BLL.ProductBLL.DeleteByIdsAndUserId(productIds2Remove, store.StoreId);
+                ProductBLL.DeleteByIdsAndUserId(productIds2Remove, store.StoreId);
                 foreach (var productId in productIds2Remove)
-                {
                     productData.Remove(productData.FirstOrDefault(p => p.ProductId == productId));
-                }
             }
 
             return ApiResult.RData(productData);
         }
-        
+
         [HttpPost]
-        public IActionResult OrderPageList([FromForm] string storeId,[FromForm] string productId, 
+        public IActionResult OrderPageList([FromForm] string storeId, [FromForm] string productId,
             [FromForm] string from, [FromForm] string to,
-            [FromForm] string keyname,[FromForm] string isPay, [FromForm] string isDelivery,
+            [FromForm] string keyname, [FromForm] string isPay, [FromForm] string isDelivery,
+            [FromForm] string isSettle,
             [FromForm] int pageIndex, [FromForm] int pageSize)
         {
-            var user = UserCurrent(storeId, out Model.StoreModel store);
+            UserModel user = UserCurrent(storeId, out StoreModel store);
             if (store == null)
                 return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
-            
+
             bool? outIsPay = null;
-            if (bool.TryParse(isPay, out bool tempIsPay))
-            {
-                outIsPay = tempIsPay;
-            }  
-            
+            if (bool.TryParse(isPay, out var tempIsPay)) outIsPay = tempIsPay;
             bool? outIsDelivery = null;
-            if (bool.TryParse(isDelivery, out bool tempIsDelivery))
-            {
-                outIsDelivery = tempIsDelivery;
-            }
+            if (bool.TryParse(isDelivery, out var tempIsDelivery)) outIsDelivery = tempIsDelivery;
+            bool? outIsSettle = null;
+            if (bool.TryParse(isSettle, out var tempIsSettle)) outIsSettle = tempIsSettle;
 
             DateTime? dateFrom = null;
-            if (DateTime.TryParse(from, out DateTime tempdateFrom))
-            {
-                dateFrom = tempdateFrom;
-            }  
-            
+            if (DateTime.TryParse(from, out DateTime tempdateFrom)) dateFrom = tempdateFrom;
+
             DateTime? dateTo = null;
-            if (DateTime.TryParse(to, out DateTime tempdateTo ))
-            {
-                dateTo = tempdateTo.AddDays(1) ;
-            }
-            
-            var res = BLL.OrderBLL.QueryPageListBySearch(store.StoreId, productId,dateFrom,dateTo, keyname,outIsPay, outIsDelivery, pageIndex, pageSize);
-            
+            if (DateTime.TryParse(to, out DateTime tempdateTo)) dateTo = tempdateTo.AddDays(1);
+
+            var res = OrderBLL.QueryPageListBySearch(store.StoreId, productId, dateFrom, dateTo, keyname, outIsPay,
+                outIsDelivery, outIsSettle, pageIndex, pageSize);
+
             return ApiResult.RData(res);
         }
-        
-        
+
+        [HttpPost]
+        public IActionResult OrderSave([FromQuery] string storeId, OrderModel order)
+        {
+            UserModel user = UserCurrent(storeId, out StoreModel store);
+            if (store == null)
+                return ApiResult.RCode(ApiResult.ECode.AuthorizationFailed);
+
+            if (order.IsPay)
+            {
+                if (string.IsNullOrWhiteSpace(order.PaymentType) ||
+                    store.PaymentList.All(p => !string.Equals(p.Name, order.PaymentType)))
+                    return ApiResult.RCode(ApiResult.ECode.DataFormatError);
+
+                order.PaymentDate = order.PaymentDate != null ? order.PaymentDate : DateTime.Now;
+                order.TranId = !string.IsNullOrWhiteSpace(order.TranId) ? order.TranId : "";
+            }
+
+            if (order.RefundAmount > 0) order.RefundDate = order.RefundDate != null ? order.RefundDate : DateTime.Now;
+
+            if (order.IsDelivery)
+            {
+                order.DeliveryDate = order.DeliveryDate != null ? order.DeliveryDate : DateTime.Now;
+                order.StockList = order.StockList != null ? order.StockList : new List<StockOrder>();
+            }
+
+            if (string.IsNullOrWhiteSpace(order.OrderId))
+            {
+                order.OrderId = Global.Generator.DateId(1);
+                order.UserId = user.UserId;
+                order.StoreId = store.StoreId;
+
+                order.ClientIP = RequestInfo._ClientIP(Request).ToString();
+                order.UserAgent = Request.Headers["User-Agent"].ToString();
+                order.AcceptLanguage = Request.Headers["Accept-Language"].ToString();
+
+                order.CreateDate = DateTime.Now;
+                order.LastUpdateDate = DateTime.Now;
+
+                OrderBLL.Insert(order);
+
+                return ApiResult.RCode();
+            }
+            else
+            {
+                OrderModel data = OrderBLL.QueryModelById(order.OrderId);
+                if (data != null && data.UserId == user.UserId && data.StoreId == store.StoreId)
+                {
+                    data.Memo = order.Memo;
+                    if (!data.IsPay && order.IsPay)
+                    {
+                        data.IsPay = order.IsPay;
+                        data.PaymentType = order.PaymentType;
+                        data.PaymentDate = order.PaymentDate;
+                        data.TranId = order.TranId;
+                    }
+                    if (!data.IsDelivery && order.IsDelivery)
+                    {
+                        data.IsDelivery = order.IsDelivery;
+                        data.DeliveryDate = order.DeliveryDate;
+                        data.StockList = order.StockList;
+                    }
+                    if (data.RefundAmount == 0 && order.RefundAmount > 0)
+                    {
+                        data.RefundAmount = order.RefundAmount;
+                        data.RefundDate = order.RefundDate;
+                    }
+
+                    BLL.OrderBLL.Update(data);
+                    
+                    return ApiResult.RCode();
+                }
+                else
+                {
+                    return ApiResult.RCode(ApiResult.ECode.UnKonwError);
+                }
+            }
+        }
+
+        [HttpPost]
+        public IActionResult OrderMultipleAction([FromForm] string storeId, [FromForm] string orderIds,
+            [FromForm] int action)
+        {
+            UserModel user = UserCurrent(storeId, out StoreModel store);
+            if (store == null)
+                return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
+
+            var orderIdList = Global.Json.Deserialize<List<string>>(orderIds);
+
+            if (orderIdList != null && orderIdList.Count > 0)
+                switch (action)
+                {
+                    case 0:
+                    {
+                        //删除
+                        OrderBLL.Delete(p =>
+                            p.UserId == user.UserId && p.StoreId == store.StoreId && orderIdList.Contains(p.OrderId));
+                    }
+                        break;
+                    case 1:
+                    {
+                        //结算 isSettle = true
+                        OrderBLL.Update(
+                            p => p.UserId == user.UserId && p.StoreId == store.StoreId &&
+                                 orderIdList.Contains(p.OrderId) && p.IsPay && p.IsDelivery,
+                            p => new OrderModel {IsSettle = true, SettleDate = DateTime.Now});
+                    }
+                        break;
+                    case 2:
+                    {
+                        // //上架 isShow = true
+                        // BLL.StockBLL.Update(p => p.UserId == user.UserId && stockIdList.Contains(p.StockId),
+                        //     p => p.IsShow == true);
+                    }
+                        break;
+                }
+
+            return ApiResult.RCode();
+        }
+
         public IActionResult Register([FromForm] string account, [FromForm] string password, [FromForm] string qq,
             [FromForm] string email, [FromForm] string telphone)
         {
             if (string.IsNullOrWhiteSpace(account) || string.IsNullOrWhiteSpace(password) ||
                 string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(telphone))
-            {
                 return ApiResult.RCode("传参错误");
-            }
 
-            if (BLL.UserBLL.QueryModelByAccount(account) != null)
+            if (UserBLL.QueryModelByAccount(account) != null)
                 return ApiResult.RCode("商户账号已存在");
-            if (BLL.UserExtendBLL.QueryModelByEmail(email) != null)
+            if (UserExtendBLL.QueryModelByEmail(email) != null)
                 return ApiResult.RCode("保密邮箱已存在");
-            if (BLL.UserExtendBLL.QueryModelByTelPhone(telphone) != null)
+            if (UserExtendBLL.QueryModelByTelPhone(telphone) != null)
                 return ApiResult.RCode("手机号已存在");
             var salt = Global.Generator.Guid().Substring(0, 6); //6位有效字符
-            BLL.UserBLL.Insert(new Model.UserModel
+            UserBLL.Insert(new UserModel
             {
                 Account = account,
                 ClientKey = string.Empty,
                 Password = Global.Hash(password, salt),
                 Salt = salt
             });
-            var user = BLL.UserBLL.QueryModelByAccount(account);
+            UserModel user = UserBLL.QueryModelByAccount(account);
             if (user == null)
                 return ApiResult.RCode("注册失败");
-            var ip = Utils.RequestInfo._ClientIP(HttpContext).ToString();
+            var ip = RequestInfo._ClientIP(HttpContext).ToString();
             var useragent = Request.Headers["User-Agent"].ToString();
             var acceptlanguage = Request.Headers["Accept-Language"].ToString();
-            BLL.UserExtendBLL.Insert(new Model.UserExtendModel
+            UserExtendBLL.Insert(new UserExtendModel
             {
                 BankAccount = string.Empty,
                 BankPersonName = string.Empty,
@@ -688,7 +776,7 @@ namespace TinyStore.Site.Controllers
             return ApiResult.RCode("");
         }
 
-        public dynamic OrderListStat(List<Model.OrderModel> orders)
+        public dynamic OrderListStat(List<OrderModel> orders)
         {
             double incomme = 0,
                 returnamount = 0,
@@ -699,11 +787,11 @@ namespace TinyStore.Site.Controllers
                 //profilegross = 0,
                 profit = 0;
 
-            foreach (var item in orders.Where(p => p.IsPay))
+            foreach (OrderModel item in orders.Where(p => p.IsPay))
             {
                 //实际收款(退款金额)
                 incomme += item.Amount;
-                returnamount += item.ReturnAmount;
+                returnamount += item.RefundAmount;
                 //合计成本(待结算)
                 cost += item.Cost + item.PaymentFee;
                 if (!item.IsSettle)
@@ -711,7 +799,7 @@ namespace TinyStore.Site.Controllers
                 //手续费(退款返还)
                 paymentfee += item.PaymentFee;
                 //毛利润（总收入-总支出） //纯利润（毛利润-总手续费）
-                profit += item.Amount - item.ReturnAmount - item.Cost - item.PaymentFee;
+                profit += item.Amount - item.RefundAmount - item.Cost - item.PaymentFee;
             }
 
             return new
@@ -730,49 +818,49 @@ namespace TinyStore.Site.Controllers
         public IActionResult OrderPageListIsPaid([FromForm] int pageIndex, [FromForm] int pageSize,
             [FromForm] string storeId)
         {
-            var user = UserCurrent(storeId, out Model.StoreModel store);
+            UserModel user = UserCurrent(storeId, out StoreModel store);
             if (store == null)
                 return ApiResult.RCode("未知错误");
 
-            var res = BLL.OrderBLL.QueryPageListIsPaidByStoreId(store.StoreId, pageIndex, pageSize);
-            return ApiResult.RData(new GridData<Model.OrderModel>(res.Rows, (int) res.Total));
+            var res = OrderBLL.QueryPageListIsPaidByStoreId(store.StoreId, pageIndex, pageSize);
+            return ApiResult.RData(new GridData<OrderModel>(res.Rows, res.Total));
         }
 
         public IActionResult OrderPageListBySid([FromForm] string storeId, [FromForm] string sId, [FromForm] int state,
             [FromForm] int keykind, [FromForm] string key, [FromForm] bool ishasreturn, [FromForm] int pageIndex,
             [FromForm] int pageSize)
         {
-            var user = UserCurrent(storeId, out Model.StoreModel store);
+            UserModel user = UserCurrent(storeId, out StoreModel store);
             if (store == null)
                 return ApiResult.RCode("未知错误");
 
-            var orderstat =
-                OrderListStat(BLL.OrderBLL.QueryListBySid(sId, state, keykind, key, store.StoreId, ishasreturn));
+            dynamic orderstat =
+                OrderListStat(OrderBLL.QueryListBySid(sId, state, keykind, key, store.StoreId, ishasreturn));
 
-            var res = BLL.OrderBLL.QueryPageListBySid(sId, state, keykind, key, store.StoreId, ishasreturn,
+            var res = OrderBLL.QueryPageListBySid(sId, state, keykind, key, store.StoreId, ishasreturn,
                 pageIndex, pageSize);
 
-            return ApiResult.RData(new GridData<Model.OrderModel>(res.Rows, (int) res.Total, orderstat));
+            return ApiResult.RData(new GridData<OrderModel>(res.Rows, res.Total, orderstat));
         }
 
         public IActionResult OrderInsert([FromForm] string storeId, [FromForm] string order)
         {
-            var user = UserCurrent(storeId, out Model.StoreModel store);
+            UserModel user = UserCurrent(storeId, out StoreModel store);
             if (store == null)
                 return ApiResult.RCode("未知错误");
             if (!string.IsNullOrWhiteSpace(order))
                 return ApiResult.RCode("传参错误");
-            var orderMpdel = Global.Json.Deserialize<Model.OrderModel>(order);
+            var orderMpdel = Global.Json.Deserialize<OrderModel>(order);
             if (orderMpdel == null)
                 return ApiResult.RCode("传参错误");
 
-            var product = BLL.ProductBLL.QueryModelByProductIdAndStoreId(orderMpdel.ProductId, store.StoreId);
+            ProductModel product = ProductBLL.QueryModelByProductIdAndStoreId(orderMpdel.ProductId, store.StoreId);
             if (product == null)
                 return ApiResult.RCode("产品不存在");
             if (product.DeliveryType == EDeliveryType.卡密)
             {
                 var stockcount =
-                    BLL.StockBLL.QueryCountBySupplyIdCanUse(product.SupplyId);
+                    StockBLL.QueryCountBySupplyIdCanUse(product.SupplyId);
                 if (stockcount < product.QuantityMin)
                     return ApiResult.RCode("库存数量不足");
                 if (orderMpdel.Quantity > stockcount)
@@ -781,21 +869,23 @@ namespace TinyStore.Site.Controllers
                     return ApiResult.RCode("下单数量不能小于最小下单量");
             }
             else if (orderMpdel.Quantity < product.QuantityMin)
+            {
                 return ApiResult.RCode("下单数量不能小于最小下单量");
+            }
 
             if (string.IsNullOrEmpty(orderMpdel.Contact))
                 return ApiResult.RCode("电子邮箱不能为空");
-            
+
             // if (string.IsNullOrEmpty(orderMpdel.Message))
             //     return ApiResult.RCode("留言信息不能为空");
 
-            Model.Extend.Payment payment = store.PaymentList.FirstOrDefault(p =>
+            Payment payment = store.PaymentList.FirstOrDefault(p =>
                 p.IsEnable && string.Equals(p.Name, orderMpdel.PaymentType, StringComparison.OrdinalIgnoreCase));
 
             if (payment == null)
                 return ApiResult.RCode("支付方式不存在");
             if (!string.IsNullOrEmpty(orderMpdel.TranId) &&
-                BLL.OrderBLL.QueryModelByTranId(orderMpdel.TranId) != null)
+                OrderBLL.QueryModelByTranId(orderMpdel.TranId) != null)
                 return ApiResult.RCode("交易编号已存在");
             //var price = product.Amount;
             double discount = 0;
@@ -805,11 +895,11 @@ namespace TinyStore.Site.Controllers
             //     : BLL.SupplierBLL.QueryModelBySId(product.SupplierId);
 
 
-            var ip = Utils.RequestInfo._ClientIP(HttpContext).ToString();
+            var ip = RequestInfo._ClientIP(HttpContext).ToString();
             var useragent = Request.Headers["User-Agent"].ToString();
             var acceptlanguage = Request.Headers["Accept-Language"].ToString();
 
-            var data = new Model.OrderModel
+            var data = new OrderModel
             {
                 OrderId = Global.Generator.DateId(2),
                 UserId = user.UserId,
@@ -818,42 +908,41 @@ namespace TinyStore.Site.Controllers
                 ProductId = product.ProductId,
                 Name = product.Name,
                 Memo = product.Memo,
-                
+
                 Quantity = orderMpdel.Quantity,
                 Amount = orderMpdel.Amount,
                 Cost = product.Cost * orderMpdel.Quantity,
                 CreateDate = orderMpdel.CreateDate,
                 //Discount = discount,
                 //Income = string.IsNullOrEmpty(orderMpdel.TranId) ? 0 : orderMpdel.Amount,
-                
+
                 IsPay = orderMpdel.IsPay,
                 IsDelivery = orderMpdel.IsPay && orderMpdel.IsDelivery,
-                
+
                 PaymentFee = orderMpdel.Amount * payment.Rate,
                 PaymentType = payment.Name,
-                
+
                 DeliveryDate = DateTime.Now,
                 StockList = new List<StockOrder>(),
                 TranId = orderMpdel.IsPay ? orderMpdel.TranId : string.Empty,
-                
-                
-                
+
+
                 Contact = orderMpdel.Contact,
                 Message = orderMpdel.Message,
                 ClientIP = ip,
                 UserAgent = useragent,
                 AcceptLanguage = acceptlanguage,
-                 
+
                 IsSettle = false,
                 SettleDate = DateTime.Now,
-                
-                ReturnAmount = 0,
-                ReturnDate = DateTime.Now,
-                
-                LastUpdateDate = DateTime.Now,
+
+                RefundAmount = 0,
+                RefundDate = DateTime.Now,
+
+                LastUpdateDate = DateTime.Now
             };
 
-            BLL.OrderBLL.Insert(data);
+            OrderBLL.Insert(data);
 
             UserLog(store.UserId, EUserLogType.订单管理, Request, store.StoreId,
                 "订单手动添加");
@@ -863,13 +952,13 @@ namespace TinyStore.Site.Controllers
 
         public IActionResult OrderDelivery([FromForm] string storeId, [FromForm] string orderId) // 保存了两次订单
         {
-            var user = UserCurrent(storeId, out Model.StoreModel store);
+            UserModel user = UserCurrent(storeId, out StoreModel store);
             if (store == null)
                 return ApiResult.RCode("未知错误");
 
             if (string.IsNullOrEmpty(orderId))
                 return ApiResult.RCode("订单不存在");
-            var order = BLL.OrderBLL.QueryModelByOrderIdAndStoreId(orderId, store.StoreId);
+            OrderModel order = OrderBLL.QueryModelByOrderIdAndStoreId(orderId, store.StoreId);
             if (order == null)
                 return ApiResult.RCode("订单不存在");
             if (!order.IsPay)
@@ -886,13 +975,13 @@ namespace TinyStore.Site.Controllers
 
         public IActionResult OrderEmail([FromForm] string storeId, [FromForm] string orderId)
         {
-            var user = UserCurrent(storeId, out Model.StoreModel store);
+            UserModel user = UserCurrent(storeId, out StoreModel store);
             if (store == null)
                 return ApiResult.RCode("未知错误");
 
             if (string.IsNullOrEmpty(orderId))
                 return ApiResult.RCode("订单ID不能为空");
-            var order = BLL.OrderBLL.QueryModelByOrderIdAndStoreId(orderId, store.StoreId);
+            OrderModel order = OrderBLL.QueryModelByOrderIdAndStoreId(orderId, store.StoreId);
             if (order == null)
                 return ApiResult.RCode("订单不存在");
             if (!order.IsDelivery)
@@ -908,12 +997,12 @@ namespace TinyStore.Site.Controllers
         public IActionResult OrderReturn([FromForm] string storeId, [FromForm] string orderId,
             [FromForm] double costUpdate, [FromForm] double returnAmount)
         {
-            var user = UserCurrent(storeId, out Model.StoreModel store);
+            UserModel user = UserCurrent(storeId, out StoreModel store);
             if (store == null)
                 return ApiResult.RCode("未知错误");
             if (string.IsNullOrEmpty(orderId))
                 return ApiResult.RCode("订单ID不能为空");
-            var order = BLL.OrderBLL.QueryModelByOrderIdAndStoreId(orderId, store.StoreId);
+            OrderModel order = OrderBLL.QueryModelByOrderIdAndStoreId(orderId, store.StoreId);
             if (order == null)
                 return ApiResult.RCode("订单不存在");
             if (order.Amount < returnAmount)
@@ -921,34 +1010,34 @@ namespace TinyStore.Site.Controllers
             if (!order.IsPay)
                 return ApiResult.RCode("订单尚未付款，不能操作");
 
-            var amountchange = returnAmount - order.ReturnAmount;
+            var amountchange = returnAmount - order.RefundAmount;
             order.Cost = costUpdate;
-            order.ReturnAmount = returnAmount;
+            order.RefundAmount = returnAmount;
 
-            order.ReturnDate = DateTime.Now;
+            order.RefundDate = DateTime.Now;
             order.LastUpdateDate = DateTime.Now;
-            if (!order.IsDelivery && string.Equals(order.Amount.ToString("f2"), order.ReturnAmount.ToString("f2"),
+            if (!order.IsDelivery && string.Equals(order.Amount.ToString("f2"), order.RefundAmount.ToString("f2"),
                 StringComparison.OrdinalIgnoreCase))
             {
                 order.IsDelivery = true;
                 order.DeliveryDate = DateTime.Now;
             }
 
-            var userExtend = BLL.UserExtendBLL.QueryModelById(order.UserId);
+            UserExtendModel userExtend = UserExtendBLL.QueryModelById(order.UserId);
             if (userExtend == null)
                 return ApiResult.RCode("商户不存在，请检查数据库");
             if (userExtend.Amount < amountchange)
                 return ApiResult.RCode("商户资金小于退款金额，请联系店铺管理人员解决");
-            BLL.UserExtendBLL.ChangeAmount(userExtend.UserId, -amountchange); //店铺金额减去变动金额
+            UserExtendBLL.ChangeAmount(userExtend.UserId, -amountchange); //店铺金额减去变动金额
 
-            BLL.OrderBLL.Update(order);
+            OrderBLL.Update(order);
             UserLog(store.UserId, EUserLogType.订单管理, Request, store.StoreId, "订单退款申请");
             return ApiResult.RCode("");
         }
 
         public IActionResult OrderUpdateIsSettle([FromForm] string storeId, [FromForm] string orderIds)
         {
-            var user = UserCurrent(storeId, out Model.StoreModel store);
+            UserModel user = UserCurrent(storeId, out StoreModel store);
             if (store == null)
                 return ApiResult.RCode("未知错误");
             if (string.IsNullOrWhiteSpace(orderIds))
@@ -957,7 +1046,7 @@ namespace TinyStore.Site.Controllers
             if (ids == null || ids.Count < 0)
                 return ApiResult.RCode("订单编号错误");
 
-            BLL.OrderBLL.UpdateIsSettle(ids, store.StoreId, true, DateTime.Now);
+            OrderBLL.UpdateIsSettle(ids, store.StoreId, true, DateTime.Now);
             UserLog(store.UserId, EUserLogType.订单管理, Request, store.StoreId, "批量结算");
             return ApiResult.RCode("");
         }
@@ -965,17 +1054,17 @@ namespace TinyStore.Site.Controllers
         public IActionResult UserLogPageList([FromForm] string storeId, [FromForm] int pageIndex,
             [FromForm] int pagesize, [FromForm] int userLogType, [FromForm] DateTime begin, [FromForm] DateTime end)
         {
-            var user = UserCurrent(storeId, out Model.StoreModel store);
+            UserModel user = UserCurrent(storeId, out StoreModel store);
             if (store == null)
                 return ApiResult.RCode("未知错误");
 
             begin = begin.Date;
             end = end.Date.AddDays(1).AddSeconds(-1);
-            var res = BLL.UserLogBLL.QueryPageListByUserIdOrStoreIdOrType(user.UserId, store.StoreId, userLogType,
+            var res = UserLogBLL.QueryPageListByUserIdOrStoreIdOrType(user.UserId, store.StoreId, userLogType,
                 begin,
                 end, pageIndex, pagesize);
 
-            return ApiResult.RData(new GridData<Model.UserLogModel>(res.Rows, (int) res.Total));
+            return ApiResult.RData(new GridData<UserLogModel>(res.Rows, res.Total));
         }
 
 
@@ -994,7 +1083,7 @@ namespace TinyStore.Site.Controllers
         public IActionResult ProductAddFromSupply([FromForm] string storeId, [FromForm] string ids,
             [FromForm] string category)
         {
-            var user = UserCurrent(storeId, out Model.StoreModel store);
+            UserModel user = UserCurrent(storeId, out StoreModel store);
             if (store == null)
                 return ApiResult.RCode("未知错误");
             if (string.IsNullOrWhiteSpace(ids))
@@ -1005,18 +1094,17 @@ namespace TinyStore.Site.Controllers
             if (string.IsNullOrEmpty(category))
                 return ApiResult.RCode("产品分类不存在");
 
-            var userExtend = BLL.UserExtendBLL.QueryModelById(user.UserId);
+            UserExtendModel userExtend = UserExtendBLL.QueryModelById(user.UserId);
             if (userExtend == null)
                 return ApiResult.RCode(ApiResult.ECode.AuthorizationFailed);
 
-            var productlist = new List<Model.ProductModel>();
-            foreach (var item in BLL.SupplyBLL.QueryListByIds(idList))
-            {
-                productlist.Add(new Model.ProductModel
+            var productlist = new List<ProductModel>();
+            foreach (SupplyModel item in SupplyBLL.QueryListByIds(idList))
+                productlist.Add(new ProductModel
                 {
                     Amount = item.FaceValue,
                     Category = category,
-                    Cost = (item.Cost * SiteContext.Config.SupplyRates[userExtend.Level]),
+                    Cost = item.Cost * SiteContext.Config.SupplyRates[userExtend.Level],
                     IsShow = false,
                     Memo = item.Name,
                     Name = item.Name,
@@ -1025,24 +1113,23 @@ namespace TinyStore.Site.Controllers
                     Sort = 0,
                     DeliveryType = item.DeliveryType,
                     StoreId = storeId,
-                    SupplyId = item.SupplyId,
+                    SupplyId = item.SupplyId
                 });
-            }
 
-            BLL.ProductBLL.InsertRange(productlist);
+            ProductBLL.InsertRange(productlist);
             return ApiResult.RCode("");
         }
 
         public IActionResult ProductSave([FromForm] string storeId, [FromForm] string product)
         {
-            var user = UserCurrent(storeId, out Model.StoreModel store);
+            UserModel user = UserCurrent(storeId, out StoreModel store);
             if (store == null)
                 return ApiResult.RCode("未知错误");
 
 
             if (string.IsNullOrWhiteSpace(product))
                 return ApiResult.RCode("商品信息为空");
-            var productModel = Global.Json.Deserialize<Model.ProductModel>(product);
+            var productModel = Global.Json.Deserialize<ProductModel>(product);
             if (productModel == null)
                 return ApiResult.RCode("商品信息数据格式错误");
             if (string.IsNullOrEmpty(productModel.Name))
@@ -1062,50 +1149,43 @@ namespace TinyStore.Site.Controllers
                 if (!string.IsNullOrEmpty(productModel.Icon) && productModel.Icon.StartsWith("/Resouce/Product/"))
                 {
                     var str = productModel.Icon.Replace("/Resouce/Product/", ""); //取图片地址的id值
-                    if (str.Contains("/"))
-                    {
-                        productModel.ProductId = str.Split("/")[0];
-                    }
+                    if (str.Contains("/")) productModel.ProductId = str.Split("/")[0];
                 }
 
                 if (string.IsNullOrWhiteSpace(productModel.ProductId))
-                {
                     productModel.ProductId = Global.Generator.DateId(2);
-                }
 
                 productModel.Icon = SiteContext.Resource.MoveTempFile(productModel.Icon);
-                BLL.ProductBLL.Insert(productModel);
+                ProductBLL.Insert(productModel);
                 UserLog(user.UserId, EUserLogType.产品管理, Request, store.StoreId,
                     "产品增加" + productModel.ProductId);
                 return ApiResult.RCode("");
             }
-            else
-            {
-                var datacompare =
-                    BLL.ProductBLL.QueryModelByProductIdAndStoreId(productModel.ProductId, store.StoreId);
-                if (datacompare == null)
-                    return ApiResult.RCode("产品不存在或已被删除");
-                productModel.Icon = SiteContext.Resource.MoveTempFile(productModel.Icon);
-                BLL.ProductBLL.Update(productModel);
-                UserLog(user.UserId, EUserLogType.产品管理, Request, store.StoreId,
-                    "产品修改" + productModel.ProductId);
-                return ApiResult.RCode("");
-            }
+
+            ProductModel datacompare =
+                ProductBLL.QueryModelByProductIdAndStoreId(productModel.ProductId, store.StoreId);
+            if (datacompare == null)
+                return ApiResult.RCode("产品不存在或已被删除");
+            productModel.Icon = SiteContext.Resource.MoveTempFile(productModel.Icon);
+            ProductBLL.Update(productModel);
+            UserLog(user.UserId, EUserLogType.产品管理, Request, store.StoreId,
+                "产品修改" + productModel.ProductId);
+            return ApiResult.RCode("");
         }
 
         public IActionResult ProductDelete([FromForm] string storeId, [FromForm] string productId)
         {
-            var user = UserCurrent(storeId, out Model.StoreModel store);
+            UserModel user = UserCurrent(storeId, out StoreModel store);
             if (store == null)
                 return ApiResult.RCode("未知错误");
 
             if (string.IsNullOrEmpty(productId))
                 return ApiResult.RCode("产品编号错误");
-            var product = BLL.ProductBLL.QueryModelByProductIdAndStoreId(productId, store.StoreId);
+            ProductModel product = ProductBLL.QueryModelByProductIdAndStoreId(productId, store.StoreId);
             if (product == null)
                 return ApiResult.RCode("产品不存在或已被删除");
 
-            BLL.ProductBLL.DeleteByProductIdAndStoreId(productId, store.StoreId);
+            ProductBLL.DeleteByProductIdAndStoreId(productId, store.StoreId);
             UserLog(store.UserId, EUserLogType.产品管理, Request, store.StoreId, "产品删除");
             return ApiResult.RCode("");
         }
@@ -1113,7 +1193,7 @@ namespace TinyStore.Site.Controllers
         public IActionResult ProductModifyIsShow([FromForm] string storeId, [FromForm] string productId,
             [FromForm] bool isShow)
         {
-            var user = UserCurrent(storeId, out Model.StoreModel store);
+            UserModel user = UserCurrent(storeId, out StoreModel store);
             if (store == null)
                 return ApiResult.RCode("未知错误");
 
@@ -1121,14 +1201,14 @@ namespace TinyStore.Site.Controllers
             if (string.IsNullOrEmpty(productId))
                 return ApiResult.RCode("产品ID不能为空");
 
-            var product = BLL.ProductBLL.QueryModelByProductIdAndStoreId(productId, store.StoreId);
+            ProductModel product = ProductBLL.QueryModelByProductIdAndStoreId(productId, store.StoreId);
             if (product == null)
                 return ApiResult.RCode("产品不存在或已被删除");
 
             if (product.IsShow != isShow)
             {
                 product.IsShow = isShow;
-                BLL.ProductBLL.Update(product);
+                ProductBLL.Update(product);
                 UserLog(store.UserId, EUserLogType.产品管理, Request,
                     store.StoreId, "产品" + (isShow ? "上架" : "下架"));
             }
@@ -1141,31 +1221,31 @@ namespace TinyStore.Site.Controllers
             [FromForm] bool isHasReturn, [FromForm] DateTime begin, [FromForm] DateTime end, [FromForm] int pageIndex,
             [FromForm] int pagesize)
         {
-            var user = UserCurrent(storeId, out Model.StoreModel store);
+            UserModel user = UserCurrent(storeId, out StoreModel store);
             if (store == null)
                 return ApiResult.RCode("未知错误");
 
             begin = begin.Date;
             end = end.Date.AddDays(1).AddSeconds(-1);
-            var res = BLL.OrderBLL.QueryPageListBenifitByStoreId(sId, begin, end, store.StoreId, isHasReturn,
+            var res = OrderBLL.QueryPageListBenifitByStoreId(sId, begin, end, store.StoreId, isHasReturn,
                 pageIndex, pagesize);
 
 
-            var orderstat = OrderListStat(BLL.OrderBLL.QueryListBenifitByStoreId(sId, begin, end, store.StoreId,
+            dynamic orderstat = OrderListStat(OrderBLL.QueryListBenifitByStoreId(sId, begin, end, store.StoreId,
                 isHasReturn));
 
 
-            return ApiResult.RData(new GridData<Model.OrderModel>(res.Rows, (int) res.Total, orderstat));
+            return ApiResult.RData(new GridData<OrderModel>(res.Rows, res.Total, orderstat));
         }
 
         public IActionResult WithDrawInsert([FromForm] double amount,
             [FromForm] int bankType, [FromForm] string bankaccount, [FromForm] string bankPersonName,
             [FromForm] string name)
         {
-            var user = UserCurrent();
+            UserModel user = UserCurrent();
 
 
-            var userExtend = BLL.UserExtendBLL.QueryModelById(user.UserId);
+            UserExtendModel userExtend = UserExtendBLL.QueryModelById(user.UserId);
             if (userExtend == null)
                 return ApiResult.RCode(ApiResult.ECode.AuthorizationFailed);
 
@@ -1183,7 +1263,7 @@ namespace TinyStore.Site.Controllers
 
             if (amount > userExtend.Amount)
                 return ApiResult.RCode("提现金额不能大于商户资金");
-            var withdraw = new Model.WithDrawModel
+            var withdraw = new WithDrawModel
             {
                 Amount = amount,
                 BankAccount = bankaccount,
@@ -1199,7 +1279,7 @@ namespace TinyStore.Site.Controllers
                 WithDrawId = Global.Generator.DateId()
             };
 
-            BLL.WithDrawBLL.Insert(withdraw);
+            WithDrawBLL.Insert(withdraw);
             UserLog(user.UserId, EUserLogType.提现, Request, "", "提现申请发布");
             return ApiResult.RCode("");
         }
@@ -1207,36 +1287,36 @@ namespace TinyStore.Site.Controllers
         public IActionResult WithDrawPageList([FromForm] int pageIndex,
             [FromForm] int pagesize, [FromForm] int state, [FromForm] DateTime begin, [FromForm] DateTime end)
         {
-            var user = UserCurrent();
+            UserModel user = UserCurrent();
 
             begin = begin.Date;
             end = end.Date.AddDays(1).AddSeconds(-1);
-            var res = BLL.WithDrawBLL.QueryPageList(user.UserId, state, begin, end, pageIndex, pagesize);
-            return ApiResult.RData(new GridData<Model.WithDrawModel>(res.Rows, (int) res.Total));
+            var res = WithDrawBLL.QueryPageList(user.UserId, state, begin, end, pageIndex, pagesize);
+            return ApiResult.RData(new GridData<WithDrawModel>(res.Rows, res.Total));
         }
 
         public IActionResult WithDrawDelete([FromForm] string id)
         {
-            var user = UserCurrent();
+            UserModel user = UserCurrent();
             if (string.IsNullOrEmpty(id))
                 return ApiResult.RCode("ID不能为空");
 
-            var withdraw = BLL.WithDrawBLL.QueryModelByWithDrawIdAndUserId(id, user.UserId);
+            WithDrawModel withdraw = WithDrawBLL.QueryModelByWithDrawIdAndUserId(id, user.UserId);
             if (withdraw == null)
                 return ApiResult.RCode("数据不存在或已被删除");
             if (withdraw.IsFinish)
                 return ApiResult.RCode("提现申请已处理，不能删除");
-            BLL.WithDrawBLL.DeleteByWithDrawIdAndUserId(id, user.UserId);
+            WithDrawBLL.DeleteByWithDrawIdAndUserId(id, user.UserId);
             UserLog(user.UserId, EUserLogType.提现, Request, "", "提现申请删除");
             return ApiResult.RCode("");
         }
 
         public IActionResult ProductListIsStock([FromForm] string storeId, [FromForm] string category)
         {
-            var user = UserCurrent(storeId, out Model.StoreModel store);
+            UserModel user = UserCurrent(storeId, out StoreModel store);
             if (store == null)
                 return ApiResult.RCode("未知错误");
-            return ApiResult.RData(BLL.ProductBLL
+            return ApiResult.RData(ProductBLL
                 .QueryListByCategoryIdAndStoreIdIsStock(category, store.StoreId));
         }
 

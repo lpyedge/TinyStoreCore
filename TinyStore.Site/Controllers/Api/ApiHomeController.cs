@@ -62,35 +62,27 @@ namespace TinyStore.Site.Controllers.Api
 
                     var order = new Model.OrderModel
                     {
-                        Amount = price * Quantity,
-                        ClientIP = Utils.RequestInfo._ClientIP(Request).ToString(),
-                        Contact = Contact,
-                        Cost = product.Cost * Quantity,
-                        CreateDate = DateTime.Now,
-                        //Discount = 0,
-                        //Income = 0,
-                        IsPay = false,
-                        IsDelivery = false,
-                        Memo = product.Memo,
-                        Name = product.Name,
-                        Message = NoticeAccount,
-                        OrderId = Global.Generator.DateId(2),
-                        ProductId = product.ProductId,
-                        Quantity = Quantity,
-                        ReturnAmount = 0,
-                        ReturnDate = DateTime.Now,
-                        DeliveryDate = DateTime.Now,
-                        StockList = new List<StockOrder>(),
+                        OrderId = Global.Generator.DateId(1),
+                        
                         StoreId = store.StoreId,
                         UserId = user.UserId,
-                        TranId = string.Empty,
+                        SupplyId = product.SupplyId,
+                        ProductId = product.ProductId,
+                        Name = product.Name,
+                        Amount = price,
+                        Contact = Contact,
+                        Cost = product.Cost,
+                        
+                        CreateDate = DateTime.Now,
+                        
+                        Memo = "",
+                        Message = NoticeAccount,
+                        Quantity = Quantity,
+                        ClientIP = Utils.RequestInfo._ClientIP(Request).ToString(),
                         UserAgent = Request.Headers["User-Agent"].ToString(),
                         AcceptLanguage = Request.Headers["Accept-Language"].ToString(),
-                        IsSettle = false,
-                        SettleDate = DateTime.Now,
-                        SupplyId = product.SupplyId,
+                        
                         LastUpdateDate = DateTime.Now,
-                        StoreUniqueId = store.UniqueId,
                     };
 
                     BLL.OrderBLL.Insert(order);

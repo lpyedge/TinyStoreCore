@@ -228,10 +228,10 @@ namespace TinyStore.Site.Controllers.Api
             if (!order.IsPay)
                 return ApiResult.RCode("订单尚未付款，不能操作");
 
-            order.ReturnDate = DateTime.Now;
+            order.RefundDate = DateTime.Now;
             order.LastUpdateDate = DateTime.Now;
             if (!order.IsDelivery && string.Equals(order.Amount.ToString("f2"),
-                order.ReturnAmount.ToString("f2"),
+                order.RefundAmount.ToString("f2"),
                 StringComparison.OrdinalIgnoreCase))
             {
                 order.IsDelivery = true;
@@ -244,9 +244,9 @@ namespace TinyStore.Site.Controllers.Api
                 var userExtend = BLL.UserExtendBLL.QueryModelById(order.UserId);
                 if (userExtend == null)
                     return ApiResult.RCode("商户不存在，请检查数据库");
-                if (userExtend.Amount < order.ReturnAmount)
+                if (userExtend.Amount < order.RefundAmount)
                     return ApiResult.RCode("商户资金小于退款金额，请联系店铺管理人员解决");
-                BLL.UserExtendBLL.ChangeAmount(userExtend.UserId, -order.ReturnAmount);
+                BLL.UserExtendBLL.ChangeAmount(userExtend.UserId, -order.RefundAmount);
             }
 
             BLL.OrderBLL.Update(order);

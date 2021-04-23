@@ -14,12 +14,6 @@
     <Content Include="App_Data\EmailTemplate\DeliveryEmail_NoStock.htm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="App_Data\EmailTemplate\DeliveryEmail_StockIp.htm">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="App_Data\EmailTemplate\DeliveryEmail_StockNoIp.htm">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="Views\Home\T5\css\store.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

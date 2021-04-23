@@ -2,7 +2,7 @@
     <div class="text-h5 text-weight-bold text-grey-8">
         <q-icon :name="storelinks[2].icon" size="md" class="on-left"></q-icon>{{storelinks[2].text}}
     </div>
-    <q-separator class="q-my-md"></q-separator>
+    <q-separator class="q-my-sm"></q-separator>
     <div class="row justify-end q-col-gutter-xs q-mx-none q-my-sm">
         <q-select outlined dense options-dense stack-label bg-color="white"
                   style="min-width: 180px"
@@ -24,33 +24,6 @@
         </q-input>
         <q-toggle class="col-shrink" toggle-indeterminate v-model="productFilter.isShow" color="orange" :label="stockIsShowOptions[1].name" left-label></q-toggle>
     </div>
-
-    @* <div class="row q-gutter-xs q-mx-none q-my-sm"> *@
-    @*     <q-btn class="q-mx-xs" color="primary" @@click="productDialogShow(-1)"><q-icon class="on-left" size="xs" name="add_circle"></q-icon>新增</q-btn> *@
-    @*     <q-space ></q-space> *@
-    @*     <q-btn-dropdown :disable-main-btn="productSelected.length === 0" color="warning" label="批量操作"> *@
-    @*         <q-list> *@
-    @*             <q-item clickable v-close-popup @@click="productMultipleAction(0)"> *@
-    @*                 <q-item-section> *@
-    @*                     <q-item-label><q-icon class="on-left" size="xs" name="delete_forever"></q-icon>删除</q-item-label> *@
-    @*                 </q-item-section> *@
-    @*             </q-item> *@
-    @* *@
-    @*             <q-item clickable v-close-popup @@click="productMultipleAction(1)"> *@
-    @*                 <q-item-section> *@
-    @*                     <q-item-label><q-icon class="on-left" size="xs" :name="stockIsShowOptions[0].icon"></q-icon>{{stockIsShowOptions[0].name}}</q-item-label> *@
-    @*                 </q-item-section> *@
-    @*             </q-item> *@
-    @* *@
-    @*             <q-item clickable v-close-popup @@click="productMultipleAction(2)"> *@
-    @*                 <q-item-section> *@
-    @*                     <q-item-label><q-icon class="on-left" size="xs" :name="stockIsShowOptions[1].icon"></q-icon>{{stockIsShowOptions[1].name}}</q-item-label> *@
-    @*                 </q-item-section> *@
-    @*             </q-item> *@
-    @*         </q-list> *@
-    @*     </q-btn-dropdown> *@
-    @* </div> *@
-    
     <q-list animated class="row q-gutter-md q-ma-none">
         <q-card class="col-auto" bordered v-for="(item,i) in productListByFilter()">
             <q-item class="q-pa-xs" style="height:3rem;">
@@ -499,7 +472,7 @@
                    }
                }else{
                    //默认productId前端初始化然后向后端获取，获取成功使用后端获取的值，获取失败则用前端初始化的值
-                   this.productCurrent = {productId:Date.now().toString(),userId:this.userExtend.userId,supplyId:this.userExtend.userId.toString(),category:'',quantityMin:1, deliveryType:this.deliveryTypeOptions[0].value, isShow:true};
+                   this.productCurrent = {productId:Date.now().toString(),userId:this.userExtend.userId,supplyId:this.userExtend.userId.toString(),category:'',memo : '',quantityMin:1, deliveryType:this.deliveryTypeOptions[0].value, isShow:true};
                    UserApi('NewDateId',{ state:1 },true)
                         .then((response)=> {
                             if (response.data.code === 1){ 

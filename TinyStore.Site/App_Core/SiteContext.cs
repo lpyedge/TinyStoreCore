@@ -251,9 +251,9 @@ namespace TinyStore.Site
             });
             BLL.OrderBLL.Insert(new OrderModel()
             {
+                OrderId = "test",
                 Name = "QQ币",
                 Memo = "请留下您的QQ号码方便我们来充值",
-                OrderId = "test",
                 UserId = 1,
                 StoreId = "StoreId",
                 SupplyId = "SupplyId",
@@ -264,34 +264,37 @@ namespace TinyStore.Site
                 Cost = 10,
                 
                 CreateDate = DateTime.Now,
+
                 
+                ClientIP = "127.0.0.1",
+                AcceptLanguage = "",
+                UserAgent = "",
+                //客户输入数据
+                Message = "100088",
+                Contact = "test@qq.com",
                 
-                IsDelivery = false,
-                DeliveryDate = DateTime.Now,
-                StockList = new List<StockOrder>(),
 
                 IsPay = false,
                 PaymentFee = 0,
                 PaymentType = "alipay",
                 TranId = "123456",
 
-
-
-                ClientIP = "127.0.0.1",
-                AcceptLanguage = "",
-                UserAgent = "",
                 
-                //客户输入数据
-                Message = "100088",
-                Contact = "test@qq.com",
+                IsDelivery = false,
+                DeliveryDate = DateTime.Now,
+                StockList = new List<StockOrder>(),
+                
 
                 IsSettle = false,
                 SettleDate = DateTime.Now,
                 
-                ReturnAmount = 0,
-                ReturnDate = DateTime.Now,
+                
+                RefundAmount = 0,
+                RefundDate = DateTime.Now,
+                
                 
                 LastUpdateDate = DateTime.Now,
+                NotifyDate = null
             });
         }
 
@@ -854,7 +857,6 @@ namespace TinyStore.Site
                                     {
                                         StockId = item.StockId,
                                         Name = item.Name,
-                                        Memo = item.Memo,
                                     });
                                 }
 
@@ -901,26 +903,25 @@ namespace TinyStore.Site
                     var msg_email = SiteContext.Email.EmailTemplates["DeliveryEmail"].Content;
                     
                     msg_email = msg_email.Replace("{SiteName}", store.Name);
-                    msg_email = msg_email.Replace("{DeliveryDate}", order.DeliveryDate.ToString("yyyy年MM月dd日"));
+                    msg_email = msg_email.Replace("{DeliveryDate}", order.DeliveryDate?.ToString("yyyy年MM月dd日"));
                     msg_email = msg_email.Replace("{Name}", order.Name);
                     msg_email = msg_email.Replace("{OrderUrl}", SiteContext.Url.OrderInfo(order.OrderId));
                     msg_email = msg_email.Replace("{OrderId}", order.OrderId);
-                    msg_email = msg_email.Replace("{Amount}", order.Amount.ToString("f2"));
+                    msg_email = msg_email.Replace("{Amount}", (order.Amount*order.Quantity).ToString("f2"));
                     msg_email = msg_email.Replace("{StoreQQ}", store.QQ);
                     var addtemplate = string.Empty;
                     if (order.StockList.Count > 0)
                     {
                         var emailadd = string.Empty;
+                        var index = 1;
                         foreach (var item in order.StockList)
                         {
-                            //emailadd = SiteContext.Email.TemplateGet("DeliveryEmail_StockNoIp");
-                            //todo
-                            emailadd = SiteContext.Email.EmailTemplates["DeliveryEmail_StockNoIp"].Content;
+                            emailadd = SiteContext.Email.EmailTemplates["DeliveryEmail_Stock"].Content;
 
+                            emailadd = emailadd.Replace("{Index}", index.ToString());
                             emailadd = emailadd.Replace("{CardName}", item.Name);
-                            emailadd = emailadd.Replace("{CardPassword}", item.Memo);
-
                             addtemplate += emailadd;
+                            index++;
                         }
                     }
                     else
@@ -929,32 +930,34 @@ namespace TinyStore.Site
                     }
 
                     msg_email = msg_email.Replace("{AddTemplate}", addtemplate);
-                    var product = BLL.ProductBLL.QueryModelByProductIdAndStoreId(order.ProductId, order.StoreId);
-                    if (order.Contact.Contains("@"))
-                    {
-                        SiteContext.Email.Send(order.Contact,
-                            store.Name + " 已收到你的订单（" + order.OrderId + "），欢迎您再次购买！", msg_email);
-                    }
-
-                    msg_email = "订单号:" + order.OrderId + "<br/><br/>";
-                    msg_email += "订单状态:" + order.State.ToString() + "<br/><br/>";
-                    msg_email += "商品名称:" + order.Name + "<br/><br/>";
-                    if (product != null)
-                        msg_email += "商品单价:￥" + product.Amount.ToString("f2") + "<br/><br/>";
-                    if (order.Quantity > 0)
-                        msg_email += "售出份数:" + order.Quantity + "<br/><br/>";
-                    msg_email += "销售金额:￥" + order.Amount.ToString("f2") + "<br/><br/>";
-                    msg_email += "买家" + (order.Contact.Contains("@") ? "邮箱" : "手机号") + ":" +
-                                 order.Contact + "<br/><br/>";
-                    msg_email += "买家联系方式:" + order.Contact + "<br/><br/>";
-                    if (order.StockList.Count > 0)
-                    {
-                        msg_email += "买家购买的卡号及卡密如下：<br/><br/>";
-                        foreach (var item in order.StockList)
-                        {
-                            msg_email += "卡号：" + item.Name + " 卡密:" + item.Memo + "<br/>";
-                        }
-                    }
+                    
+                    // var product = BLL.ProductBLL.QueryModelByProductIdAndStoreId(order.ProductId, order.StoreId);
+                    // if (order.Contact.Contains("@"))
+                    // {
+                    //     SiteContext.Email.Send(order.Contact,
+                    //         store.Name + " 已收到你的订单（" + order.OrderId + "），欢迎您再次购买！", msg_email);
+                    // }
+                    //
+                    // msg_email = "订单号:" + order.OrderId + "<br/><br/>";
+                    // msg_email += "订单状态:" + order.State.ToString() + "<br/><br/>";
+                    // msg_email += "商品名称:" + order.Name + "<br/><br/>";
+                    // if (product != null)
+                    //     msg_email += "商品单价:￥" + product.Amount.ToString("f2") + "<br/><br/>";
+                    // if (order.Quantity > 0)
+                    //     msg_email += "售出份数:" + order.Quantity + "<br/><br/>";
+                    // msg_email += "销售金额:￥" + order.Amount.ToString("f2") + "<br/><br/>";
+                    // msg_email += "买家" + (order.Contact.Contains("@") ? "邮箱" : "手机号") + ":" +
+                    //              order.Contact + "<br/><br/>";
+                    // msg_email += "买家联系方式:" + order.Contact + "<br/><br/>";
+                    // if (order.StockList.Count > 0)
+                    // {
+                    //     msg_email += "买家购买的卡号及卡密如下：<br/><br/>";
+                    //     var index = 1;
+                    //     foreach (var item in order.StockList)
+                    //     {
+                    //         msg_email += $"卡密{index}：{item.Name}<br/>";
+                    //     }
+                    // }
 
                     SiteContext.Email.Send(store.Email, "您有一笔付款通知（" + order.OrderId + "），请尽快处理", msg_email);
                 }

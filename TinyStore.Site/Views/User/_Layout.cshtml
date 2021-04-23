@@ -76,7 +76,7 @@
                         </q-item-section>
                     </q-item>
                     
-                    <q-separator class="q-my-md"></q-separator>
+                    <q-separator class="q-my-sm"></q-separator>
                     
                     <q-item-label header class="text-weight-bold text-uppercase">
                         商户
@@ -91,7 +91,7 @@
                         </q-item-section>
                     </q-item>
 
-                    <q-separator class="q-my-md"></q-separator>
+                    <q-separator class="q-my-sm"></q-separator>
                     
                     <q-item-label header class="text-weight-bold text-uppercase">
                         店铺
@@ -187,6 +187,10 @@
        orderIsDeliveryOptions:[
           { icon:'send',name:'未发货',color:'warning',value :false},
           { icon:'send',name:'已发货',color:'accent',value :true},
+       ],
+       orderIsSettleOptions:[
+          { icon:'done_all',name:'未结算',color:'warning',value :false},
+          { icon:'done_all',name:'已结算',color:'accent',value :true},
        ]
      },
      beforeCreate(){

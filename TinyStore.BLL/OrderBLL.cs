@@ -46,7 +46,7 @@ namespace TinyStore.BLL
             var expr = Expressionable.Create<OrderModel>().And(p =>
                 p.StoreId == storeId && p.IsSettle && p.LastUpdateDate >= begin && p.LastUpdateDate <= end);
             if (ishasreturn)
-                expr = expr.And(p => p.ReturnAmount > 0);
+                expr = expr.And(p => p.RefundAmount > 0);
             if (!string.IsNullOrEmpty(suppliyid))
                 expr = expr.And(p => p.SupplyId == suppliyid);
             return QueryList(-1, expr.ToExpression(), SortLastUpdateDateDesc);
@@ -58,7 +58,7 @@ namespace TinyStore.BLL
             var expr = Expressionable.Create<OrderModel>().And(p =>
                 p.StoreId == storeId && p.IsSettle && p.LastUpdateDate >= begin && p.LastUpdateDate <= end);
             if (ishasreturn)
-                expr = expr.And(p => p.ReturnAmount > 0);
+                expr = expr.And(p => p.RefundAmount > 0);
             if (!string.IsNullOrEmpty(supplierid))
                 expr = expr.And(p => p.SupplyId == supplierid);
             return QueryPageList(pageindex, pagesize, expr.ToExpression(), SortLastUpdateDateDesc);
@@ -71,18 +71,19 @@ namespace TinyStore.BLL
         }
 
         public static PageList<OrderModel> QueryPageListBySearch(string storeId, string productId, DateTime? datefrom,
-            DateTime? dateto, string keyname, bool? isPay, bool? isDelivery, int pageindex, int pagesize)
+            DateTime? dateto, string keyname, bool? isPay, bool? isDelivery,bool? isSettle, int pageindex, int pagesize)
         {
             var expr = Expressionable.Create<OrderModel>()
                 .And(p => p.StoreId == storeId)
                 .AndIF(!string.IsNullOrWhiteSpace(productId), p => p.ProductId == productId)
                 .AndIF(isPay != null, p => p.IsPay == isPay)
                 .AndIF(isDelivery != null, p => p.IsDelivery == isDelivery)
+                .AndIF(isSettle != null, p => p.IsSettle == isSettle)
                 .AndIF(datefrom != null && dateto != null, p => SqlFunc.Between(p.CreateDate, datefrom, dateto))
                 .AndIF(!string.IsNullOrWhiteSpace(keyname),
                     p => p.Contact.Contains(keyname) || p.Name.Contains(keyname) || p.Message.Contains(keyname));
 
-            return QueryPageList(pageindex, pagesize, expr.ToExpression(), SortLastUpdateDateDesc);
+            return QueryPageList(pageindex, pagesize, expr.ToExpression(), SortCreateDateDesc);
         }
 
         public static PageList<OrderModel> QueryPageList(DateTime begin, DateTime end, int state, int keykind,
@@ -148,7 +149,7 @@ namespace TinyStore.BLL
                 }
             }
 
-            if (ishasreturn) expr = expr.And(p => p.ReturnAmount > 0);
+            if (ishasreturn) expr = expr.And(p => p.RefundAmount > 0);
 
             //if (ishasduealert)
             //{
@@ -178,7 +179,7 @@ namespace TinyStore.BLL
             }
 
             var expr = Expressionable.Create<OrderModel>().And(p =>
-                p.SupplyId == sid && p.IsSettle == false && p.IsPay && p.Amount > p.ReturnAmount);
+                p.SupplyId == sid && p.IsSettle == false && p.IsPay && p.Amount > p.RefundAmount);
             if (!string.IsNullOrEmpty(storeId))
                 expr = expr.And(p => p.StoreId == storeId);
             if (state > 0)
@@ -215,7 +216,7 @@ namespace TinyStore.BLL
                 }
             }
 
-            if (ishasreturn) expr = expr.And(p => p.ReturnAmount > 0);
+            if (ishasreturn) expr = expr.And(p => p.RefundAmount > 0);
 
             //if (ishasduealert)
             //{
@@ -271,7 +272,7 @@ namespace TinyStore.BLL
                     expr = expr.And(p => p.StockList.Any(s => s.Name == key));
             }
 
-            if (ishasreturn) expr = expr.And(p => p.ReturnAmount > 0);
+            if (ishasreturn) expr = expr.And(p => p.RefundAmount > 0);
 
             //if (ishasduealert)
             //{
@@ -297,7 +298,7 @@ namespace TinyStore.BLL
             }
 
             var expr = Expressionable.Create<OrderModel>().And(p =>
-                p.SupplyId == sid && p.IsSettle == false && p.IsPay && p.ReturnAmount < p.Amount);
+                p.SupplyId == sid && p.IsSettle == false && p.IsPay && p.RefundAmount < p.Amount);
             if (!string.IsNullOrEmpty(storeId))
                 expr = expr.And(p => p.StoreId == storeId);
             if (state > 0)
@@ -322,7 +323,7 @@ namespace TinyStore.BLL
                     expr = expr.And(p => p.StockList.Any(s => s.Name == key));
             }
 
-            if (ishasreturn) expr = expr.And(p => p.ReturnAmount > 0);
+            if (ishasreturn) expr = expr.And(p => p.RefundAmount > 0);
 
             //if (ishasduealert)
             //{

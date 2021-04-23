@@ -2,7 +2,7 @@
     <div class="text-h5 text-weight-bold text-grey-8">
         <q-icon :name="supplylinks[1].icon" size="md" class="on-left"></q-icon>{{supplylinks[1].text}}
     </div>
-    <q-separator class="q-my-md"></q-separator>
+    <q-separator class="q-my-sm"></q-separator>
     <div class="row q-gutter-xs q-mx-none q-my-sm">
         <q-select outlined dense options-dense stack-label bg-color="white"
                   style="min-width: 240px"
@@ -110,25 +110,26 @@
         <template v-slot:item="props">
             <div class="q-pa-xs col-xs-12 col-sm-6 col-md-4">
                 <q-card>
-                    <q-item dense>
-                        <q-item-section >
+                    <q-item dense class="q-px-sm">
+                        <q-item-section side>
                             <q-checkbox dense v-model="props.selected"></q-checkbox>
                         </q-item-section>
                         <q-item-section style="display: inline-block;text-align: right">
-                            <q-icon size="sm" :name="props.row.isShow?'play_circle_filled':'pause'" :color="props.row.isShow?'primary':'warning'">
+                            {{ void (isDeliveryIndex = props.row.isDelivery ? 1 : 0, isShowIndex = props.row.isShow ? 1 : 0) }}
+                            <q-icon size="sm" :name="stockIsShowOptions[isShowIndex].icon" :color="stockIsShowOptions[isShowIndex].color">
                                 <q-tooltip>
-                                    {{ props.row.isShow?'上架':'下架' }}
+                                    {{ stockIsShowOptions[isShowIndex].name }}
                                 </q-tooltip>
                             </q-icon>
-                            <q-icon size="sm" :name="props.row.isDelivery?'send':'card_travel'" :color="props.row.isDelivery?'warning':'primary'">
+                            <q-icon size="sm" :name="stockIsDeliveryOptions[isDeliveryIndex].icon" :color="stockIsDeliveryOptions[isDeliveryIndex].color">
                                 <q-tooltip>
-                                    {{ props.row.isDelivery?'已售':'在库' }}
+                                    {{ stockIsDeliveryOptions[isDeliveryIndex].name }}
                                 </q-tooltip>
                             </q-icon>
                         </q-item-section>
                     </q-item>
                     <q-separator></q-separator>
-                    <q-card-section class="q-pa-xs">
+                    <q-card-section class="q-pa-sm">
                         <strong>{{ props.row.name }}</strong>
                     </q-card-section>
                 </q-card>
