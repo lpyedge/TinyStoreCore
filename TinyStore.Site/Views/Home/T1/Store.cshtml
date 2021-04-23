@@ -65,13 +65,13 @@
                 </div>
 
             </div>
-            <!--角色ID-->
-            <div class="order-email">
-                <input type="text" placeholder="请输入游戏角色编号" id="OrderUniqueId">
-            </div>
             <!--电子信箱-->
             <div class="order-email">
-                <input type="text" placeholder="请输入接收订单的电子信箱" id="OrderNotice">
+                <input type="text" placeholder="请输入接收订单的电子信箱" id="OrderContact">
+            </div>
+            <!--留言-->
+            <div class="order-email">
+                <input type="text" placeholder="请输入其他即时联系方式" id="OrderMessage">
             </div>
             <!--商品信息-->
             <div class="product-memo" id="ProductMemo">
@@ -134,17 +134,17 @@
         function RenderProducts() {
             var listdiv = '';
             if (productlist && productlist.length > 0) {
-                var categorydatas = _.groupBy(productlist, 'Category');
+                var categorydatas = _.groupBy(productlist, 'category');
                 for (var category in categorydatas) {
                     var datas = categorydatas[category];
                     listdiv += '<div class="soft-title">' + category + '</div>';
                     _.forEach(datas, function (data) {
-                        var storenum = data.StockNumber;
+                        var storenum = data.stockNumber;
                         if (storenum == -1) {
                             storenum = "不限量";
                         }
-                        listdiv += ' <div class="product-box row" data-productid="' + data.ProductId + '"><div class="product-icon"><img src="' + data.Icon + '" ></div><div class="col"><div class="product-name">'
-                            + data.Name + '</div><div class="row info"><div class="">单价：<span class="txt-red font-family-T">￥' + data.Amount +
+                        listdiv += ' <div class="product-box row" data-productid="' + data.productId + '"><div class="product-icon"><img src="' + data.icon + '" ></div><div class="col"><div class="product-name">'
+                            + data.name + '</div><div class="row info"><div class="">单价：<span class="txt-red font-family-T">￥' + data.amount +
                             '</span></div><div class="" id="ProductStock">库存：' + storenum + '</div></div></div></div>';
                     });
                 }

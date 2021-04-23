@@ -60,13 +60,13 @@
                     <span id="ProductStockQty">0件</span>
                 </div>
             </div>
-            <!--角色编号或电话-->
-            <div class="order-email" style="padding-bottom:5px">
-                <input type="text" placeholder="请输入游戏角色编号" id="OrderUniqueId">
-            </div>
             <!--电子信箱-->
-            <div class="order-email">
-                <input type="text" placeholder="请输入接收订单的电子信箱" id="OrderNotice">
+            <div class="order-email" style="padding-bottom:5px">
+                <input type="text" placeholder="请输入接收订单的电子信箱" id="OrderContact">
+            </div>
+            <!--留言-->
+            <div class="order-email" >
+                <input type="text" placeholder="请输入其他即时联系方式" id="OrderMessage">
             </div>
         </div>
 
@@ -95,13 +95,13 @@
             var options = "";
             if (productlist && productlist.length > 0) {
 
-                var categorydatas = _.groupBy(productlist, 'Category');
+                var categorydatas = _.groupBy(productlist, 'category');
                 for (var category in categorydatas) {
                     var datas = categorydatas[category];
                     options += '<optgroup label="' + category + '">';
                     _.forEach(datas, function (data) {
 
-                        options += '<option value= "' + data.ProductId + '">' + data.Name + '</option>';
+                        options += '<option value= "' + data.productId + '">' + data.name + '</option>';
                     });
                     options += '</optgroup>';
                 }

@@ -1,20 +1,22 @@
 ﻿<partial name="Widgets/_Plugin_Payment" />
-<script src="https://cdn.staticfile.org/dayjs/1.8.34/dayjs.min.js"></script>
+<script src="https://cdn.staticfile.org/dayjs/1.10.4/dayjs.min.js"
+        asp-fallback-test="dayjs"
+        asp-fallback-src="~/lib/dayjs/dayjs.min.js"></script>
+
 <script>
-        //var orderid = location.pathname.substring(7);
-        var intervalHandle;
+    var intervalHandle;
     var order = @Json.Serialize(ViewBag.Order);
     var store = @Json.Serialize(ViewBag.Store);
 
         function OrderInfo() {
                 CY.Ajax("OrderInfo", {
-                    "OrderId": order.OrderId,
+                    "orderId": order.orderId,
                 }, function (msg) {
                     if (msg.Result) {
-                       if (msg.Data.IsDelivery != order.IsDelivery ||
-                           msg.Data.IsPay != order.IsPay) {
+                       if (msg.Data.isDelivery != order.isDelivery ||
+                           msg.Data.isPay != order.isPay) {
                             order = msg.Data;
-                            if (order.IsPay) {
+                            if (order.isPay) {
                                 window.clearInterval(intervalHandle);
                             }
                             LoadOrderInfo();
@@ -27,33 +29,33 @@
         }
 
         function LoadOrderInfo() {
-            $("#orderid").text(order.OrderId);
-            if (order.IsDelivery && order.IsPay) {
-                $("#state").text("完成订单");
+            $("#orderid").text(order.orderId);
+            if (order.isDelivery && order.isPay) {
+                $("#state").text("已完成");
                 $("#state").prop("class", "finish");
                 $("#showpay").hide();
             }
             else {
                 $("#state").prop("class", "unfinish");
-                if (order.IsPay && !order.IsDelivery) {
-                    $("#state").text("等待发货");
+                if (order.isPay && !order.isDelivery) {
+                    $("#state").text("待发货");
                     $("#showpay").hide();
-                } else if (!order.IsPay) {
-                    $("#state").text("客户下单");
+                } else if (!order.isPay) {
+                    $("#state").text("未付款");
                     $("#showpay").show();
                 }
             }
-            $("#createdate").text(dayjs(order.CreateDate).format("YYYY-MM-DD HH:mm:ss"));
-            $("#name").text(order.Name);
-            $("#qty").text("X" + order.Quantity);
-            $("#amount").text("￥" + order.Amount);
-            $("#email").text(order.NoticeAccount);
-            $("#contact").text(order.Contact);
-            $("#memo").text(order.Memo);
+            $("#createdate").text(dayjs(order.createDate).format("YYYY-MM-DD HH:mm:ss"));
+            $("#name").text(order.name);
+            $("#qty").text("X" + order.quantity);
+            $("#amount").text("￥" + (order.amount * order.quantity));
+            $("#contact").text(order.contact);
+            $("#message").text(order.message);
+            //$("#memo").text(order.Memo);
         }
 
     $(function () {
-        $("#storeurl").attr("href", "/" + store.UniqueId);
+        $("#storeurl").attr("href", "/s/" + store.uniqueId);
 
         LoadOrderInfo();
 
@@ -62,10 +64,15 @@
         }
 
         $("#showpay").click(function () {
-
-            Payment.Show(order.OrderId);
+            Payment.Show(order.orderId);
         });
 
     });
-
+        
+    //复制CD-Key
+    function copyFn(id) {
+        "use strict";
+        window.getSelection().selectAllChildren(document.getElementById(id));
+        document.execCommand("Copy");
+    }
 </script>

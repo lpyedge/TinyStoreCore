@@ -16,7 +16,8 @@ namespace TinyStore.Site.Controllers
         public IActionResult Index()
         {
             ViewBag.StoerList = BLL.StoreBLL.QueryHotList(6);
-            return View(); //返回Views目录下当前Controller名称目录下的当前Action名称的模板文件
+            return View(); 
+            //返回Views目录下当前Controller名称目录下的当前Action名称的模板文件
             //return View("xxx/yyy");返回Views目录下当前Controller名称目录下xxx目录下的yyy模板文件
             //return View("default/index");
 
@@ -84,7 +85,7 @@ namespace TinyStore.Site.Controllers
                     ViewBag.Store = store;
                      var productlist = BLL.ProductBLL.QueryListByStoreIdShow(store.StoreId);
                     ViewBag.ProductList = productlist;
-                    ViewBag.Product = productlist.FirstOrDefault();
+                    
                     if (store.Template == EStoreTemplate.模板一)
                     {
                         return View("T1/Store");

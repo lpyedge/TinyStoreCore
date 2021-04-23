@@ -75,20 +75,20 @@
         });
 
         if (arguments.length == 4) {
-            Payment.OrderId = undefined;
-            Payment.ProductId = arguments[0];
-            Payment.Quantity = arguments[1];
-            Payment.Contact = arguments[2];
-            Payment.NoticeAccount = arguments[3];
+            Payment.orderId = undefined;
+            Payment.productId = arguments[0];
+            Payment.quantity = arguments[1];
+            Payment.contact = arguments[2];
+            Payment.message = arguments[3];
 
         } else if (arguments.length == 1) {
-            Payment.OrderId = arguments[0];
+            Payment.orderId = arguments[0];
         }
     }
 
     Payment.AppLaunched = function (isVisibility) {
-        if (!isVisibility && Payment.OrderId) {
-            location.href = "/order_" + Payment.OrderId;
+        if (!isVisibility && Payment.orderId) {
+            location.href = "/o/" + Payment.orderId;
         }
     }
 
@@ -106,10 +106,10 @@
             }
             if (paymentid) {
 
-                if (Payment.OrderId) {
+                if (Payment.orderId) {
 
                     CY.Ajax("OrderPay", {
-                        "orderid": Payment.OrderId,
+                        "orderid": Payment.orderId,
                         "paymentid": paymentid
                     }, function (msg) {
                         if (msg.Result) {                            
@@ -123,17 +123,17 @@
                 } else {
                     CY.Ajax("OrderInsert",
                         {
-                            "productid": Payment.ProductId,
-                            "quantity": Payment.Quantity,
-                            "contact": Payment.Contact,
-                            "noticeaccount": Payment.NoticeAccount,
+                            "productid": Payment.productId,
+                            "quantity": Payment.quantity,
+                            "contact": Payment.contact,
+                            "message": Payment.message,
                             "paymentid": paymentid
                         },
                         function (msg) {
                             if (msg.Result) {
-                                Payment.OrderId = msg.Message;
-                                if (msg.Data && msg.Data.Url) {
-                                    CY.Page.AppLaunch(msg.Data.Url);
+                                Payment.orderId = msg.message;
+                                if (msg.data && msg.data.url) {
+                                    CY.Page.AppLaunch(msg.Data.url);
                                 }
 
                                 CY.Page.VisibilityListener(Payment.AppLaunched);

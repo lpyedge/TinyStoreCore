@@ -71,13 +71,13 @@
                             <span>合计：</span>
                             <span class="txt-red font-bold" id="OrderAmount">￥0</span>
                         </div>
-                        <!--角色ID-->
-                        <div class="order-email">
-                            <input type="text" placeholder="请输入游戏角色编号" id="OrderUniqueId">
-                        </div>
                         <!--电子信箱-->
                         <div class="order-email">
-                            <input type="text" placeholder="请输入接收订单的电子信箱" id="OrderNotice">
+                            <input type="text" placeholder="请输入接收订单的电子信箱" id="OrderContact">
+                        </div>
+                        <!--留言-->
+                        <div class="order-email">
+                            <input type="text" placeholder="请输入其他即时联系方式" id="OrderMessage">
                         </div>
                         <!--商品信息-->
                         <div class="product-memo col" id="ProductMemo">
@@ -135,7 +135,7 @@
 
         function RenderProducts() {
             if (productlist && productlist.length > 0) {
-                productcategorydatas = _.groupBy(productlist, 'Category');
+                productcategorydatas = _.groupBy(productlist, 'category');
                 productcategorys = _.keys(productcategorydatas);
                 if (productcategorys.length > 1) {
                     productcategorys.unshift("全部");
@@ -152,17 +152,17 @@
 
     <script id="tmpl_store-products" type="text/x-dot-template">
         {{ for(var i=0; i<it.length; i++) { }}
-        <li class="row" data-productid="{{=it[i].ProductId}}">
+        <li class="row" data-productid="{{=it[i].productId}}">
             <div class="product-img">
-                <img src="{{=it[i].Icon}}">
+                <img src="{{=it[i].icon}}">
             </div>
             <div class="product-text col column">
-                <div class="product-name col-auto">{{=it[i].Name}}</div>
+                <div class="product-name col-auto">{{=it[i].name}}</div>
                 <div class="col flex items-end">
-                    <span class="product-price"><em>￥</em>{{=it[i].Amount}}</span>
+                    <span class="product-price"><em>￥</em>{{=it[i].amount}}</span>
                     <span class="product-inventory">
-                        {{? it[i].DeliveryType == 1 }}
-                        剩余{{=it[i].StockNumber }}件
+                        {{? it[i].deliveryType == 1 }}
+                        剩余{{=it[i].stockNumber }}件
                         {{??}}
                         不限量
                         {{?}}

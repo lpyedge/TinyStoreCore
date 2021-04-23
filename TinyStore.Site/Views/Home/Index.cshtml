@@ -27,7 +27,7 @@
             </div>
         </div>
         <div class="home-more">
-            <a href="@Url.ActionLink("orders","home")">进入游戏列表</a>
+            <a href="@Url.ActionLink("stores","home")">进入游戏列表</a>
         </div>
     </div>
     <!--弹出窗口/关于我们详情-->
@@ -54,7 +54,7 @@
         $(function () {
             var uldiv = '<ul>';
             for (var k in stoerlist) {
-                uldiv += '<li><a href="/' + stoerlist[k].UniqueId + '"><img src="' + stoerlist[k].Logo + '" ><span>' + stoerlist[k].Name + '</span></a></li>';
+                uldiv += '<li><a href="/s/' + stoerlist[k].uniqueId + '"><img src="' + stoerlist[k].logo + '" ><span>' + stoerlist[k].name + '</span></a></li>';
             }
             uldiv += '</ul>';
             $("#storehot").html(uldiv);

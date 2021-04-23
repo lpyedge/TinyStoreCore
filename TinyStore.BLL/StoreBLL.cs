@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using SqlSugar;
 
 
 namespace TinyStore.BLL
@@ -31,10 +32,7 @@ namespace TinyStore.BLL
         {
             return QueryModel(p => p.UniqueId == uniqueid);
         }
-        //public static Model.Store QueryModelByUserId(int userId)
-        //{
-        //    return QueryModel(p => p.UserId == userId);
-        //}
+        
         public static List<Model.StoreModel> QueryListByUserId(int userId)
         {
             var where = SqlSugar.Expressionable.Create<Model.StoreModel>()
@@ -64,6 +62,7 @@ namespace TinyStore.BLL
                     //StoreId = p.StoreId,
                     Name = p.Name,
                     Logo = p.Logo,
+                    Initial = p.Initial,
                     UniqueId = p.UniqueId,
                 }).ToList();
             }
@@ -89,7 +88,20 @@ namespace TinyStore.BLL
 
         public static List<Model.StoreModel> QueryHotList(int top)
         {
-            return BaseBLL<Model.StoreModel>.QueryList(top, null, SortHotDesc);
+            using (var conn = DbClient)
+            {
+                return conn.Queryable<Model.StoreModel>().Select(p => new Model.StoreModel
+                    {
+                        //StoreId = p.StoreId,
+                        Name = p.Name,
+                        Logo = p.Logo,
+                        Initial = p.Initial,
+                        UniqueId = p.UniqueId,
+                    })
+                    .OrderBy(p=>p.Sort,OrderByType.Desc)
+                    .Take(top)
+                    .ToList();
+            }
         }
     }
 }
