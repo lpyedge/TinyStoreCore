@@ -60,7 +60,7 @@ namespace TinyStore.Site
 
         public ECode code { get; set; }
 
-        public bool Result => code == ECode.Success;
+        public bool result => code == ECode.Success;
 
         public string message { get; private set; }
         public static JsonResult RCode()

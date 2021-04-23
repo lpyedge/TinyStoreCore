@@ -528,7 +528,9 @@
                   this.orderCurrent = {userId:this.userExtend.userId,supplyId:'',memo : '',quantity:1, isPay:false,isDelivery:false,isSettle:false,isRefund:false,refundAmount:0,stockData:''};
               }
            },
-           orderDialogEdit(){          
+           orderDialogEdit(){     
+               //todo  新增和修改验证数据是否已经输入 
+               
                if (this.orderCurrent.isDelivery && !this.orderCurrent.deliveryDate && this.orderCurrent.stockData.trim().length > 0){
                    var stockList = [];
                    var stockArray= this.orderCurrent.stockData.trim().split('\n');

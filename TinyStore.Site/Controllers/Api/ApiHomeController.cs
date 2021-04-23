@@ -15,48 +15,41 @@ namespace TinyStore.Site.Controllers.Api
     [Route("Api/[action]")]
     public class ApiHomeController : ControllerBase
     {
-        public IActionResult OrderInsert([FromForm] string Productid, [FromForm] int Quantity,
-            [FromForm] string Contact, [FromForm] string NoticeAccount, [FromForm] string PaymentType)
+        public IActionResult OrderInsert([FromForm] string productid, [FromForm] int quantity,
+            [FromForm] string contact, [FromForm] string message, [FromForm] string paymentType)
         {
-            if (string.IsNullOrWhiteSpace(Productid) || string.IsNullOrWhiteSpace(Contact) ||
-                string.IsNullOrWhiteSpace(NoticeAccount) || Quantity <= 0)
+            if (string.IsNullOrWhiteSpace(productid) || string.IsNullOrWhiteSpace(contact)|| string.IsNullOrWhiteSpace(paymentType) || quantity <= 0)
             {
-                return ApiResult.RCode("传参错误");
+                return ApiResult.RCode(ApiResult.ECode.AuthorizationFailed);
             }
             else
             {
                 try
                 {
-                    if (string.IsNullOrEmpty(NoticeAccount))
-                        return ApiResult.RCode("联系邮箱不能为空");
-                    if (!Global.Regex.Email.IsMatch(NoticeAccount))
-                        return ApiResult.RCode("邮箱格式不正确");
-                    var product = BLL.ProductBLL.QueryModelByProductId(Productid);
+                    if (string.IsNullOrEmpty(message))
+                        return ApiResult.RCode(ApiResult.ECode.DataFormatError);
+                    if (!Global.Regex.Email.IsMatch(message))
+                        return ApiResult.RCode(ApiResult.ECode.DataFormatError);
+                    
+                    var product = BLL.ProductBLL.QueryModelByProductId(productid);
                     if (product == null)
-                        return ApiResult.RCode("产品不存在");
+                        return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
                     var store = BLL.StoreBLL.QueryModelByStoreId(product.StoreId);
                     if (store == null)
-                        return ApiResult.RCode("店铺不存在");
+                        return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
                     var user = BLL.UserBLL.QueryModelById(product.UserId);
                     if (user == null)
-                        return ApiResult.RCode("商户不存在");
-
+                        return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
+                    
+                    if (quantity < product.QuantityMin)
+                        return ApiResult.RCode(ApiResult.ECode.Fail);
+                    
                     if (product.DeliveryType == EDeliveryType.卡密)
                     {
-                        var stockcount =
-                            BLL.StockBLL.QueryCountBySupplyIdCanUse(product.SupplyId);
-                        if (stockcount < product.QuantityMin)
-                            return ApiResult.RCode("库存数量不足");
-                        if (Quantity > stockcount)
-                            return ApiResult.RCode("下单数量不能大于库存数量");
-                        if (Quantity < product.QuantityMin)
-                            return ApiResult.RCode("下单数量不能小于最小下单量");
+                        var stockcount = BLL.StockBLL.QueryCountBySupplyIdCanUse(product.SupplyId);
+                        if (quantity > stockcount)
+                            return ApiResult.RCode(ApiResult.ECode.Fail);
                     }
-                    else if (Quantity < product.QuantityMin)
-                        return ApiResult.RCode("下单数量不能小于最小下单量");
-
-                    if (string.IsNullOrEmpty(Contact))
-                        return ApiResult.RCode("联系方式不能为空");
 
                     var price = product.Amount;
 
@@ -70,14 +63,14 @@ namespace TinyStore.Site.Controllers.Api
                         ProductId = product.ProductId,
                         Name = product.Name,
                         Amount = price,
-                        Contact = Contact,
+                        Contact = contact,
                         Cost = product.Cost,
+                        Quantity = quantity,
                         
                         CreateDate = DateTime.Now,
                         
                         Memo = "",
-                        Message = NoticeAccount,
-                        Quantity = Quantity,
+                        Message = message,
                         ClientIP = Utils.RequestInfo._ClientIP(Request).ToString(),
                         UserAgent = Request.Headers["User-Agent"].ToString(),
                         AcceptLanguage = Request.Headers["Accept-Language"].ToString(),
@@ -90,21 +83,21 @@ namespace TinyStore.Site.Controllers.Api
                     //order.IsPay = true;
                     //Delivery(order);
 #endif
-                    if (!string.IsNullOrWhiteSpace(PaymentType))
+                    if (!string.IsNullOrWhiteSpace(paymentType))
                     {
                         // if (order.IsPay)
                         //     return ApiResult.RCode( "订单不存在或已付款");
 
                         Model.Extend.Payment payment = store.PaymentList.FirstOrDefault(p =>
-                            p.IsEnable && string.Equals(p.Name, PaymentType, StringComparison.OrdinalIgnoreCase));
+                            p.IsEnable && string.Equals(p.Name, paymentType, StringComparison.OrdinalIgnoreCase));
 
                         if (payment == null)
-                            return ApiResult.RCode("支付方式不存在");
+                            return ApiResult.RCode(ApiResult.ECode.DataFormatError);
 
-                        if (PaymentType != order.PaymentType)
+                        if (paymentType != order.PaymentType)
                         {
                             order.PaymentFee = order.Amount * payment.Rate;
-                            order.PaymentType = PaymentType;
+                            order.PaymentType = paymentType;
                             BLL.OrderBLL.Update(order);
                         }
 
@@ -112,47 +105,47 @@ namespace TinyStore.Site.Controllers.Api
                     }
                     else
                     {
-                        return ApiResult.RData(order.OrderId);
+                        return ApiResult.RData(order);
                     }
                 }
                 catch (Exception ex)
                 {
-                    return ApiResult.RCode(ex.Message);
+                    return ApiResult.RCode(ApiResult.ECode.UnKonwError);
                 }
             }
         }
 
 
-        public IActionResult OrderPay([FromForm] string OrderId, [FromForm] string PaymentType)
+        public IActionResult OrderPay([FromForm] string orderId, [FromForm] string paymentType)
         {
-            var order = BLL.OrderBLL.QueryModelByOrderId(OrderId);
+            var order = BLL.OrderBLL.QueryModelByOrderId(orderId);
 
             if (order == null || order.IsPay)
-                return ApiResult.RCode("订单不存在或已付款");
+                return ApiResult.RCode(ApiResult.ECode.Fail);
 
             var store = BLL.StoreBLL.QueryModelById(order.StoreId);
             if (store == null)
-                return ApiResult.RCode("店铺已关闭");
+                return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
 
             Model.Extend.Payment payment = store.PaymentList.FirstOrDefault(p =>
-                p.IsEnable && string.Equals(p.Name, PaymentType, StringComparison.OrdinalIgnoreCase));
+                p.IsEnable && string.Equals(p.Name, paymentType, StringComparison.OrdinalIgnoreCase));
 
             if (payment == null)
-                return ApiResult.RCode("支付方式不存在");
+                return ApiResult.RCode(ApiResult.ECode.DataFormatError);
 
-            if (PaymentType != order.PaymentType)
+            if (paymentType != order.PaymentType)
             {
                 order.PaymentFee = order.Amount * payment.Rate;
-                order.PaymentType = PaymentType;
+                order.PaymentType = paymentType;
                 BLL.OrderBLL.Update(order);
             }
 
             return ApiResult.RData(SiteContext.OrderHelper.GetPayTicket(order.PaymentType,order.OrderId,order.Amount));
         }
 
-        public IActionResult OrderInfo([FromForm] string OrderId)
+        public IActionResult OrderInfo([FromForm] string orderId)
         {
-            var order = BLL.OrderBLL.QueryModelByOrderId(OrderId);
+            var order = BLL.OrderBLL.QueryModelByOrderId(orderId);
             if (order == null)
                 return ApiResult.RCode("订单不存在");
             order.StockList = new List<StockOrder>();
@@ -178,11 +171,11 @@ namespace TinyStore.Site.Controllers.Api
         //[Marvin.Cache.Headers.HttpCacheExpiration(CacheLocation = Marvin.Cache.Headers.CacheLocation.Public,MaxAge = 60)]
         [Marvin.Cache.Headers.HttpCacheValidation(MustRevalidate = true, NoCache = true)]
         [HttpGet("/" + SiteContext.Resource.ResourcePrefix + "/{Model}/{Id}/{Name}")]
-        public dynamic Resouce(string Model, string Id, string Name)
+        public dynamic Resouce(string model, string id, string name)
         {
-            if (!string.IsNullOrWhiteSpace(Model) && !string.IsNullOrWhiteSpace(Id) && !string.IsNullOrWhiteSpace(Name))
+            if (!string.IsNullOrWhiteSpace(model) && !string.IsNullOrWhiteSpace(id) && !string.IsNullOrWhiteSpace(name))
             {
-                return SiteContext.Resource.Result(Model, Id, Name, false);
+                return SiteContext.Resource.Result(model, id, name, false);
             }
             else
             {
@@ -192,11 +185,11 @@ namespace TinyStore.Site.Controllers.Api
 
         [Marvin.Cache.Headers.HttpCacheExpiration(NoStore = true)]
         [HttpGet("/" + SiteContext.Resource.ResourcePrefix + "_" + SiteContext.Resource.Temp + "/{Model}/{Id}/{Name}")]
-        public dynamic ResouceTemp(string Model, string Id, string Name)
+        public dynamic ResouceTemp(string model, string id, string name)
         {
-            if (!string.IsNullOrWhiteSpace(Model) && !string.IsNullOrWhiteSpace(Id) && !string.IsNullOrWhiteSpace(Name))
+            if (!string.IsNullOrWhiteSpace(model) && !string.IsNullOrWhiteSpace(id) && !string.IsNullOrWhiteSpace(name))
             {
-                return SiteContext.Resource.Result(Model, Id, Name, true);
+                return SiteContext.Resource.Result(model, id, name, true);
             }
             else
             {

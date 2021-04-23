@@ -61,6 +61,8 @@
 </style>
 <script>
     var Payment = {};
+    
+    //todo 需要根据店铺配置的支付方式展示
 
     Payment.Show = function () {
         $(".blackmask,#payment").fadeIn(150);
@@ -97,28 +99,24 @@
         //支付
         $("#payment").find("[name]").on("click", function (e) {
             var payname = $(this).attr("name");
-            var paymentid = "";
-            if (payname == "wechat") {
-                paymentid = 4
-            }
-            else if (payname == "alipay") {
-                paymentid = 3
-            }
-            if (paymentid) {
+            if (payname) {
 
                 if (Payment.orderId) {
-
                     CY.Ajax("OrderPay", {
                         "orderid": Payment.orderId,
-                        "paymentid": paymentid
-                    }, function (msg) {
-                        if (msg.Result) {                            
-                            if (msg.Data && msg.Data.Url) {
-                                CY.Page.AppLaunch(msg.Data.Url);
+                        "paymenttype": payname
+                    }, function (response) {
+                        if (response.code === 1) {                            
+                            if (response.data && response.data.url) {
+                                CY.Page.AppLaunch(msg.data.url);
                             }
-                        } else {
-                            $.toast(msg.Message);
-                        }
+                        } else if (response.code === 0){
+                             $.toast("订单不存在或已经成功付款");
+                         } else if (response.code === 13){
+                              $.toast("服务器数据异常");
+                          } else if (response.code === 15){
+                               $.toast("支付方式不存在");
+                           }
                     });
                 } else {
                     CY.Ajax("OrderInsert",
@@ -127,18 +125,23 @@
                             "quantity": Payment.quantity,
                             "contact": Payment.contact,
                             "message": Payment.message,
-                            "paymentid": paymentid
+                            "paymenttype": payname
                         },
-                        function (msg) {
-                            if (msg.Result) {
-                                Payment.orderId = msg.message;
-                                if (msg.data && msg.data.url) {
-                                    CY.Page.AppLaunch(msg.Data.url);
+                        function (response) {
+                            if (response.code === 1) {
+                                Payment.orderId = response.data.orderId;
+                                if (response.data && response.data.url) {
+                                    CY.Page.AppLaunch(response.data.url);
                                 }
-
                                 CY.Page.VisibilityListener(Payment.AppLaunched);
-                            } else {
-                                $.toast(msg.Message);
+                            } else if (response.code === 0) {
+                              $.toast("请检查您的下单数量是否满足购买条件");
+                            }else if (response.code === 11) {
+                                $.toast("提交数据验证未通过");
+                            }else if (response.code === 13) {
+                                $.toast("服务器数据异常");
+                            }else if (response.code === 15) {
+                                $.toast("提交数据格式错误");
                             }
                         });
                 }
