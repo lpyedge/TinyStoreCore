@@ -3,9 +3,9 @@
     asp-fallback-test="_.groupBy"
     asp-fallback-src="~/lib/lodash/lodash.min.js"></script>
 <script>
-        var store = @Json.Serialize(ViewBag.Store);
-        var productlist =  @Json.Serialize(ViewBag.ProductList);
-        var product = productlist.length > 0 ? productlist[0] : null;
+    var store = @Json.Serialize(ViewBag.Store);
+    var productlist =  @Json.Serialize(ViewBag.ProductList);
+    var product = productlist.length > 0 ? productlist[0] : null;
 
     $(function () {
         if (!store.isSingle) {

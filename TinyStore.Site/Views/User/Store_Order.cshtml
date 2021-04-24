@@ -193,7 +193,7 @@
     </q-table>
 </q-page>
 
-<q-dialog v-model="orderDialog">
+<q-dialog v-model="orderDialog" persistent>
     <q-card class="q-pb-md" style="max-width: 500px; width: 500px;">
         <q-card-section class="row items-center q-pb-none">
             <div class="text-h6 text-primary on-left">
@@ -213,10 +213,10 @@
             inline-label
             v-model="orderDialog_tab">
             <q-tab icon="add" name="default" label="基础"></q-tab>
-            <q-tab icon="add" name="stock" label="发货"></q-tab>
             <q-tab icon="add" name="payment" label="款项"></q-tab>
+            <q-tab icon="add" name="stock" label="发货"></q-tab>
         </q-tabs>
-        <q-card-section v-if="orderDialog_tab === 'default'" class="q-gutter-sm">
+        <q-card-section v-show="orderDialog_tab === 'default'" class="q-gutter-sm">
             <q-select outlined dense options-dense stack-label bg-color="white"
                       clearable use-input
                       v-if="!orderCurrent.orderId"
@@ -279,9 +279,7 @@
                          class="col"
                          label="成本"
                          hint="商品成本"
-                         v-model.number="orderCurrent.cost"
-                         ref="orderCurrent_cost"
-                         :rules="[val => !!val || '必须输入成本',val => val >= 0 || '成本必须大于等于0']">
+                         v-model.number="orderCurrent.cost">
                 </q-input>
             </div>
             <div class="row">
@@ -308,17 +306,7 @@
                      v-model.trim="orderCurrent.memo">
             </q-input>
         </q-card-section>
-        <q-card-section v-if="orderDialog_tab === 'stock'" class="q-gutter-sm">
-            <q-toggle v-model="orderCurrent.isDelivery" color="orange" :label="orderIsDeliveryOptions[1].name" left-label :disable="!!orderCurrent.deliveryDate"></q-toggle><q-badge v-if="orderCurrent.deliveryDate" color="accent">发货日期:{{Quasar.date.formatDate(orderCurrent.paymentDate,'YYYY-MM-DD HH:mm')}}</q-badge>
-            <q-input outlined dense stack-label bg-color="white" input-style="min-height: 22rem;"
-                     v-if="orderCurrent.isDelivery"
-                     :readonly="!!orderCurrent.deliveryDate"
-                     type="textarea"
-                     label="发货数据" hint="格式： 每行一条卡密信息"
-                     v-model.trim="orderCurrent.stockData">
-            </q-input>
-        </q-card-section>
-        <q-card-section v-if="orderDialog_tab === 'payment'" class="q-gutter-sm">
+        <q-card-section v-show="orderDialog_tab === 'payment'" class="q-gutter-sm">
             @* {{ void (isPayIndex = orderCurrent.isPay ? 1 : 0, isSettleIndex = orderCurrent.isSettle ? 1 : 0) }} *@
             @* <q-btn :color="orderIsPayOptions[isPayIndex].color" :icon="orderIsPayOptions[isPayIndex].icon" :label="orderIsPayOptions[isPayIndex].name" @@click="orderCurrent.isPay = !orderCurrent.isPay"></q-btn> *@
             <q-toggle v-model="orderCurrent.isPay" color="orange" :label="orderIsPayOptions[1].name" left-label :disable="!!orderCurrent.paymentDate"></q-toggle><q-badge v-if="orderCurrent.paymentDate" color="accent">支付日期:{{Quasar.date.formatDate(orderCurrent.paymentDate,'YYYY-MM-DD HH:mm')}}</q-badge>
@@ -332,7 +320,9 @@
                           option-value="name"
                           option-label="name"
                           v-model="orderCurrent.paymentType"
-                          :options="storeCurrent.paymentList">
+                          :options="storeCurrent.paymentList"
+                         ref="orderCurrent_paymentType"
+                         :rules="[val => !!val || '必须选择支付名称']">
                 </q-select>
                 <q-input outlined dense stack-label bg-color="white"
                          :readonly="!!orderCurrent.paymentDate"
@@ -357,6 +347,16 @@
             </q-input>
             <q-separator class="q-my-xs"></q-separator>
             <q-toggle v-model="orderCurrent.isSettle" color="orange" :label="orderIsSettleOptions[1].name" disable left-label></q-toggle><q-badge v-if="orderCurrent.settleDate" color="accent">结算日期:{{Quasar.date.formatDate(orderCurrent.settleDate,'YYYY-MM-DD HH:mm')}}</q-badge>
+        </q-card-section>
+        <q-card-section v-show="orderDialog_tab === 'stock'" class="q-gutter-sm">
+            <q-toggle v-model="orderCurrent.isDelivery" color="orange" :label="orderIsDeliveryOptions[1].name" left-label :disable="!!orderCurrent.deliveryDate"></q-toggle><q-badge v-if="orderCurrent.deliveryDate" color="accent">发货日期:{{Quasar.date.formatDate(orderCurrent.paymentDate,'YYYY-MM-DD HH:mm')}}</q-badge>
+            <q-input outlined dense stack-label bg-color="white" input-style="min-height: 22rem;"
+                     v-if="orderCurrent.isDelivery"
+                     :readonly="!!orderCurrent.deliveryDate"
+                     type="textarea"
+                     label="发货数据" hint="格式： 每行一条卡密信息"
+                     v-model.trim="orderCurrent.stockData">
+            </q-input>
         </q-card-section>
         <q-card-section>
             <q-btn class="float-right" color="warning" icon="edit" label="保存" @@click="orderDialogEdit"></q-btn>
@@ -530,32 +530,61 @@
            },
            orderDialogEdit(){     
                //todo  新增和修改验证数据是否已经输入 
-               
-               if (this.orderCurrent.isDelivery && !this.orderCurrent.deliveryDate && this.orderCurrent.stockData.trim().length > 0){
-                   var stockList = [];
-                   var stockArray= this.orderCurrent.stockData.trim().split('\n');
-                   for (i in stockArray){
-                       if (stockArray[i].trim().length > 0){
-                            stockList.push({name:stockArray[i].trim(),stockId:''});
-                       }
-                   }
-                   this.orderCurrent.stockList = stockList;
+               var default_hasError = false;
+               if (!this.orderCurrent.orderId){
+                   this.$refs.orderCurrent_product.validate();
+                   this.$refs.orderCurrent_name.validate();
+                   default_hasError = this.$refs.orderCurrent_product.hasError 
+                   || this.$refs.orderCurrent_name.hasError;
                }
-               UserApi('OrderSave?storeId='+this.storeCurrent.storeId,this.orderCurrent)
-                  .then((response)=> {
-                        if (response.data.code === 1){ 
-                            this.orderDialog=false;
-                            this.loadOrderData();
-                        } else{
-                            Notify.Warning('操作执行失败');
-                        }
-                        this.orderFilter.loading =false;
-                    })
-                    .catch( (error)=> {
-                        this.orderFilter.loading =false;
-                        Notify.Warning('接口通信错误');
-                        console.error(error);
-                    });
+               this.$refs.orderCurrent_quantity.validate();
+               this.$refs.orderCurrent_amount.validate();
+               this.$refs.orderCurrent_contact.validate();
+               
+               var pay_hasError = false;
+               if (this.orderCurrent.isPay){
+                this.$refs.orderCurrent_paymentType.validate();
+                pay_hasError = this.$refs.orderCurrent_paymentType.hasError;
+               }
+               var refund_hasError = false;
+               if (this.orderCurrent.isRefund){
+                this.$refs.orderCurrent_refundAmount.validate();
+                refund_hasError = this.$refs.orderCurrent_refundAmount.hasError;
+               }
+               
+               
+               if (!default_hasError
+               && !this.$refs.orderCurrent_quantity.hasError
+               && !this.$refs.orderCurrent_amount.hasError
+               && !this.$refs.orderCurrent_contact.hasError
+               && !pay_hasError
+               && !refund_hasError){
+                   if (this.orderCurrent.isDelivery && !this.orderCurrent.deliveryDate && this.orderCurrent.stockData.trim().length > 0){
+                       var stockList = [];
+                       var stockArray= this.orderCurrent.stockData.trim().split('\n');
+                       for (i in stockArray){
+                           if (stockArray[i].trim().length > 0){
+                                stockList.push({name:stockArray[i].trim(),stockId:''});
+                           }
+                       }
+                       this.orderCurrent.stockList = stockList;
+                   }
+                   UserApi('OrderSave?storeId='+this.storeCurrent.storeId,this.orderCurrent)
+                      .then((response)=> {
+                            if (response.data.code === 1){ 
+                                this.orderDialog=false;
+                                this.loadOrderData();
+                            } else{
+                                Notify.Warning('操作执行失败');
+                            }
+                            this.orderFilter.loading =false;
+                        })
+                        .catch( (error)=> {
+                            this.orderFilter.loading =false;
+                            Notify.Warning('接口通信错误');
+                            console.error(error);
+                        });
+               }
            },
            orderMultipleAction(action){
                var orderIds = _.map(this.orderSelected, 'orderId');

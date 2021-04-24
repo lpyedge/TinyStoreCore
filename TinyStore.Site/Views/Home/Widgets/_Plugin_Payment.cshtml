@@ -11,7 +11,7 @@
             <div class="content">
                 <div class="payment row">
                     <div class="unit">
-                        <a name="wechat"> 
+                        <a name="wechat">
                             <span class="wechat"></span>
                             微信支付
                         </a>
@@ -61,29 +61,29 @@
 </style>
 <script>
     var Payment = {};
-    
+    var $payment_dialog = $("#payment .dialog");
     //todo 需要根据店铺配置的支付方式展示
 
     Payment.Show = function () {
         $(".blackmask,#payment").fadeIn(150);
-        $("#payment .dialog").addClass("fadeIn-up");
-        $("#payment .dialog").removeClass("fadeOut-up");
+        $payment_dialog.addClass("fadeIn-up");
+        $payment_dialog.removeClass("fadeOut-up");
 
         //关闭付款方式选择页面
         $("#payment").find(".dialog-close").click(function () {
             $(".blackmask,#payment").fadeOut(150);
-            $("#payment .dialog").addClass("fadeOut-up");
-            $("#payment .dialog").removeClass("fadeIn-up");
+            $payment_dialog.addClass("fadeOut-up");
+            $payment_dialog.removeClass("fadeIn-up");
         });
 
-        if (arguments.length == 4) {
+        if (arguments.length === 4) {
             Payment.orderId = undefined;
             Payment.productId = arguments[0];
             Payment.quantity = arguments[1];
             Payment.contact = arguments[2];
             Payment.message = arguments[3];
 
-        } else if (arguments.length == 1) {
+        } else if (arguments.length === 1) {
             Payment.orderId = arguments[0];
         }
     }
@@ -100,7 +100,6 @@
         $("#payment").find("[name]").on("click", function (e) {
             var payname = $(this).attr("name");
             if (payname) {
-
                 if (Payment.orderId) {
                     CY.Ajax("OrderPay", {
                         "orderid": Payment.orderId,
@@ -111,12 +110,12 @@
                                 CY.Page.AppLaunch(msg.data.url);
                             }
                         } else if (response.code === 0){
-                             $.toast("订单不存在或已经成功付款");
-                         } else if (response.code === 13){
-                              $.toast("服务器数据异常");
-                          } else if (response.code === 15){
-                               $.toast("支付方式不存在");
-                           }
+                            $.toast("订单不存在或已经成功付款");
+                        } else if (response.code === 13){
+                            $.toast("服务器数据异常");
+                        } else if (response.code === 15){
+                            $.toast("支付方式不存在");
+                        }
                     });
                 } else {
                     CY.Ajax("OrderInsert",
@@ -134,8 +133,9 @@
                                     CY.Page.AppLaunch(response.data.url);
                                 }
                                 CY.Page.VisibilityListener(Payment.AppLaunched);
-                            } else if (response.code === 0) {
-                              $.toast("请检查您的下单数量是否满足购买条件");
+                            }
+                            else if (response.code === 0) {
+                                $.toast("请检查您的下单数量是否满足购买条件");
                             }else if (response.code === 11) {
                                 $.toast("提交数据验证未通过");
                             }else if (response.code === 13) {

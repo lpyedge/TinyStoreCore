@@ -13,8 +13,8 @@
                     "orderId": order.orderId,
                 }, function (msg) {
                     if (msg.Result) {
-                       if (msg.Data.isDelivery != order.isDelivery ||
-                           msg.Data.isPay != order.isPay) {
+                       if (msg.Data.isDelivery !== order.isDelivery ||
+                           msg.Data.isPay !== order.isPay) {
                             order = msg.Data;
                             if (order.isPay) {
                                 window.clearInterval(intervalHandle);

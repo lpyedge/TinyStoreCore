@@ -1,5 +1,5 @@
 ﻿<style>
-    #toast {
+    .toast {
         position: fixed;
         top: 44%;
         left: 50%;
@@ -20,25 +20,47 @@
 </style>
 
 <script>
+    var __sto = setTimeout;
+    window.setTimeout = function(callback,timeout,param)
+    {
+        var args = Array.prototype.slice.call(arguments,2);
+        var _cb = function(){
+            callback.apply(null,args);
+        }
+        __sto(_cb,timeout);
+　　}
+
      /*
        $.toast('网络错误，请稍后重试',1400);
     */
     $.extend({
+        $el:null,
         toast: function (msg, timeout) {
             if (!timeout) {
                 timeout = 2500;
             }
-            var oDiv = document.getElementById("toast");
-            if (!oDiv) {                
-                var oDiv = document.createElement("div");
-                oDiv.setAttribute("id", "toast");
-                $("body").append(oDiv);
+            if (this.$el === null){
+                var divToast = document.createElement("div");
+                divToast.setAttribute("class", "toast");
+                this.$el = $(divToast);
+                $("body").append(this.$el);
             }
-            $('#toast').text(msg.replace(/\n/ig, '<br/>'));
-            $('#toast').fadeIn();
-            setTimeout(function () {
-                $('#toast').fadeOut();
-            }, timeout);
+            this.$el.text(msg.replace(/\n/ig, '<br/>'));
+            this.$el.fadeIn();
+            window.setTimeout(function () {
+                arguments[0].fadeOut();
+            }, timeout,this.$el);
+            // var oDiv = document.getElementById("toast");
+            // if (!oDiv) {                
+            //     var oDiv = document.createElement("div");
+            //     oDiv.setAttribute("class", "toast");
+            //     $("body").append(oDiv);
+            // }
+            // $('#toast').text(msg.replace(/\n/ig, '<br/>'));
+            // $('#toast').fadeIn();
+            // setTimeout(function () {
+            //     $('#toast').fadeOut();
+            // }, timeout);
         }
     });
 </script>
