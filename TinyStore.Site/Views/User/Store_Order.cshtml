@@ -607,7 +607,6 @@
            dateRangeOptionsFn(date){
                var date_end = Quasar.date.formatDate(Date.now(),'YYYY/MM/DD');
                var date_start = Quasar.date.formatDate(Quasar.date.addToDate(Date.now(),{month:-3}),'YYYY/MM/DD');
-               //console.log(date_start,date_end);
                return date >= date_start && date <= date_end;
            },        
            orderCurrent_product_Change(v){

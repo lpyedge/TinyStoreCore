@@ -91,6 +91,17 @@
             "files": [
                 "doT.min.js"
             ]
+        },
+        {
+            "provider": "jsdelivr",
+            "library": "@antv/f2@3.8.6",
+            "destination": "wwwroot/lib/antv/f2/",
+            "files": [
+                "dist/f2.min.js",
+                "dist/f2-all.min.js",
+                "dist/f2-simple.min.js",
+                "README.zh-CN.md"
+            ]
         }
     ]
 }
