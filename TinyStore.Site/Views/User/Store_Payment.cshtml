@@ -80,6 +80,7 @@
         </q-card-section>
         <q-card-section class="q-gutter-sm">
             <q-input outlined dense stack-label bg-color="white"
+                     :readonly="paymentIndex >= 0"
                      label="收款名称"
                      v-model.trim="paymentCurrent.name"
                      ref="paymentCurrent_name"
@@ -192,29 +193,35 @@
                         this.paymentCurrent = { isEnable: false };
                     }
                 },
-                paymentDialogEdit() {                    
-                   this.$refs.paymentCurrent_name.validate();
-                   this.$refs.paymentCurrent_account.validate();
-                   if (!this.$refs.paymentCurrent_name.hasError && !this.$refs.paymentCurrent_account.hasError){
-                       if (this.paymentIndex >= 0) {
+                paymentDialogEdit() {
+                    var nameExist = _.filter(this.storeCurrent.paymentList, (data)=>{return data.name.toLowerCase() === this.paymentCurrent.name.toLowerCase()});
+                    if (nameExist.length !== 0){
+                        Notify.Warning('支付名称重复');
+                        return;
+                    }
+                   
+                    this.$refs.paymentCurrent_name.validate();
+                    this.$refs.paymentCurrent_account.validate();
+                    if (!this.$refs.paymentCurrent_name.hasError && !this.$refs.paymentCurrent_account.hasError){
+                        if (this.paymentIndex >= 0) {
                            var index = 0;
                            for (i in this.storeCurrent.paymentList) {
                                if (!this.storeCurrent.paymentList[i].isSystem) {
                                    if (index === this.paymentIndex) {
-                                       this.$set(this.storeCurrent.paymentList, i, JSON.parse(JSON.stringify(this.paymentCurrent)))
+                                       this.$set(this.storeCurrent.paymentList, i, JSON.parse(JSON.stringify(this.paymentCurrent)));
                                        break;
                                    }
                                    index++;
                                }
                            }
-                       } else if (this.paymentIndex === -1) {
-                           this.$set(this.storeCurrent.paymentList, this.storeCurrent.paymentList.length, JSON.parse(JSON.stringify(this.paymentCurrent)))
-                       }
-                       this.storePaymentListAutoSave();
-                       this.paymentIndex = -2;
-                       this.paymentDialog = false;
-                       this.paymentCurrent = {};
-                   }                    
+                        } else if (this.paymentIndex === -1) {
+                           this.$set(this.storeCurrent.paymentList, this.storeCurrent.paymentList.length, JSON.parse(JSON.stringify(this.paymentCurrent)));              
+                        }
+                        this.storePaymentListAutoSave();
+                        this.paymentIndex = -2;
+                        this.paymentDialog = false;
+                        this.paymentCurrent = {};
+                    }                    
                 },
                 paymentDialogRemove() {
                     this.$q.dialog({
