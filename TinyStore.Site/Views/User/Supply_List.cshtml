@@ -68,10 +68,10 @@
             <q-card-section style="height: 4.7rem;width: 18rem;">
                 <label class="ellipsis-2-lines" v-html="item.memo"></label>
             </q-card-section>
-            <q-icon class="absolute-bottom-right q-ma-xs" color="primary" size="1.4rem" name="zoom_out_map" @@click="supplyDialogShow(i)"></q-icon>
+            <q-icon class="cursor-pointer absolute-bottom-right q-ma-xs" color="primary" size="1.4rem" name="zoom_out_map" @@click="supplyDialogShow(i)"></q-icon>
         </q-card>
         <q-card class="col-auto" style="width: 18rem;height: 8rem" bordered v-if="supplyType == 'custom'">
-            <q-icon class="absolute-center" name="add" size="xl" color="primary" @@click="supplyDialogShow(-1)"></q-icon>
+            <q-icon class="cursor-pointer absolute-center" name="add" size="xl" color="primary" @@click="supplyDialogShow(-1)"></q-icon>
         </q-card>
     </q-list>
 </q-page>

@@ -64,7 +64,7 @@
                         </div>
                     </div>
                     <div class="col text-h6" style="text-align: center;height:5rem;line-height: 5rem;width: 18rem">{{item.account}}</div>
-                    <q-icon class="absolute-bottom-right q-ma-xs" color="negative" size="1.4rem" name="far fa-edit" @@click="paymentDialogShow(i)"></q-icon>
+                    <q-icon class="cursor-pointer absolute-bottom-right q-ma-xs" color="negative" size="1.4rem" name="far fa-edit" @@click="paymentDialogShow(i)"></q-icon>
                 </q-card-section>
             </q-card>
         </div>
@@ -100,7 +100,7 @@
                      hint="点击二维码图标解析收款二维码"
                      v-model="paymentCurrent.qrCode">
                 <template v-slot:append>
-                    <q-icon name="fas fa-qrcode" color="negative" @@click="$refs.qrcodeImagePick.click()"></q-icon>
+                    <q-icon class="cursor-pointer" name="fas fa-qrcode" color="negative" @@click="$refs.qrcodeImagePick.click()"></q-icon>
                 </template>
             </q-input>
             <input class="hidden" type="file" accept="image/*" ref="qrcodeImagePick" @@change="qrcodeRead"/>

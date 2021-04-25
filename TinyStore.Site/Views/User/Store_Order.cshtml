@@ -126,22 +126,22 @@
                 </q-td>
                 <q-td auto-width key="state">
                     {{ void (isPayIndex = props.row.isPay ? 1 : 0, isDeliveryIndex = props.row.isDelivery ? 1 : 0, isSettleIndex = props.row.isSettle ? 1 : 0) }}
-                    <q-icon size="sm" :name="orderIsPayOptions[isPayIndex].icon" :color="orderIsPayOptions[isPayIndex].color">
+                    <q-icon size="1rem" :name="orderIsPayOptions[isPayIndex].icon" :color="orderIsPayOptions[isPayIndex].color">
                         <q-tooltip>
                             {{ orderIsPayOptions[isPayIndex].name }}
                         </q-tooltip>
                     </q-icon>
-                    <q-icon size="sm" :name="orderIsDeliveryOptions[isDeliveryIndex].icon" :color="orderIsDeliveryOptions[isDeliveryIndex].color">
+                    <q-icon size="1rem" :name="orderIsDeliveryOptions[isDeliveryIndex].icon" :color="orderIsDeliveryOptions[isDeliveryIndex].color">
                         <q-tooltip>
                             {{ orderIsDeliveryOptions[isDeliveryIndex].name }}
                         </q-tooltip>
                     </q-icon>
-                    <q-icon size="sm" :name="orderIsSettleOptions[isSettleIndex].icon" :color="orderIsSettleOptions[isSettleIndex].color">
+                    <q-icon size="1rem" :name="orderIsSettleOptions[isSettleIndex].icon" :color="orderIsSettleOptions[isSettleIndex].color">
                         <q-tooltip>
                             {{ orderIsSettleOptions[isSettleIndex].name }}
                         </q-tooltip>
                     </q-icon>
-                    <q-icon class="q-ml-sm" color="primary" size="1.4rem" name="zoom_out_map" @@click="orderDialogShow(props.rowIndex)"></q-icon>
+                    <q-icon class="cursor-pointer q-ml-sm" color="primary" size="1.4rem" name="zoom_out_map" @@click="orderDialogShow(props.rowIndex)"></q-icon>
                 </q-td>
             </q-tr>
         </template>
@@ -157,22 +157,22 @@
                         </q-item-section>
                         <q-item-section side style="display: inline-block;text-align: right">
                             {{ void (isPayIndex = props.row.isPay ? 1 : 0, isDeliveryIndex = props.row.isDelivery ? 1 : 0, isSettleIndex = props.row.isSettle ? 1 : 0) }}
-                            <q-icon size="sm" :name="orderIsPayOptions[isPayIndex].icon" :color="orderIsPayOptions[isPayIndex].color">
+                            <q-icon size="1rem" :name="orderIsPayOptions[isPayIndex].icon" :color="orderIsPayOptions[isPayIndex].color">
                                 <q-tooltip>
                                     {{ orderIsPayOptions[isPayIndex].name }}
                                 </q-tooltip>
                             </q-icon>
-                            <q-icon size="sm" :name="orderIsDeliveryOptions[isDeliveryIndex].icon" :color="orderIsDeliveryOptions[isDeliveryIndex].color">
+                            <q-icon size="1rem" :name="orderIsDeliveryOptions[isDeliveryIndex].icon" :color="orderIsDeliveryOptions[isDeliveryIndex].color">
                                 <q-tooltip>
                                     {{ orderIsDeliveryOptions[isDeliveryIndex].name }}
                                 </q-tooltip>
                             </q-icon>
-                            <q-icon size="sm" :name="orderIsSettleOptions[isSettleIndex].icon" :color="orderIsSettleOptions[isSettleIndex].color">
+                            <q-icon size="1rem" :name="orderIsSettleOptions[isSettleIndex].icon" :color="orderIsSettleOptions[isSettleIndex].color">
                                 <q-tooltip>
                                     {{ orderIsSettleOptions[isSettleIndex].name }}
                                 </q-tooltip>
                             </q-icon>
-                            <q-icon class="q-ml-sm" color="primary" size="1.4rem" name="zoom_out_map" @@click="orderDialogShow(props.rowIndex)"></q-icon>
+                            <q-icon class="cursor-pointer q-ml-sm" color="primary" size="1.4rem" name="zoom_out_map" @@click="orderDialogShow(props.rowIndex)"></q-icon>
                         </q-item-section>
                     </q-item>
                     <q-separator></q-separator>
@@ -212,9 +212,9 @@
             narrow-indicator
             inline-label
             v-model="orderDialog_tab">
-            <q-tab icon="add" name="default" label="基础"></q-tab>
-            <q-tab icon="add" name="payment" label="款项"></q-tab>
-            <q-tab icon="add" name="stock" label="发货"></q-tab>
+            <q-tab icon="info" name="default" label="基础"></q-tab>
+            <q-tab icon="fas fa-yen-sign" name="payment" label="款项"></q-tab>
+            <q-tab icon="send" name="stock" label="发货"></q-tab>
         </q-tabs>
         <q-card-section v-show="orderDialog_tab === 'default'" class="q-gutter-sm">
             <q-select outlined dense options-dense stack-label bg-color="white"

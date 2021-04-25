@@ -56,10 +56,10 @@
             <q-card-section style="height: 4.7rem;width: 18rem;">
                 <label class="ellipsis-2-lines" v-html="item.memo"></label>
             </q-card-section>
-            <q-icon class="absolute-bottom-right q-ma-xs" color="primary" size="1.4rem" name="zoom_out_map" @@click="productDialogShow(i)"></q-icon>
+            <q-icon class="cursor-pointer absolute-bottom-right q-ma-xs" color="primary" size="1.4rem" name="zoom_out_map" @@click="productDialogShow(i)"></q-icon>
         </q-card>
         <q-card class="col-auto" style="width: 18rem;height: 8rem" bordered>
-            <q-icon class="absolute-center" name="add" size="xl" color="primary" @@click="productDialogShow(-1)"></q-icon>
+            <q-icon class="cursor-pointer absolute-center" name="add" size="xl" color="primary" @@click="productDialogShow(-1)"></q-icon>
         </q-card>
     </q-list>
 </q-page>
@@ -191,6 +191,7 @@
                 <q-space class="col-auto q-mx-xs"></q-space>
                 <div class="col-auto">
                     <q-img basic style="border:1px solid grey;border-radius: 0.8rem; height: 6.5rem; width: 6.5rem"
+                           class="cursor-pointer"
                            :src="productCurrent.icon"
                            spinner-color="white"
                            @@click="$refs.product_icon_pick.click()">
@@ -202,7 +203,7 @@
                         @* </template> *@
                         <template v-slot:error>
                             <div class="absolute-full flex flex-center bg-grey-2 text-primary">
-                                暂无图片
+                                暂无图标
                                 <q-icon class="absolute-top-right" color="orange-9" name="backup" size="sm"></q-icon>
                             </div>
                         </template>
@@ -472,7 +473,7 @@
                    }
                }else{
                    //默认productId前端初始化然后向后端获取，获取成功使用后端获取的值，获取失败则用前端初始化的值
-                   this.productCurrent = {productId:Date.now().toString(),userId:this.userExtend.userId,supplyId:this.userExtend.userId.toString(),category:'',memo : '',quantityMin:1, deliveryType:this.deliveryTypeOptions[0].value, isShow:true};
+                   this.productCurrent = {productId:Date.now().toString(),userId:this.userExtend.userId,supplyId:this.userExtend.userId.toString(),category:'',memo : '',icon:'#',quantityMin:1, deliveryType:this.deliveryTypeOptions[0].value, isShow:true};
                    UserApi('NewDateId',{ state:1 },true)
                         .then((response)=> {
                             if (response.data.code === 1){ 

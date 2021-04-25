@@ -404,7 +404,7 @@ namespace TinyStore.Site.Controllers
 
             if (res.Count > 0)
             {
-                var sb = new StringBuilder("卡号" + Environment.NewLine);
+                var sb = new StringBuilder("卡密数据" + Environment.NewLine);
                 foreach (StockModel item in res)
                 {
                     sb.Append(item.Name);

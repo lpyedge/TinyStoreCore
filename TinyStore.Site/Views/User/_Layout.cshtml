@@ -94,7 +94,7 @@
                     <q-separator class="q-my-sm"></q-separator>
                     
                     <q-item-label header class="text-weight-bold text-uppercase">
-                        店铺
+                        店铺<q-badge class="on-right cursor-pointer">{{storeCurrent.name}}</q-badge>
                     </q-item-label>
 
                     <q-item v-ripple clickable v-for="link in storelinks" :key="link.text" @@click="Goto(link.url)">
@@ -147,9 +147,9 @@
        userlinks: [
            { icon: 'person', text: '商户资料',url:'@Url.ActionLink("User_Profile", "User")' },
            { icon: 'lock', text: '密码安全',url:'@Url.ActionLink("User_Secret","User")' },
-           { icon: 'local_atm', text: '账目管理',url:'' },
+           { icon: 'local_atm', text: '账目管理',url:'@Url.ActionLink("User_Bill","User")' },
            //{ icon: 'monetization_on', text: '提现管理' },     
-           { icon: 'history', text: '操作日志',url:'' }
+           { icon: 'history', text: '操作日志',url:'@Url.ActionLink("User_Log","User")' }
          ],
        storelinks: [
            { icon: 'store_mall_directory', text: '店铺资料',url:'@Url.ActionLink("Store_Info","User")'  },
