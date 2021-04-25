@@ -196,7 +196,7 @@
                 paymentDialogEdit() {
                     var nameExist = _.filter(this.storeCurrent.paymentList, (data)=>{return data.name.toLowerCase() === this.paymentCurrent.name.toLowerCase()});
                     if (nameExist.length !== 0){
-                        Notify.Warning('支付名称重复');
+                        Notify.Warning('收款名称重复');
                         return;
                     }
                    
