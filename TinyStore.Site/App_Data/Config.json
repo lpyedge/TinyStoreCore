@@ -5,6 +5,8 @@
         "FormatDate": "yyyy-MM-dd",
         "SiteDomain": "27070.com",
         "SiteName": "27070",
+        "ServiceQQ": "38798955",
+        "ServiceEmail": "38798955@qq.com",
         "TaxConfigList": [
             {
                 "Level": 0,

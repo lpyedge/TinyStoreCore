@@ -27,29 +27,23 @@
                 <q-space></q-space>
 
                 <div class="q-gutter-sm row items-center no-wrap">
-                    <q-btn round dense flat color="grey-8" icon="apps" v-if="$q.screen.gt.sm">
-                        <q-tooltip>Apps</q-tooltip>
-                    </q-btn>
-                    <q-btn round dense flat color="grey-8" icon="message" v-if="$q.screen.gt.sm">
-                        <q-tooltip>Messages</q-tooltip>
-                    </q-btn>
-                    <q-btn round dense flat  icon="list">
+                    <q-btn round dense flat :class="orderNotifyCount>0?'':'text-grey-8'" :icon="orderNotifyCount>0?'notifications_active':'notifications_off'">
                         <q-badge color="red" text-color="white" floating>
-                            2
+                            {{orderNotifyCount}}
                         </q-badge>
-                        <q-tooltip>订单</q-tooltip>
+                        <q-tooltip>提醒</q-tooltip>
                     </q-btn>
-                    <q-btn-dropdown split>
-                          <template v-slot:label>
+                    <q-btn-dropdown class="on-right" split>
+                        <template v-slot:label>
                             {{ storeCurrent.name }}
-                          </template>
-                          <q-list>
+                        </template>
+                        <q-list>
                             <q-item clickable v-close-popup @@click="setStoreCurrent(i)" v-for="(store,i) in storeList">
-                              <q-item-section>
-                                <q-item-label>{{store.name}}</q-item-label>
-                              </q-item-section>
+                                <q-item-section>
+                                    <q-item-label>{{store.name}}</q-item-label>
+                                </q-item-section>
                             </q-item>
-                          </q-list>
+                        </q-list>
                     </q-btn-dropdown>
                 </div>
             </q-toolbar>
@@ -107,20 +101,19 @@
                     </q-item>
 
                     <q-separator class="q-mt-md q-mb-lg"></q-separator>
-
-                    <div class="q-py-md q-px-md text-grey-9">
-                        <div class="row items-center q-gutter-x-sm q-gutter-y-xs">
-                            <a
-                                v-for="button in buttons1"
-                                :key="button.text"
-                                class="YL__drawer-footer-link"
-                                href="javascript:void(0)">
-                                {{ button.text }}
-                            </a>
-                        </div>
-                    </div>
                     
-                </q-list>
+                    <q-item-label header class="text-weight-bold text-uppercase">
+                        客服
+                    </q-item-label>
+                    @if (!string.IsNullOrWhiteSpace(SiteContext.Config.ServiceQQ))
+                    {
+                        <q-btn flat class="q-mb-sm text-grey-8" icon="fab fa-qq" label="@SiteContext.Config.ServiceQQ" type="a" target="_blank" :href="qqservice('@SiteContext.Config.ServiceQQ')"></q-btn>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(SiteContext.Config.ServiceEmail) && SiteContext.Config.ServiceEmail.Contains('@'))
+                    {
+                        <q-btn flat class="q-mb-sm text-grey-8" icon="email" label="@SiteContext.Config.ServiceEmail" type="a" target="_blank" href="mailto:@SiteContext.Config.ServiceEmail?subject=@Uri.EscapeDataString("问题提交")"></q-btn>
+                    }
+                    </q-list>
             </q-scroll-area>
         </q-drawer>
 
@@ -140,6 +133,7 @@
        userExtend : Store.UserExtend(),
        storeList : Store.StoreList(),
        storeCurrent : Store.StoreCurrent(),
+       orderNotifyCount:5,
        supplylinks: [
            { icon: 'fas fa-dolly', text: '货源管理',url:'@Url.ActionLink("Supply_List", "User")' },
            { icon: 'vpn_key', text: '卡密管理',url:'@Url.ActionLink("Supply_Stock", "User")'  },      
@@ -156,13 +150,7 @@
            { icon: 'fas fa-hand-holding-usd', text: '收款设置',url:'@Url.ActionLink("Store_Payment","User")'  },
            { icon: 'card_travel', text: '商品管理',url:'@Url.ActionLink("Store_Product","User")'  },
            { icon: 'local_grocery_store', text: '订单管理',url:'@Url.ActionLink("Store_Order","User")'  },
-           { icon: 'timeline', text: '销售统计',url:'@Url.ActionLink("Store_Stat","User")' },
-         ],
-         buttons1: [
-           { text: 'Terms' },
-           { text: 'Privacy' },
-           { text: 'Policy & Safety' },
-           { text: 'Test new features' }
+           { icon: 'insert_chart', text: '销售统计',url:'@Url.ActionLink("Store_Stat","User")' },
          ],
          deliveryTypeOptions:[
              {icon:'vpn_key',name:'卡密',color:'primary',value:1},
@@ -198,14 +186,22 @@
          if(!Store.Token()){
              location.href = '@Url.ActionLink("Login", "User")';
          }
-        //桌面下为 true，手机端为 undefined
+     },
+     created(){
+         //桌面下为 true，手机端为 undefined
          this.leftDrawerOpen=!!this.$q.platform.is.desktop;
      },
-       computed:{
-       },
      methods: {
+         qqservice(qqnumber){
+            if (/(iPhone|iPad|iPod|iOS|Android)/i.test(navigator.userAgent)) { //移动端
+                return 'mqqwpa://im/chat?chat_type=wpa&uin=' + qqnumber + '&version=1&src_type=web&web_src=';
+            } else {
+                return 'http://wpa.qq.com/msgrd?V=3&uin=' + qqnumber + '&Site=&Menu=yes';
+            }
+         },
          setStoreCurrent(index){
              Store.StoreCurrent(index);
+             this.storeCurrent = Store.StoreCurrent();
          },
          deliveryTypeOption(deliveryType){
              for (i in this.deliveryTypeOptions){

@@ -8,6 +8,8 @@ using System.Linq;
 using System.Net;
 using System.Net.Mail;
 using System.Text;
+using LPayments;
+using LPayments.Plartform.AliPay;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using TinyStore.Model;
@@ -64,7 +66,6 @@ namespace TinyStore.Site
                 TinyStore.BLL.BaseBLL.DbClient.CodeFirst.InitTables<Model.UserExtendModel>();
                 TinyStore.BLL.BaseBLL.DbClient.CodeFirst.InitTables<Model.UserLogModel>();
                 TinyStore.BLL.BaseBLL.DbClient.CodeFirst.InitTables<Model.WithDrawModel>();
-
 
 #if DEBUG
                 InitDevData();
@@ -439,7 +440,10 @@ namespace TinyStore.Site
             public string SiteDomain { get; set; } = "tiny.store";
 
             public string SiteName { get; set; } = "TinyStore";
-
+            
+            public string ServiceQQ { get; set; } = "10000";
+            
+            public string ServiceEmail { get; set; } = "10000@qq.com";
             public string FormatDate { get; set; } = "yyyy-MM-dd";
 
             public string FormatDateTime { get; set; } = "yyyy-MM-dd HH:mm";
@@ -451,7 +455,6 @@ namespace TinyStore.Site
             public List<KeyValuePair<string, string>> WechatPaySettings { get; set; }
 
             public List<KeyValuePair<string, string>> AliPaySettings { get; set; }
-            
             
             public Utils.EmailContext.EmailServer EmailServer { get; set; }
         }
@@ -698,11 +701,11 @@ namespace TinyStore.Site
 
         public static class OrderHelper
         {
-            public static YPayments.PayTicket GetPayTicket(string PaymentType, string OrderId, double Amount)
+            public static LPayments.PayTicket GetPayTicket(string PaymentType, string OrderId, double Amount,IPAddress clientIP)
             {
                 EPaymentType ePaymentType =
                     Enum.GetValues<EPaymentType>().FirstOrDefault(p => p.ToString() == PaymentType);
-                YPayments.IPayment payment = GetPayment(ePaymentType);
+                LPayments.IPayChannel payment = GetPayment(ePaymentType);
                 if (payment == null)
                 {
                     return null;
@@ -714,87 +717,16 @@ namespace TinyStore.Site
 
                     ServicePointManager.SecurityProtocol = (SecurityProtocolType) 3072;
 
-                    var payticket = payment.Pay(OrderId, Amount, "订单付款",
-#if DEBUG
-                        IPAddress.None,
-#else
-                        IPAddress.Parse(order.ClientIP),
-#endif
+                    var payticket = (payment as LPayments.IPay).Pay(OrderId, Amount, ECurrency.CNY,"订单付款", clientIP,
                         //order.Url, Config.config.SiteDomain.TrimEnd('/') + "/api/" + order.PaymentType, Config.config.SiteDomain, "");
                         returnurl, notifyurl, SiteContext.Config.SiteDomain, "");
-                    if (payticket != null && payticket.Success)
-                    {
-                        //return new Msg<dynamic> { Data = payticket, Message = order.OrderId, Result = true };
-                        if (!string.IsNullOrWhiteSpace(payticket.Url))
-                        {
-                            if (!payticket.Url.StartsWith("http"))
-                            {
-                                return payticket;
-                            }
-                            else if (!string.IsNullOrWhiteSpace(payticket.FormHtml) &&
-                                     payticket.FormHtml.StartsWith("<form"))
-                            {
-                                try
-                                {
-                                    var webclient = new System.Net.WebClient();
-                                    webclient.Encoding = Encoding.UTF8;
-                                    var url =
-#if DEBUG
-                                        "http://localhost:62340/RechargePre";
-#else
-                                        "http://pay.gamemakesmoney.com/RechargePre";
-#endif
-                                    //ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072;
-                                    var response = webclient.UploadString(url, Global.Json.Serialize(payticket));
-                                    if (!Directory.Exists(SiteContext.Config.AppData + "Notify/"))
-                                        Directory.CreateDirectory(SiteContext.Config.AppData + "Notify/");
-                                    File.WriteAllText(SiteContext.Config.AppData + "Notify/" +
-                                                      DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".log",
-                                        Global.Json.Serialize(payticket));
-                                    var result = Global.Json.Deserialize<dynamic>(response);
-                                    if (result != null)
-                                    {
-                                        if (!string.IsNullOrWhiteSpace((string) result.Data))
-                                        {
-                                            return new YPayments.PayTicket()
-                                            {
-                                                Success = true,
-                                                Url = "http://pay.gamemakesmoney.com/Recharge/" + result.Data
-                                            };
-                                        }
-
-                                        return payticket;
-                                    }
-                                    else
-                                    {
-                                        return payticket;
-                                    }
-                                }
-                                catch (Exception ex)
-                                {
-                                    return payticket;
-                                }
-                            }
-                            else
-                            {
-                                // 扫码支付  支付链接返回
-                                return payticket;
-                            }
-                        }
-                        else if (!string.IsNullOrWhiteSpace(payticket.Extra))
-                        {
-                            //app支付 支付链接返回
-                            return payticket;
-                        }
-                    }
-
                     return payticket;
                 }
             }
 
-            private static YPayments.IPayment GetPayment(EPaymentType paytype)
+            private static LPayments.IPayChannel GetPayment(EPaymentType paytype)
             {
-                YPayments.IPayment pay = null;
+                LPayments.IPayChannel pay = null;
                 switch (paytype)
                 {
                     //case EPaymentType.AliPayApp:
@@ -804,10 +736,10 @@ namespace TinyStore.Site
                     //    pay = new YPayments.WechatApp();
                     //    break;
                     case EPaymentType.AliPayWap:
-                        pay = new YPayments.AliPayWap();
+                        pay = LPayments.Context.Get("蚂蚁金服", EChannel.AliPay,EPayType.H5);
                         break;
                     case EPaymentType.WeChatH5:
-                        pay = new YPayments.WeChatH5();
+                        pay = LPayments.Context.Get("微信支付", EChannel.Wechat,EPayType.H5);
                         break;
                     //case EPaymentType.AliPayQR:
                     //    pay = new YPayments.AliPayQR();
@@ -872,16 +804,16 @@ namespace TinyStore.Site
 
                     if (paynotify != null)
                     {
-                        YPayments.IPayment payment =
+                        LPayments.IPayChannel payment =
                             GetPayment((EPaymentType) Enum.Parse(typeof(EPaymentType), paynotify.PaymentName,
                                 true));
 
                         if (payment != null)
                         {
-                            var res = payment.Notify(paynotify.Form, paynotify.Query, paynotify.Header,
+                            var res = (payment as IPay).Notify(paynotify.Form, paynotify.Query, paynotify.Header,
                                 paynotify.Body, paynotify.NotifyIp);
 
-                            if (res.Status == YPayments.NotifyResult.EStatus.Completed)
+                            if (res.Status == LPayments.PayResult.EStatus.Completed)
                             {
                                 Pay(res.OrderID, res.Amount, res.TxnID);
                             }

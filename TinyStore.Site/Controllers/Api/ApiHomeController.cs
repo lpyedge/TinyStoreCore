@@ -101,9 +101,11 @@ namespace TinyStore.Site.Controllers.Api
                         order.PaymentType = paymentType;
                         OrderBLL.Update(order);
                     }
+                    
+                    var clietnIP = Utils.RequestInfo._ClientIP(Request);
 
                     return ApiResult.RData(
-                        SiteContext.OrderHelper.GetPayTicket(order.PaymentType, order.OrderId, order.Amount));
+                        SiteContext.OrderHelper.GetPayTicket(order.PaymentType, order.OrderId, order.Amount,clietnIP));
                 }
 
                 return ApiResult.RData(order);
@@ -139,8 +141,10 @@ namespace TinyStore.Site.Controllers.Api
                 OrderBLL.Update(order);
             }
 
+            var clietnIP = Utils.RequestInfo._ClientIP(Request);
+
             return ApiResult.RData(
-                SiteContext.OrderHelper.GetPayTicket(order.PaymentType, order.OrderId, order.Amount));
+                SiteContext.OrderHelper.GetPayTicket(order.PaymentType, order.OrderId, order.Amount,clietnIP));
         }
 
         public IActionResult OrderInfo([FromForm] string orderId)

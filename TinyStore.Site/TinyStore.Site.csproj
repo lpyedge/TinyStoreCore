@@ -45,10 +45,4 @@
     <ProjectReference Include="..\TinyStore.Model\TinyStore.Model.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="YPayments, Version=1.0.1.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\DLLs\YPayments.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>
