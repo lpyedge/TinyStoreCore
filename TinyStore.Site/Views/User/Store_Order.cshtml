@@ -32,7 +32,7 @@
                  readonly
                  class="col-xs-12 col-md-auto"
                  label="订单日期"
-                 :value="orderFilter.dateRange ? orderFilter.dateRange.from + ' 至 ' + orderFilter.dateRange.to : '' "
+                 :value="orderFilter.dateRange ? (Object.prototype.toString.call(orderFilter.dateRange) === '[object String]' ? orderFilter.dateRange + ' 至 ' + orderFilter.dateRange : orderFilter.dateRange.from + ' 至 ' + orderFilter.dateRange.to) : '' "
                  @@clear="v=>orderFilter.dateRange = null">
             <template v-slot:append>
                 <q-icon name="event" color="primary" class="cursor-pointer">
@@ -40,9 +40,15 @@
                         <q-date range mask="YYYY-MM-DD"
                                 v-model="orderFilter.dateRange"
                                 :options="dateRangeOptionsFn">
-                            <div class="row items-center justify-end">
-                                <q-btn v-close-popup :label="$q.lang.label.clear" color="warning" flat @@click="orderFilter.dateRange = null"></q-btn>
-                                <q-btn v-close-popup :label="$q.lang.label.close" color="primary" flat></q-btn>
+                            <div class="row items-center justify-between">
+                                 <div class="col-auto">
+                                     <q-btn v-close-popup label="上月" color="accent" @@click="orderFilter.dateRange = {from:Quasar.date.formatDate(Quasar.date.subtractFromDate(Quasar.date.adjustDate(Date.now(),{date:1}),{month:1}),'YYYY-MM-DD'),to:Quasar.date.formatDate(Quasar.date.subtractFromDate(Quasar.date.adjustDate(Date.now(),{date:1}),{days:1}),'YYYY-MM-DD')}" class="col-shrink self-start"></q-btn>
+                                     <q-btn v-close-popup label="本月" color="accent" @@click="orderFilter.dateRange = {from:Quasar.date.formatDate(Quasar.date.adjustDate(Date.now(),{date:1}),'YYYY-MM-DD'),to:Quasar.date.formatDate(Date.now(),'YYYY-MM-DD')}" class="col-shrink self-start"></q-btn>
+                                 </div>
+                                 <div class="col-auto">
+                                    <q-btn v-close-popup :label="$q.lang.label.clear" color="warning" flat @@click="orderFilter.dateRange = null"></q-btn>
+                                    <q-btn v-close-popup :label="$q.lang.label.close" color="primary" flat></q-btn>
+                                 </div>
                             </div>
                         </q-date>
                     </q-popup-proxy>
@@ -374,7 +380,11 @@
                keyname:'',
                isPay:null,
                isDelivery:null,
-               dateRange:null,
+               isSettle:null,
+               dateRange:{
+                    from:Quasar.date.formatDate(Quasar.date.adjustDate(Date.now(),{date:1}),'YYYY-MM-DD'),
+                    to:Quasar.date.formatDate(Date.now(),'YYYY-MM-DD')
+               },
                productData:[],
                productCurrent:{productId:''},
                pagination:{                   
@@ -477,14 +487,33 @@
                if(arguments.length>0 && arguments[0].pagination){
                    this.orderFilter.pagination = arguments[0].pagination;
                }
+               var dateFrom='', dateTo='';
+               if(this.orderFilter.dateRange){            
+                  var dateRangeType = Object.prototype.toString.call(this.orderFilter.dateRange);
+                  if (dateRangeType === '[object String]'){
+                       dateFrom=this.orderFilter.dateRange;    
+                       dateTo=this.orderFilter.dateRange;                    
+                  }else{
+                       dateFrom=this.orderFilter.dateRange.from;    
+                       dateTo=this.orderFilter.dateRange.to; 
+                  }   
+               }
+               
+               if (dateFrom==='' && dateTo==='' && this.orderFilter.keyname ===''){
+                   Notify.Warning('订单日期和关键词不能同时为空');
+                   return;
+               }
+               
                this.orderFilter.loading =true;
-               UserApi('OrderPageList',{ 
+               UserApi('OrderPageList',{
                    storeId:this.storeCurrent.storeId, 
                    productId:this.orderFilter.productCurrent.productId,
                    keyname:this.orderFilter.keyname,
                    isPay:this.orderFilter.isPay,
                    isDelivery:this.orderFilter.isDelivery, 
                    isSettle:this.orderFilter.isSettle, 
+                   from:dateFrom,
+                   to:dateTo,
                    pageSize:this.orderFilter.pagination.rowsPerPage,
                    pageIndex:this.orderFilter.pagination.page},true)
                   .then((response)=> {
@@ -551,7 +580,6 @@
                 this.$refs.orderCurrent_refundAmount.validate();
                 refund_hasError = this.$refs.orderCurrent_refundAmount.hasError;
                }
-               
                
                if (!default_hasError
                && !this.$refs.orderCurrent_quantity.hasError

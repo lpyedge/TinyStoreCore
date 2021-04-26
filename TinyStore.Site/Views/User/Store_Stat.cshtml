@@ -1,0 +1,281 @@
+﻿<q-page padding>
+    <div class="text-h5 text-weight-bold text-grey-8">
+        <q-icon :name="storelinks[4].icon" size="md" class="on-left"></q-icon>{{storelinks[4].text}}
+    </div>
+    <q-separator class="q-my-sm"></q-separator>
+    <div class="row q-gutter-xs q-mx-none q-my-sm">
+        <q-input outlined dense stack-label bg-color="white" style="min-width: 230px;"
+                 readonly
+                 class="col-xs-12 col-md-auto"
+                 label="统计日期"
+                 :value="billFilter.dateRange ?  (Object.prototype.toString.call(billFilter.dateRange) === '[object String]' ? billFilter.dateRange + ' 至 ' + billFilter.dateRange : billFilter.dateRange.from + ' 至 ' + billFilter.dateRange.to)  : '' "
+                 @@clear="v=>billFilter.dateRange = null">
+            <template v-slot:append>
+                <q-icon name="event" color="primary" class="cursor-pointer">
+                    <q-popup-proxy transition-show="scale" transition-hide="scale">
+                        <q-date range mask="YYYY-MM-DD"
+                                v-model="billFilter.dateRange"
+                                :options="dateRangeOptionsFn">
+                            <div class="row items-center justify-between">
+                                <div class="col-auto">
+                                    <q-btn v-close-popup label="上月" color="accent" @@click="billFilter.dateRange = {from:Quasar.date.formatDate(Quasar.date.subtractFromDate(Quasar.date.adjustDate(Date.now(),{date:1}),{month:1}),'YYYY-MM-DD'),to:Quasar.date.formatDate(Quasar.date.subtractFromDate(Quasar.date.adjustDate(Date.now(),{date:1}),{days:1}),'YYYY-MM-DD')}" class="col-shrink self-start"></q-btn>
+                                    <q-btn v-close-popup label="本月" color="accent" @@click="billFilter.dateRange = {from:Quasar.date.formatDate(Quasar.date.adjustDate(Date.now(),{date:1}),'YYYY-MM-DD'),to:Quasar.date.formatDate(Date.now(),'YYYY-MM-DD')}" class="col-shrink self-start"></q-btn>
+                                </div>
+                                <div class="col-auto">
+                                    <q-btn v-close-popup :label="$q.lang.label.close" color="primary" flat></q-btn>
+                                </div>
+                            </div>
+                        </q-date>
+                    </q-popup-proxy>
+                </q-icon>
+            </template>
+        </q-input>
+        <q-select outlined dense options-dense stack-label bg-color="white" style="min-width: 110px"
+                 class="col-auto"
+                  label="统计类型"
+                  v-model="billFilter.statType"
+                  emit-value
+                  map-options
+                  :options="billFilter.statTypeOptions">
+        </q-select>
+        <q-space></q-space>
+        <q-btn :loading="billFilter.loading" class="col-shrink" color="primary" icon="search" label="搜索" @@click="loadStat"></q-btn>
+    </div>
+
+    <div class="row q-gutter-xs q-mx-none q-my-sm">
+        <q-btn class="q-mx-xs" color="primary" @@click="billExport"><q-icon class="on-left" size="xs" name="fas fa-file-export"></q-icon>导出</q-btn>
+        <q-space ></q-space>
+        @* <q-btn-dropdown :disable-main-btn="stockSelected.length === 0" color="warning" label="批量操作"> *@
+        @*     <q-list> *@
+        @*         <q-item clickable v-close-popup @@click="stockMultipleAction(0)"> *@
+        @*             <q-item-section> *@
+        @*                 <q-item-label><q-icon class="on-left" size="xs" name="delete_forever"></q-icon>删除</q-item-label> *@
+        @*             </q-item-section> *@
+        @*         </q-item> *@
+        @* *@
+        @*         <q-item clickable v-close-popup @@click="stockMultipleAction(1)"> *@
+        @*             <q-item-section> *@
+        @*                 <q-item-label><q-icon class="on-left" size="xs" :name="stockIsShowOptions[0].icon"></q-icon>{{stockIsShowOptions[0].name}}</q-item-label> *@
+        @*             </q-item-section> *@
+        @*         </q-item> *@
+        @* *@
+        @*         <q-item clickable v-close-popup @@click="stockMultipleAction(2)"> *@
+        @*             <q-item-section> *@
+        @*                 <q-item-label><q-icon class="on-left" size="xs" :name="stockIsShowOptions[1].icon"></q-icon>{{stockIsShowOptions[1].name}}</q-item-label> *@
+        @*             </q-item-section> *@
+        @*         </q-item> *@
+        @*     </q-list> *@
+        @* </q-btn-dropdown> *@
+    </div>
+    <div class="row" style="height: 18rem;">
+        <canvas id="productPie" class="col-xs-12 col-md-4"></canvas>
+        <canvas id="productLine" class="col-xs-12 col-md-8"></canvas>
+    </div>
+</q-page>
+
+
+@section Scripts{
+    <script src="https://cdn.jsdelivr.net/npm/@@antv/f2@3.8.6/dist/f2-all.min.js"
+            asp-fallback-test="F2"
+            asp-fallback-src="~/lib/antv/f2/dist/f2-all.min.js"></script>
+
+    <script>
+   var _page = {
+       data:{
+           billFilter:{
+               loading:false,
+               statType:1,
+               dateRange:{
+                   from:Quasar.date.formatDate(Quasar.date.adjustDate(Date.now(),{date:1}),'YYYY-MM-DD'),
+                   to:Quasar.date.formatDate(Date.now(),'YYYY-MM-DD')
+               },
+               statTypeOptions:[
+                   {label:'商品统计',value:1},
+                   {label:'其他',value:2},
+               ]
+           },
+       },
+       beforeMount(){
+       },
+       mounted(){
+           //绘制图形要在mounted事件以后调用
+           // var dataPie = [
+           //   { name: 'QQ币', count: 8,amount:1441,profit:131,const: 'const' },
+           //   { name: '魔兽点卡', count: 15,amount:342,profit:34,const: 'const' },
+           //   { name: '不卡代理', count: 45,amount:245,profit:56,const: 'const' },
+           //   { name: '网易游戏币', count: 56 ,amount:3500,profit:780,const: 'const'},
+           //   { name: 'GoogleVoice帐号', count: 14,amount:189,profit:45,const: 'const' }
+           //   ];
+           // this.loadProductPie(dataPie);
+           this.loadStat();
+       },
+       computed:{
+       },
+       methods: {
+           loadProductStat(dataAll){
+               const top = 6;
+               var dataPie = [];
+               var dataTotal = {};
+               var dataGroup = _.groupBy(dataAll, 'name');
+               for (name in dataGroup){
+                   var data = {};
+                   data.name = name;
+                   data.count = _.sumBy(dataGroup[name], (o)=>{return o.count;});
+                   data.amount = _.sumBy(dataGroup[name], (o)=>{return o.amount;});
+                   data.cost = _.sumBy(dataGroup[name], (o)=>{return o.cost;});
+                   data.quantity = _.sumBy(dataGroup[name], (o)=>{return o.quantity;});
+                   data.refundAmount = _.sumBy(dataGroup[name], (o)=>{return o.refundAmount;});
+                   data.pieConst = 'fixed';
+                   dataTotal[name] =  data;
+               }
+               dataTotal = _.orderBy(dataTotal, function(o) { return o.count; },['desc']);
+               console.log(dataTotal);
+              var chartPie = new F2.Chart({
+                id: 'productPie',
+                pixelRatio: window.devicePixelRatio
+              });
+              chartPie.source(dataTotal);
+              chartPie.coord('polar', {
+                transposed: true,
+                radius: 0.9,
+                innerRadius: 0.6
+              });
+              chartPie.axis(false);
+              chartPie.legend(false);
+              chartPie.tooltip(false);
+              chartPie.guide()
+                .html({
+                  position: [ '50%', '50%' ],
+                  html: '<div style="text-align: center;width:150px;height: 50px;">\n      <p style="font-size: 12px;color: #999;margin: 0" id="name"></p>\n      <p style="font-size: 18px;color: #343434;margin: 0;font-weight: bold;" id="amount"></p>\n      </div>'
+                });
+              chartPie.interval()
+                .position('pieConst*count')//饼状图x用所有字段统一值的属性来实现合值的判断
+                .adjust('stack')
+                .color('name', [ 
+                        '#1890FF',
+                        '#13C2C2',
+                        '#2FC25B',
+                        '#FACC14',
+                        '#F04864',
+                        '#8543E0', ]);
+              chartPie.pieLabel({
+                sidePadding: 10,
+                adjustOffset:15,
+                skipOverlapLabels:false,
+                triggerOn:'click',
+                activeShape: true,
+                label1: (data)=> {
+                  return {
+                    text: data.count,
+                    fill: '#343434',
+                    fontWeight: 'bold'
+                  };
+                },
+                label2:  (data)=> {
+                  return {
+                    text: data.name,
+                    fill: '#999'
+                  };
+                },
+                onClick:  (ev)=> {
+                  const data = ev.data;
+                  console.log(ev);
+                  if (data) {
+                    document.getElementById('name').innerText = data.name;
+                    document.getElementById('amount').innerText = '￥' + data.amount +' 利润:'+ (data.amount-data.cost-data.refundAmount);
+                  }else{
+                    //点击空白位置 重绘图标 移除激活对象
+                    chartPie.repaint();
+                  }
+                }
+              });
+              chartPie.render();
+              
+              
+           },
+           loadStat(){
+              var dateFrom='', dateTo='';
+              if(this.billFilter.dateRange){
+                  var dateRangeType = Object.prototype.toString.call(this.billFilter.dateRange);
+                  if (dateRangeType === '[object String]'){
+                       dateFrom = this.billFilter.dateRange;    
+                       dateTo = this.billFilter.dateRange;                    
+                  }else{
+                       dateFrom = this.billFilter.dateRange.from;    
+                       dateTo = this.billFilter.dateRange.to; 
+                  }   
+              }
+              
+              UserApi('StoreStat',{ storeId:this.storeCurrent.storeId,from:dateFrom, to:dateTo,statType:this.billFilter.statType},true)
+                 .then((response)=> {
+                     if (response.data.code === 1){ 
+                         switch (this.billFilter.statType){
+                             case 1:
+                                 this.loadProductStat(response.data.data);
+                                 break;
+                         }
+                     } else{
+                         Notify.Warning('卡密数据导出失败');
+                     }
+                     this.billFilter.loading =false;
+                 })
+                 .catch( (error)=> {
+                     this.billFilter.loading =false;
+                     Notify.Warning('接口通信错误');
+                     console.error(error);
+                 });
+           },
+           billExport(){
+               // UserApi('StockExport',{ supplyId:this.billFilter.supplyCurrent.supplyId,keyname:this.billFilter.keyname, isShow:this.billFilter.isShow},true)
+               //    .then((response)=> {
+               //        if (response.data.code === 1){ 
+               //            var blob = new Blob([response.data.data], {type: "text/plain;charset=utf-8"});
+               //            saveAs(blob, Date.now().toString() + ".txt");
+               //        } else{
+               //            Notify.Warning('卡密数据导出失败');
+               //        }
+               //        this.billFilter.loading =false;
+               //    })
+               //    .catch( (error)=> {
+               //        this.billFilter.loading =false;
+               //        Notify.Warning('接口通信错误');
+               //        console.error(error);
+               //    });
+           },
+           billFilterReset(){
+               this.billFilter.keyname='';
+               this.billFilter.isShow=null;
+               this.billFilter.supplyCurrent=this.billFilter.supplyCustom[0];
+               this.billFilter.pagination.page =1;
+               this.billFilter.pagination.rowsPerPage =25;
+           },
+           stockMultipleAction(action){
+               var stockIds = _.map(this.stockSelected, 'stockId');
+               this.billFilter.loading =true;
+               UserApi('StockMultipleAction',{ stockIds:JSON.stringify(stockIds), action},true)
+               .then((response)=> {
+                     if (response.data.code === 1){ 
+                         this.loadStockData();
+                     } else{
+                         Notify.Warning('操作执行失败');
+                     }
+                     this.billFilter.loading =false;
+                 })
+                 .catch( (error)=> {
+                     this.billFilter.loading =false;
+                     Notify.Warning('接口通信错误');
+                     console.error(error);
+                 });
+           },
+           dateRangeOptionsFn(date){
+               var date_end = Quasar.date.formatDate(Date.now(),'YYYY/MM/DD');
+               var date_start = Quasar.date.formatDate(Quasar.date.addToDate(Date.now(),{month:-3}),'YYYY/MM/DD');
+               //console.log(date_start,date_end);
+               return date >= date_start && date <= date_end;
+           },   
+       }
+   };
+   DeepMerge(_layout,_page);
+   new Vue(_layout);
+    </script>
+}

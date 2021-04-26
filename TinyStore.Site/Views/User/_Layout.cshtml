@@ -147,7 +147,7 @@
        userlinks: [
            { icon: 'person', text: '商户资料',url:'@Url.ActionLink("User_Profile", "User")' },
            { icon: 'lock', text: '密码安全',url:'@Url.ActionLink("User_Secret","User")' },
-           { icon: 'local_atm', text: '账目统计',url:'@Url.ActionLink("User_Bill","User")' },
+           { icon: 'local_atm', text: '资金提现',url:'@Url.ActionLink("User_Withdraw","User")' },
            //{ icon: 'monetization_on', text: '提现管理' },     
            { icon: 'history', text: '操作日志',url:'@Url.ActionLink("User_Log","User")' }
          ],
@@ -156,6 +156,7 @@
            { icon: 'fas fa-hand-holding-usd', text: '收款设置',url:'@Url.ActionLink("Store_Payment","User")'  },
            { icon: 'card_travel', text: '商品管理',url:'@Url.ActionLink("Store_Product","User")'  },
            { icon: 'local_grocery_store', text: '订单管理',url:'@Url.ActionLink("Store_Order","User")'  },
+           { icon: 'timeline', text: '销售统计',url:'@Url.ActionLink("Store_Stat","User")' },
          ],
          buttons1: [
            { text: 'Terms' },
@@ -200,6 +201,8 @@
         //桌面下为 true，手机端为 undefined
          this.leftDrawerOpen=!!this.$q.platform.is.desktop;
      },
+       computed:{
+       },
      methods: {
          setStoreCurrent(index){
              Store.StoreCurrent(index);

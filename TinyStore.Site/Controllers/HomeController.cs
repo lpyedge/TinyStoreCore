@@ -83,7 +83,7 @@ namespace TinyStore.Site.Controllers
                 if (store != null)                {
                     
                     ViewBag.Store = store;
-                     var productlist = BLL.ProductBLL.QueryListByStoreIdShow(store.StoreId);
+                     var productlist = BLL.ProductBLL.QueryListByStoreShow(store.StoreId);
                     ViewBag.ProductList = productlist;
                     
                     if (store.Template == EStoreTemplate.模板一)

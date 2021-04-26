@@ -49,7 +49,7 @@ namespace TinyStore.BLL
             return QueryList(-1, where.ToExpression(), SortAsc);
         }
 
-        public static List<Model.ProductModel> QueryListByStoreIdShow(string storeId)
+        public static List<Model.ProductModel> QueryListByStoreShow(string storeId)
         {
             List<Model.ProductModel> data;
             using (var conn = DbClient)

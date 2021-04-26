@@ -33,6 +33,16 @@ namespace TinyStore.Site.Controllers
             return View();
         }
         
+        public IActionResult User_Withdraw()
+        {
+            return View();
+        }
+        
+        public IActionResult User_Log()
+        {
+            return View();
+        }
+        
         public IActionResult Supply_List()
         {
             return View();
@@ -63,21 +73,13 @@ namespace TinyStore.Site.Controllers
             return View();
         }
         
-        public IActionResult User_Bill()
-        {
-            return View();
-        }
-        public IActionResult User_Log()
+        public IActionResult Store_Stat()
         {
             return View();
         }
         
         //！----------------------！//
         public IActionResult Register()
-        {
-            return View();
-        }
-        public IActionResult Withdraw()
         {
             return View();
         }

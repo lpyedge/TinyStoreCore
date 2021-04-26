@@ -144,7 +144,46 @@ namespace TinyStore.Site
                 UniqueId = "test",
                 StoreId = storeId
             });
-            BLL.SupplyBLL.InsertAsync(new SupplyModel()
+            TinyStore.BLL.StoreBLL.InsertAsync(new StoreModel()
+            {
+                UserId = 1,
+                Email = "test@test.com",
+                Name = "大网店",
+                Initial = Global.Initial("大网店"),
+                Logo = "#",
+                Memo = "自家供货，自家销售",
+                Template = EStoreTemplate.模板一,
+                IsSingle = true,
+                PaymentList = new List<Payment>(SiteContext.SystemPaymentList())
+                {
+                    new Payment()
+                    {
+                        Name = "B先生",
+                        Account = "13101010101",
+                        IsEnable = true,
+                        IsSystem = false,
+                        Rate = 0,
+                        QRCode = "alipay://xxxxx",
+                        Memo = "支付宝shoukuan",
+                    }
+                },
+                UniqueId = "test",
+                StoreId = storeId+"1"
+            });
+            var supplyList = new List<Model.SupplyModel>();
+            supplyList.Add(new SupplyModel()
+            {
+                SupplyId ="SupplyId",
+                UserId = 1,
+                Category = "",
+                Cost = 5,
+                Name = "盲盒",
+                Memo = "盲盒",
+                DeliveryType = EDeliveryType.人工,
+                FaceValue = 10,
+                IsShow = true,
+            });
+            supplyList.Add(new SupplyModel()
             {
                 UserId = SiteContext.Config.SupplyUserIdSys,
                 Category = "腾讯",
@@ -156,7 +195,7 @@ namespace TinyStore.Site
                 IsShow = true,
                 SupplyId = Global.Generator.DateId(2)
             });
-            BLL.SupplyBLL.InsertAsync(new SupplyModel()
+            supplyList.Add(new SupplyModel()
             {
                 UserId = SiteContext.Config.SupplyUserIdSys,
                 Category = "腾讯",
@@ -168,7 +207,7 @@ namespace TinyStore.Site
                 IsShow = true,
                 SupplyId = Global.Generator.DateId(2)
             });
-            BLL.SupplyBLL.InsertAsync(new SupplyModel()
+            supplyList.Add(new SupplyModel()
             {
                 UserId = SiteContext.Config.SupplyUserIdSys,
                 Category = "腾讯",
@@ -180,7 +219,7 @@ namespace TinyStore.Site
                 IsShow = true,
                 SupplyId = Global.Generator.DateId(2)
             });
-            BLL.SupplyBLL.InsertAsync(new SupplyModel()
+            supplyList.Add(new SupplyModel()
             {
                 UserId = SiteContext.Config.SupplyUserIdSys,
                 Category = "网易",
@@ -192,7 +231,7 @@ namespace TinyStore.Site
                 IsShow = true,
                 SupplyId = Global.Generator.DateId(2)
             });
-            BLL.SupplyBLL.InsertAsync(new SupplyModel()
+            supplyList.Add(new SupplyModel()
             {
                 UserId = SiteContext.Config.SupplyUserIdSys,
                 Category = "网易",
@@ -204,9 +243,9 @@ namespace TinyStore.Site
                 IsShow = true,
                 SupplyId = Global.Generator.DateId(2)
             });
-            BLL.SupplyBLL.InsertAsync(new SupplyModel()
+            supplyList.Add(new SupplyModel()
             {
-                SupplyId = "SupplyId",
+                SupplyId =Global.Generator.DateId(2),
                 UserId = 1,
                 Category = "腾讯",
                 Cost = 5,
@@ -216,6 +255,7 @@ namespace TinyStore.Site
                 FaceValue = 10,
                 IsShow = true,
             });
+            BLL.SupplyBLL.InsertRangeAsync(supplyList);
             for (int i = 0; i < 100; i++)
             {
                 BLL.StockBLL.InsertAsync(new StockModel()
@@ -231,71 +271,151 @@ namespace TinyStore.Site
                     DeliveryDate = DateTime.Now,
                 });
             }
-            BLL.ProductBLL.InsertAsync(new ProductModel()
+
+            var productList = new List<Model.ProductModel>();
+            productList.Add(new ProductModel()
             {
                 UserId = 1,
                 Category = "",
                 Cost = 5,
-                Name = "QQ币",
-                Memo = "请留下您的QQ号码方便我们来充值",
+                Name = "盲盒",
+                Memo =  "盲盒",
                 DeliveryType = EDeliveryType.人工,
                 FaceValue = 10,
                 IsShow = true,
-                SupplyId = "SupplyId",
+                SupplyId ="SupplyId",
                 ProductId = "ProductId",
-                Amount = 9,
+                Amount = 8.5,
                 Icon = "#",
                 Sort = 0,
                 QuantityMin = 1,
                 StoreId = storeId
             });
-            BLL.OrderBLL.Insert(new OrderModel()
+            foreach (SupplyModel supplyModel in supplyList)
+            {
+                productList.Add(new ProductModel()
+                {
+                    UserId = 1,
+                    Category = "",
+                    Cost = supplyModel.Cost,
+                    Name = supplyModel.Name,
+                    Memo = supplyModel.Memo,
+                    DeliveryType = supplyModel.DeliveryType,
+                    FaceValue = supplyModel.FaceValue,
+                    IsShow = true,
+                    SupplyId = supplyModel.SupplyId,
+                    ProductId = Global.Generator.DateId(2),
+                    Amount = supplyModel.FaceValue * 0.85,
+                    Icon = "#",
+                    Sort = 0,
+                    QuantityMin = 1,
+                    StoreId = storeId
+                });
+            }
+            BLL.ProductBLL.InsertRangeAsync(productList);
+
+            var orderList = new List<Model.OrderModel>();
+            orderList.Add(new OrderModel()
             {
                 OrderId = "test",
-                Name = "QQ币",
-                Memo = "请留下您的QQ号码方便我们来充值",
+                Name = "盲盒",
+                Memo = "",
                 UserId = 1,
                 StoreId = "StoreId",
                 SupplyId = "SupplyId",
                 ProductId = "ProductId",
-                
+
                 Amount = 18,
                 Quantity = 2,
                 Cost = 10,
-                
+
                 CreateDate = DateTime.Now,
 
-                
+
                 ClientIP = "127.0.0.1",
                 AcceptLanguage = "",
                 UserAgent = "",
                 //客户输入数据
                 Message = "100088",
                 Contact = "test@qq.com",
-                
+
 
                 IsPay = false,
                 PaymentFee = 0,
                 PaymentType = "alipay",
                 TranId = "123456",
 
-                
+
                 IsDelivery = false,
                 DeliveryDate = DateTime.Now,
                 StockList = new List<StockOrder>(),
-                
+
 
                 IsSettle = false,
                 SettleDate = DateTime.Now,
-                
-                
+
+
                 RefundAmount = 0,
                 RefundDate = DateTime.Now,
-                
-                
+
+
                 LastUpdateDate = DateTime.Now,
                 NotifyDate = null
             });
+            foreach (var productModel in productList)
+            {
+                for (int i = 0; i < 60; i++)
+                {
+                    for (int j = 0; j < Global.Generator.Random.Next(3, 40); j++)
+                    {
+                        var isrefund = Global.Generator.Random.NextDouble() > 0.9;
+                        var quantity = Global.Generator.Random.Next(1, 30);
+                        orderList.Add(new OrderModel()
+                        {
+                            OrderId = Global.Generator.DateId(2),
+                            Name = productModel.Name,
+                            Memo = productModel.Memo,
+                            UserId = 1,
+                            StoreId = "StoreId",
+                            SupplyId = productModel.SupplyId,
+                            ProductId = productModel.ProductId,
+
+                            Amount = productModel.Amount,
+                            Quantity = quantity,
+                            Cost = productModel.Cost,
+
+                            CreateDate = DateTime.Now.AddDays(-i),
+
+
+                            ClientIP = "127.0.0.1",
+                            AcceptLanguage = "",
+                            UserAgent = "",
+                            //客户输入数据
+                            Message = "100088",
+                            Contact = "test@qq.com",
+
+
+                            IsPay = true,
+                            PaymentFee = 0,
+                            PaymentType = "alipay",
+                            TranId = Global.Generator.DateId(2),
+
+                            IsDelivery = true,
+                            DeliveryDate = DateTime.Now.AddDays(-i),
+                            StockList = new List<StockOrder>(),
+
+                            RefundAmount = isrefund? productModel.Cost *0.3:0,
+                            RefundDate = isrefund?DateTime.Now.AddDays(-i):null,
+
+
+                            LastUpdateDate = DateTime.Now.AddDays(-i),
+                            NotifyDate = null
+                        });
+                    }
+                }
+            }
+            
+            BLL.OrderBLL.InsertRangeAsync(orderList);
         }
 
         public class ConfigModel

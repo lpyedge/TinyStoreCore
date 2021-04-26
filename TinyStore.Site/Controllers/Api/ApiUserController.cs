@@ -7,8 +7,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ApplicationModels;
-using Org.BouncyCastle.Crypto.Tls;
 using TinyStore.BLL;
 using TinyStore.Model;
 using TinyStore.Model.Extend;
@@ -633,40 +631,38 @@ namespace TinyStore.Site.Controllers
 
                 return ApiResult.RCode();
             }
-            else
-            {
-                OrderModel data = OrderBLL.QueryModelById(order.OrderId);
-                if (data != null && data.UserId == user.UserId && data.StoreId == store.StoreId)
-                {
-                    data.Memo = order.Memo;
-                    if (!data.IsPay && order.IsPay)
-                    {
-                        data.IsPay = order.IsPay;
-                        data.PaymentType = order.PaymentType;
-                        data.PaymentDate = order.PaymentDate;
-                        data.TranId = order.TranId;
-                    }
-                    if (!data.IsDelivery && order.IsDelivery)
-                    {
-                        data.IsDelivery = order.IsDelivery;
-                        data.DeliveryDate = order.DeliveryDate;
-                        data.StockList = order.StockList;
-                    }
-                    if (data.RefundAmount == 0 && order.RefundAmount > 0)
-                    {
-                        data.RefundAmount = order.RefundAmount;
-                        data.RefundDate = order.RefundDate;
-                    }
 
-                    BLL.OrderBLL.Update(data);
-                    
-                    return ApiResult.RCode();
-                }
-                else
+            OrderModel data = OrderBLL.QueryModelById(order.OrderId);
+            if (data != null && data.UserId == user.UserId && data.StoreId == store.StoreId)
+            {
+                data.Memo = order.Memo;
+                if (!data.IsPay && order.IsPay)
                 {
-                    return ApiResult.RCode(ApiResult.ECode.UnKonwError);
+                    data.IsPay = order.IsPay;
+                    data.PaymentType = order.PaymentType;
+                    data.PaymentDate = order.PaymentDate;
+                    data.TranId = order.TranId;
                 }
+
+                if (!data.IsDelivery && order.IsDelivery)
+                {
+                    data.IsDelivery = order.IsDelivery;
+                    data.DeliveryDate = order.DeliveryDate;
+                    data.StockList = order.StockList;
+                }
+
+                if (data.RefundAmount == 0 && order.RefundAmount > 0)
+                {
+                    data.RefundAmount = order.RefundAmount;
+                    data.RefundDate = order.RefundDate;
+                }
+
+                OrderBLL.Update(data);
+
+                return ApiResult.RCode();
             }
+
+            return ApiResult.RCode(ApiResult.ECode.UnKonwError);
         }
 
         [HttpPost]
@@ -708,6 +704,72 @@ namespace TinyStore.Site.Controllers
                 }
 
             return ApiResult.RCode();
+        }
+
+        [HttpPost]
+        public IActionResult StoreStat([FromForm] string storeId, [FromForm] int statType,
+            [FromForm] string from, [FromForm] string to)
+        {
+            UserModel user = UserCurrent(storeId, out StoreModel store);
+            if (store == null)
+                return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
+
+            if (string.IsNullOrWhiteSpace(from) || string.IsNullOrWhiteSpace(to))
+                return ApiResult.RCode(ApiResult.ECode.DataFormatError);
+
+            DateTime dateFrom = DateTime.Parse(from);
+
+            DateTime dateTo = DateTime.Parse(to).AddDays(1);
+
+            switch (statType)
+            {
+                //商品统计
+                case 1:
+                {
+                    var orderList = OrderBLL.QueryListStat(store.StoreId, dateFrom, dateTo);
+                    var productIdGroup= orderList.GroupBy(p => p.ProductId);
+                    var orderProductIdList = productIdGroup.Select(p=>p.Key).ToList();
+                    var productList = BLL.ProductBLL.QueryListByStoreId(store.StoreId).Where(p=> orderProductIdList.Contains(p.ProductId)).ToList();
+                    var productStatList = new List<Model.Extend.ProductStat>();
+                    foreach (var item in productIdGroup)
+                    {
+                        var productId = item.Key;
+                        var productName = "";
+                        var product = productList.FirstOrDefault(p => p.ProductId == productId);
+                        if (product != null)
+                        {
+                            productName = product.Name;
+                        }
+                        else
+                        {
+                            productName = "[未知商品]";
+                        }
+                        var orderProductList = new List<Model.OrderModel>(item);
+                        for (int i = 0; i < dateTo.Subtract(dateFrom).TotalDays; i++)
+                        {
+                            var orderDate = dateFrom.AddDays(i);
+                            var orderInDayList = orderProductList
+                                .Where(p => p.CreateDate >= orderDate && p.CreateDate <= orderDate.AddDays(1)).ToList();
+                            var productStat = new Model.Extend.ProductStat()
+                            {
+                                Name = productName,
+                                Amount = orderInDayList.Sum(p=>p.Amount*p.Quantity),
+                                Cost = orderInDayList.Sum(p=>p.Cost*p.Quantity),
+                                Quantity = orderInDayList.Sum(p=>p.Quantity),
+                                Count = orderInDayList.Count(),
+                                RefundAmount = orderInDayList.Sum(p=>p.RefundAmount),
+                                CreateDate = orderDate
+                            };
+                            productStatList.Add(productStat);
+                        }
+                    }
+
+                    return ApiResult.RData(productStatList);
+                    
+                }
+                break;
+            }
+            return ApiResult.RCode(ApiResult.ECode.DataFormatError);
         }
 
         public IActionResult Register([FromForm] string account, [FromForm] string password, [FromForm] string qq,
@@ -835,7 +897,7 @@ namespace TinyStore.Site.Controllers
             if (store == null)
                 return ApiResult.RCode("未知错误");
 
-            dynamic orderstat =
+            var orderstat =
                 OrderListStat(OrderBLL.QueryListBySid(sId, state, keykind, key, store.StoreId, ishasreturn));
 
             var res = OrderBLL.QueryPageListBySid(sId, state, keykind, key, store.StoreId, ishasreturn,
@@ -1232,7 +1294,7 @@ namespace TinyStore.Site.Controllers
                 pageIndex, pagesize);
 
 
-            dynamic orderstat = OrderListStat(OrderBLL.QueryListBenifitByStoreId(sId, begin, end, store.StoreId,
+            var orderstat = OrderListStat(OrderBLL.QueryListBenifitByStoreId(sId, begin, end, store.StoreId,
                 isHasReturn));
 
 

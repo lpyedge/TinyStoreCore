@@ -45,7 +45,7 @@ namespace TinyStore.Site.Controllers
             }
             if (!string.IsNullOrWhiteSpace(productid))
             {
-                var prodcut = BLL.ProductBLL.QueryModelByProductId(productid);
+                var prodcut = BLL.ProductBLL.QueryModelByProductIdAndStoreId(productid,sid);
                 if (prodcut != null)
                 {
                     ViewBag.Product = prodcut;
