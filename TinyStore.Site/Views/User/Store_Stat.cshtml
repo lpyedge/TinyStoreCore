@@ -43,29 +43,33 @@
     </div>
 
     <div class="row q-gutter-xs q-mx-none q-my-sm">
-        <q-btn class="q-mx-xs" color="primary" @@click="billExport"><q-icon class="on-left" size="xs" name="fas fa-file-export"></q-icon>导出</q-btn>
-        <q-space ></q-space>
-        @* <q-btn-dropdown :disable-main-btn="stockSelected.length === 0" color="warning" label="批量操作"> *@
-        @*     <q-list> *@
-        @*         <q-item clickable v-close-popup @@click="stockMultipleAction(0)"> *@
-        @*             <q-item-section> *@
-        @*                 <q-item-label><q-icon class="on-left" size="xs" name="delete_forever"></q-icon>删除</q-item-label> *@
-        @*             </q-item-section> *@
-        @*         </q-item> *@
-        @* *@
-        @*         <q-item clickable v-close-popup @@click="stockMultipleAction(1)"> *@
-        @*             <q-item-section> *@
-        @*                 <q-item-label><q-icon class="on-left" size="xs" :name="stockIsShowOptions[0].icon"></q-icon>{{stockIsShowOptions[0].name}}</q-item-label> *@
-        @*             </q-item-section> *@
-        @*         </q-item> *@
-        @* *@
-        @*         <q-item clickable v-close-popup @@click="stockMultipleAction(2)"> *@
-        @*             <q-item-section> *@
-        @*                 <q-item-label><q-icon class="on-left" size="xs" :name="stockIsShowOptions[1].icon"></q-icon>{{stockIsShowOptions[1].name}}</q-item-label> *@
-        @*             </q-item-section> *@
-        @*         </q-item> *@
-        @*     </q-list> *@
-        @* </q-btn-dropdown> *@
+        <q-tabs 
+            class="text-grey-8"
+            active-color="primary"
+            indicator-color="primary"
+            content-class="text-h5"
+            dense
+            align="left"
+            narrow-indicator
+            inline-label
+            v-model="statFiled"
+            @@input="loadProductStat">
+            <q-tab name="count" icon="timeline" label="订单量" ></q-tab>
+            <q-tab name="amount" icon="timeline" label="收入" ></q-tab>
+            <q-tab name="profit" icon="timeline" label="利润" ></q-tab>
+        </q-tabs>
+    </div>
+    <div class="row q-gutter-xs q-mx-none q-my-sm">
+        <q-btn dense flat :label="postDataTotal.name" ></q-btn>
+        <div class="text-caption">
+            订单量<q-badge >{{ postDataTotal.count }}</q-badge>
+        </div>
+        <div class="text-caption">
+            收入<q-badge >{{ postDataTotal.amount }}</q-badge>
+        </div>
+        <div class="text-caption">
+            利润<q-badge >{{ postDataTotal.amount - postDataTotal.cost -postDataTotal.refundAmount }}</q-badge>
+        </div>
     </div>
     <div class="row" style="height: 18rem;">
         <canvas id="productPie" class="col-xs-12 col-md-4"></canvas>
@@ -85,56 +89,142 @@
            billFilter:{
                loading:false,
                statType:1,
+               statFiled:'count',
                dateRange:{
                    from:Quasar.date.formatDate(Quasar.date.adjustDate(Date.now(),{date:1}),'YYYY-MM-DD'),
                    to:Quasar.date.formatDate(Date.now(),'YYYY-MM-DD')
                },
                statTypeOptions:[
                    {label:'商品统计',value:1},
-                   {label:'其他',value:2},
+                   //{label:'其他',value:2},
                ]
            },
+           statDataAll:[],
+           statFiled:'count',
+           // postData:{
+           //      name: '',
+           //      count: 0,
+           //      amount: 0,
+           //      cost: 0,
+           //      quantity: 0,
+           //      refundAmount: 0,
+           // },
+           postDataTotal:{
+                name: '合计',
+                count: 0,
+                amount: 0,
+                cost: 0,
+                profit:0,
+                quantity: 0,
+                refundAmount: 0,
+           }
        },
        beforeMount(){
        },
        mounted(){
-           //绘制图形要在mounted事件以后调用
-           // var dataPie = [
-           //   { name: 'QQ币', count: 8,amount:1441,profit:131,const: 'const' },
-           //   { name: '魔兽点卡', count: 15,amount:342,profit:34,const: 'const' },
-           //   { name: '不卡代理', count: 45,amount:245,profit:56,const: 'const' },
-           //   { name: '网易游戏币', count: 56 ,amount:3500,profit:780,const: 'const'},
-           //   { name: 'GoogleVoice帐号', count: 14,amount:189,profit:45,const: 'const' }
-           //   ];
-           // this.loadProductPie(dataPie);
            this.loadStat();
        },
        computed:{
+           
        },
        methods: {
-           loadProductStat(dataAll){
-               const top = 6;
-               var dataPie = [];
-               var dataTotal = {};
-               var dataGroup = _.groupBy(dataAll, 'name');
-               for (name in dataGroup){
+           loadProductStat(){
+              var typeColors =['#1890FF','#13C2C2','#2FC25B','#FACC14','#F04864','#8543E0'];
+              var otherName = '其它';
+              var dataAll = JSON.parse(JSON.stringify(this.statDataAll));
+              this.postDataTotal={
+                     name: '合计',
+                     count: 0,
+                     amount: 0,
+                     cost: 0,
+                     profit:0,
+                     quantity: 0,
+                     refundAmount: 0,
+                };
+              var statFiled = this.statFiled;
+              
+              var dataTotal = [];
+              var dataDate = [];
+              var dataGroup = _.groupBy(dataAll, 'name');
+              for (name in dataGroup){
                    var data = {};
+                   data.pieConst = 'fixed';
                    data.name = name;
                    data.count = _.sumBy(dataGroup[name], (o)=>{return o.count;});
                    data.amount = _.sumBy(dataGroup[name], (o)=>{return o.amount;});
                    data.cost = _.sumBy(dataGroup[name], (o)=>{return o.cost;});
                    data.quantity = _.sumBy(dataGroup[name], (o)=>{return o.quantity;});
                    data.refundAmount = _.sumBy(dataGroup[name], (o)=>{return o.refundAmount;});
-                   data.pieConst = 'fixed';
-                   dataTotal[name] =  data;
-               }
-               dataTotal = _.orderBy(dataTotal, function(o) { return o.count; },['desc']);
-               console.log(dataTotal);
+                   data.profit = data.amount -data.cost -data.refundAmount ;
+                   dataTotal.push(data);
+                   this.postDataTotal.count += data.count ;
+                   this.postDataTotal.amount += data.amount ;
+                   this.postDataTotal.cost += data.cost ;
+                   this.postDataTotal.quantity += data.quantity ;
+                   this.postDataTotal.refundAmount += data.refundAmount ;
+               }               
+              var dataTotalSorted = _.orderBy(dataTotal, function(o) { return o[statFiled]; },['desc']);
+              if (dataTotalSorted.length > typeColors.length){
+                   var dataOther = {
+                       name:otherName,
+                       count:0,
+                       amount:0,
+                       cost:0,
+                       profit:0,
+                       quantity:0,
+                       refundAmount:0,
+                       pieConst:'fixed'
+                   };
+                   for(var i = typeColors.length; i < dataTotalSorted.length; i++) {
+                     dataOther.count += dataTotalSorted[i].count;
+                     dataOther.amount += dataTotalSorted[i].amount;
+                     dataOther.cost += dataTotalSorted[i].cost;
+                     dataOther.profit += dataTotalSorted[i].amount - dataTotalSorted[i].cost - dataTotalSorted[i].refundAmount;
+                     dataOther.quantity += dataTotalSorted[i].quantity;
+                     dataOther.refundAmount += dataTotalSorted[i].refundAmount;
+                   }
+                   dataTotalSorted.splice(typeColors.length,dataTotalSorted.length - typeColors.length);
+                   dataTotalSorted.push(dataOther);
+               }               
+              dataTotalLimitSorted = _.orderBy(dataTotalSorted, function(o) { return o[statFiled]; },['desc']);
+              var namesLimitSorted=_.map(dataTotalLimitSorted, 'name');
+              var createDateGroup = _.groupBy(dataAll, 'createDate');
+
+              for (date in createDateGroup){
+                var dayDataOthers = _.filter(dataAll,(o)=>{return o.createDate === date && _.indexOf(namesLimitSorted, o.name) === -1;});
+                var dayDataIncluds = _.filter(dataAll,(o)=>{return o.createDate === date && _.indexOf(namesLimitSorted, o.name) !== -1;});
+                if(dayDataOthers.length > 0){
+                    var dayDataOther = {
+                        name: otherName,
+                        createDate: date,
+                        count: 0,
+                        amount: 0,
+                        cost: 0,
+                        profit:0,
+                        quantity: 0,
+                        refundAmount: 0,
+                    };
+                    for(let i = 0; i < dayDataOthers.length; i++) {
+                        dayDataOther.count += dayDataOthers[i].count;
+                        dayDataOther.amount += dayDataOthers[i].amount;
+                        dayDataOther.cost += dayDataOthers[i].cost;
+                        dayDataOther.quantity += dayDataOthers[i].quantity;
+                        dayDataOther.refundAmount += dayDataOthers[i].refundAmount;
+                        dayDataOther.profit = dayDataOthers[i].amount - dayDataOthers[i].cost - dayDataOthers[i].refundAmount;
+                        _.remove(dataAll,dayDataOthers[i]);
+                    }
+                    dataDate.push(dayDataOther);
+                }                
+                for(let i = 0; i < dayDataIncluds.length; i++) {
+                  dataDate.push(dayDataIncluds[i]);
+                }
+              }
+
               var chartPie = new F2.Chart({
                 id: 'productPie',
                 pixelRatio: window.devicePixelRatio
               });
-              chartPie.source(dataTotal);
+              chartPie.source(dataTotalLimitSorted);
               chartPie.coord('polar', {
                 transposed: true,
                 radius: 0.9,
@@ -143,30 +233,20 @@
               chartPie.axis(false);
               chartPie.legend(false);
               chartPie.tooltip(false);
-              chartPie.guide()
-                .html({
-                  position: [ '50%', '50%' ],
-                  html: '<div style="text-align: center;width:150px;height: 50px;">\n      <p style="font-size: 12px;color: #999;margin: 0" id="name"></p>\n      <p style="font-size: 18px;color: #343434;margin: 0;font-weight: bold;" id="amount"></p>\n      </div>'
-                });
               chartPie.interval()
-                .position('pieConst*count')//饼状图x用所有字段统一值的属性来实现合值的判断
+                .position('pieConst*'+statFiled)//饼状图x用所有字段统一值的属性来实现合值的判断
                 .adjust('stack')
-                .color('name', [ 
-                        '#1890FF',
-                        '#13C2C2',
-                        '#2FC25B',
-                        '#FACC14',
-                        '#F04864',
-                        '#8543E0', ]);
+                .color('name', (name)=>{
+                    var colorIndex = _.indexOf(namesLimitSorted, name);
+                    return typeColors[colorIndex];
+                });
               chartPie.pieLabel({
                 sidePadding: 10,
                 adjustOffset:15,
                 skipOverlapLabels:false,
-                triggerOn:'click',
-                activeShape: true,
                 label1: (data)=> {
                   return {
-                    text: data.count,
+                    text: data[statFiled],
                     fill: '#343434',
                     fontWeight: 'bold'
                   };
@@ -177,21 +257,95 @@
                     fill: '#999'
                   };
                 },
-                onClick:  (ev)=> {
-                  const data = ev.data;
-                  console.log(ev);
-                  if (data) {
-                    document.getElementById('name').innerText = data.name;
-                    document.getElementById('amount').innerText = '￥' + data.amount +' 利润:'+ (data.amount-data.cost-data.refundAmount);
-                  }else{
-                    //点击空白位置 重绘图标 移除激活对象
-                    chartPie.repaint();
+                //triggerOn:'click',
+                //activeShape: true,
+                // onClick:  (ev)=> {
+                //   const data = ev.data;
+                //   console.log(ev);
+                //   if (data) {
+                //       if (this.postData.name !== data.name){                          
+                //           this.postData.name = data.name;
+                //           this.postData.count = data.count;
+                //           this.postData.amount = data.amount;
+                //           this.postData.cost = data.cost;
+                //           this.postData.quantity = data.quantity;
+                //           this.postData.refundAmount = data.refundAmount;
+                //       }else{    
+                //         chartPie.repaint();
+                //         this.postData = JSON.parse(JSON.stringify(this.postDataTotal));
+                //       }
+                //   }else{
+                //       chartPie.repaint();
+                //     this.postData = JSON.parse(JSON.stringify(this.postDataTotal));
+                //   }
+                // }
+              });
+              // chartPie.guide()
+              //   .html({
+              //     position: [ '50%', '50%' ],
+              //     html: '<div style="text-align: center;width:150px;height: 50px;">\n      <p style="font-size: 12px;color: #999;margin: 0" id="name"></p>\n      <p style="font-size: 18px;color: #343434;margin: 0;font-weight: bold;" id="amount"></p>\n      </div>'
+              //   });
+              chartPie.render();
+
+
+              const chartLine = new F2.Chart({
+                id: 'productLine',
+                pixelRatio: window.devicePixelRatio
+              });
+              chartLine.source(dataDate);
+              chartLine.scale('createDate', {
+                type: 'timeCat',
+                tickCount: 3
+              });
+              chartLine.scale(statFiled, {
+                tickCount: 5
+              });
+              chartLine.axis('date', {
+                label: function label(text, index, total) {
+                  // 只显示每一年的第一天
+                  const textCfg = {};
+                  if (index === 0) {
+                    textCfg.textAlign = 'left';
+                  } else if (index === total - 1) {
+                    textCfg.textAlign = 'right';
                   }
+                  return textCfg;
                 }
               });
-              chartPie.render();
-              
-              
+              chartLine.tooltip({
+                custom: true, // 自定义 tooltip 内容框
+                onChange:  ()=> {
+                  const legend = chartLine.get('legendController').legends.top[0];
+                  const tooltipItems = obj.items;
+                  const legendItems = legend.items;
+                  const map = {};
+                  legendItems.forEach(function(item) {
+                    map[item.name] = _.clone(item);
+                  });
+                  tooltipItems.forEach(function(item) {
+                    const name = item.name;
+                    const value = item.value;
+                    if (map[name]) {
+                      map[name].value = value;
+                    }
+                  });
+                  legend.setItems(_.values(map));
+                },
+                onHide: ()=> {
+                  const legend = chartLine.get('legendController').legends.top[0];
+                  legend.setItems(chartLine.getLegendItems().country);
+                }
+              });
+              chartLine.legend({
+                triggerOn: 'click'
+              });
+              chartLine.line()
+              .position('createDate*'+statFiled)
+              .color('name', (name)=>{
+                  var colorIndex = _.indexOf(namesLimitSorted, name);
+                  return typeColors[colorIndex];
+              });
+              chartLine.render();
            },
            loadStat(){
               var dateFrom='', dateTo='';
@@ -206,12 +360,18 @@
                   }   
               }
               
+              if (!dateFrom || !dateTo){
+                  Notify.Warning('必须选择统计日期');
+                  return;
+              }
+              
               UserApi('StoreStat',{ storeId:this.storeCurrent.storeId,from:dateFrom, to:dateTo,statType:this.billFilter.statType},true)
                  .then((response)=> {
                      if (response.data.code === 1){ 
                          switch (this.billFilter.statType){
                              case 1:
-                                 this.loadProductStat(response.data.data);
+                                 this.statDataAll = response.data.data;
+                                 this.loadProductStat();
                                  break;
                          }
                      } else{
@@ -241,31 +401,6 @@
                //        Notify.Warning('接口通信错误');
                //        console.error(error);
                //    });
-           },
-           billFilterReset(){
-               this.billFilter.keyname='';
-               this.billFilter.isShow=null;
-               this.billFilter.supplyCurrent=this.billFilter.supplyCustom[0];
-               this.billFilter.pagination.page =1;
-               this.billFilter.pagination.rowsPerPage =25;
-           },
-           stockMultipleAction(action){
-               var stockIds = _.map(this.stockSelected, 'stockId');
-               this.billFilter.loading =true;
-               UserApi('StockMultipleAction',{ stockIds:JSON.stringify(stockIds), action},true)
-               .then((response)=> {
-                     if (response.data.code === 1){ 
-                         this.loadStockData();
-                     } else{
-                         Notify.Warning('操作执行失败');
-                     }
-                     this.billFilter.loading =false;
-                 })
-                 .catch( (error)=> {
-                     this.billFilter.loading =false;
-                     Notify.Warning('接口通信错误');
-                     console.error(error);
-                 });
            },
            dateRangeOptionsFn(date){
                var date_end = Quasar.date.formatDate(Date.now(),'YYYY/MM/DD');
