@@ -25,7 +25,6 @@
                 </q-toolbar-title>
 
                 <q-space></q-space>
-
                 <div class="q-gutter-sm row items-center no-wrap">
                     <q-btn round dense flat :class="orderNotifyCount>0?'':'text-grey-8'" :icon="orderNotifyCount>0?'notifications_active':'notifications_off'">
                         <q-badge color="red" text-color="white" floating>
@@ -74,6 +73,14 @@
                     
                     <q-item-label header class="text-weight-bold text-uppercase">
                         商户
+                        <q-badge class="on-right cursor-pointer" color="primary">
+                            <q-icon name="fas fa-yen-sign" size="0.8rem"></q-icon>{{ userExtend.amount }}
+                            <q-tooltip>资金</q-tooltip>
+                        </q-badge>
+                        <q-badge class="on-right cursor-pointer" color="orange">
+                            <q-icon name="fas fa-yen-sign" size="0.8rem"></q-icon>{{ userExtend.amountCharge }}
+                            <q-tooltip>签帐额度</q-tooltip>
+                        </q-badge>
                     </q-item-label>
                     
                     <q-item v-ripple clickable v-for="link in userlinks" :key="link.text" @@click="Goto(link.url)" >
