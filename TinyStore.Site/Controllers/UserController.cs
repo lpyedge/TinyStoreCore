@@ -11,6 +11,7 @@ namespace TinyStore.Site.Controllers
     [Route("{controller}/{action}")]
     public class UserController : Controller
     {
+        [Route("/user")]
         public IActionResult Index(string storeid)
         {
             ViewBag.StoreId = storeid;

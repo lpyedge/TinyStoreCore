@@ -54,6 +54,14 @@
                                     </q-item-label>
                                 </q-item-section>
                             </q-item>
+                            <q-separator inset></q-separator>
+                            <q-item clickable v-close-popup @@click="logoff">
+                                <q-item-section>
+                                    <q-item-label class="text-subtitle2">
+                                         <q-icon class="on-left" name="power_settings_new"></q-icon>退出帐号
+                                    </q-item-label>
+                                </q-item-section>
+                            </q-item>
                         </q-list>
                     </q-btn-dropdown>
                 </div>
@@ -148,7 +156,7 @@
      el: '#q-app',
      data : {
        leftDrawerOpen: false,
-       user : Store.User(),
+       //user : Store.User(),
        userExtend : Store.UserExtend(),
        storeList : Store.StoreList(),
        storeCurrent : Store.StoreCurrent(),
@@ -211,15 +219,11 @@
          this.leftDrawerOpen=!!this.$q.platform.is.desktop;
          UserApi('StoreOrderNotify',{})
               .then((response)=> {
-                  console.log(response.data);
                   if (response.data.code === 1){ 
                       this.storeOrderNotify = response.data.data;
-                  } else{
-                      Notify.Warning('卡密数据导出失败');
                   }
               })
               .catch( (error)=> {
-                  Notify.Warning('接口通信错误');
                   console.error(error);
               });
     },
@@ -243,6 +247,13 @@
              }
              return null;
          },
+         logoff(){
+             Store.TokenRemove();
+             Store.UserExtendRemove();
+             Store.StoreListRemove();
+             Store.StoreCurrentRemove();
+             location.href = '@Url.ActionLink("login","user")';
+         }
      }
    };
     
