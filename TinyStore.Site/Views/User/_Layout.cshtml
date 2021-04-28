@@ -26,20 +26,32 @@
 
                 <q-space></q-space>
                 <div class="q-gutter-sm row items-center no-wrap">
-                    <q-btn round dense flat :class="orderNotifyCount>0?'':'text-grey-8'" :icon="orderNotifyCount>0?'notifications_active':'notifications_off'">
-                        <q-badge color="red" text-color="white" floating>
-                            {{orderNotifyCount}}
-                        </q-badge>
-                        <q-tooltip>提醒</q-tooltip>
-                    </q-btn>
-                    <q-btn-dropdown class="on-right" split>
+                    <q-btn-dropdown class="on-right" flat >
                         <template v-slot:label>
-                            {{ storeCurrent.name }}
+                            <div class="text-subtitle1 text-weight-bold">
+                                {{ storeCurrent.name }}
+                                {{ void ( storeCurrentOrderNotify = _.find(storeOrderNotify,(o)=>{return o.storeId == storeCurrent.storeId;}) )}}
+                                <q-btn dense flat class="on-right" :icon="storeCurrentOrderNotify?'notifications_active':'notifications_off'">
+                                    <q-badge v-if="storeCurrentOrderNotify" color="red" floating>
+                                        {{storeCurrentOrderNotify.count}}
+                                    </q-badge>
+                                    <q-tooltip>订单提醒</q-tooltip>
+                                </q-btn>
+                            </div>
                         </template>
                         <q-list>
                             <q-item clickable v-close-popup @@click="setStoreCurrent(i)" v-for="(store,i) in storeList">
                                 <q-item-section>
-                                    <q-item-label>{{store.name}}</q-item-label>
+                                    <q-item-label class="text-subtitle1 text-weight-bold">
+                                        {{store.name}}
+                                        {{ void ( orderNotify = _.find(storeOrderNotify,(o)=>{return o.storeId == store.storeId;}) )}}
+                                        <q-btn dense flat class="on-right" :icon="orderNotify?'notifications_active':'notifications_off'">
+                                            <q-badge v-if="orderNotify" color="red" text-color="white" floating>
+                                                {{orderNotify.count}}
+                                            </q-badge>
+                                            <q-tooltip>订单提醒</q-tooltip>
+                                        </q-btn>
+                                    </q-item-label>
                                 </q-item-section>
                             </q-item>
                         </q-list>
@@ -140,7 +152,7 @@
        userExtend : Store.UserExtend(),
        storeList : Store.StoreList(),
        storeCurrent : Store.StoreCurrent(),
-       orderNotifyCount:5,
+       storeOrderNotify:[],
        supplylinks: [
            { icon: 'fas fa-dolly', text: '货源管理',url:'@Url.ActionLink("Supply_List", "User")' },
            { icon: 'vpn_key', text: '卡密管理',url:'@Url.ActionLink("Supply_Stock", "User")'  },      
@@ -194,10 +206,23 @@
              location.href = '@Url.ActionLink("Login", "User")';
          }
      },
-     created(){
+    created(){
          //桌面下为 true，手机端为 undefined
          this.leftDrawerOpen=!!this.$q.platform.is.desktop;
-     },
+         UserApi('StoreOrderNotify',{})
+              .then((response)=> {
+                  console.log(response.data);
+                  if (response.data.code === 1){ 
+                      this.storeOrderNotify = response.data.data;
+                  } else{
+                      Notify.Warning('卡密数据导出失败');
+                  }
+              })
+              .catch( (error)=> {
+                  Notify.Warning('接口通信错误');
+                  console.error(error);
+              });
+    },
      methods: {
          qqservice(qqnumber){
             if (/(iPhone|iPad|iPod|iOS|Android)/i.test(navigator.userAgent)) { //移动端

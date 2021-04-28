@@ -110,18 +110,22 @@
                 <q-td>
                     <q-checkbox v-model="props.selected"></q-checkbox>
                 </q-td>
-                <q-td key="name">
-                    <strong>
-                        {{ props.row.name }}
-                        <q-badge align="top" color="accent" class="text-italic">* {{ props.row.quantity }}</q-badge>
-                    </strong>
+                <q-td key="name" class="text-weight-bolder">
+                    {{ void ( isNotify = (Quasar.date.getDateDiff(props.row.notifyDate,Date.now()) < @SiteContext.Config.OrderNotifyLastDays && Quasar.date.getDateDiff(props.row.notifyDate,Date.now()) > -@SiteContext.Config.OrderNotifyLastDays) )}}
+                    <q-icon v-if="isNotify" size="1.1rem" name="warning" color="negative">
+                        <q-tooltip>
+                            {{ Quasar.date.formatDate(props.row.notifyDate,'YYYY-MM-DD HH:mm') }}
+                        </q-tooltip>
+                    </q-icon>
+                    {{ props.row.name }}
+                    <q-badge align="top" color="accent" class="text-italic">* {{ props.row.quantity }}</q-badge>
                 </q-td>
                 <q-td key="amount">
-                    <q-btn dense flat><q-icon size="0.7rem" name="fas fa-yen-sign"  class="q-mr-auto"></q-icon> {{ props.row.quantity * props.row.amount }}</q-btn>
+                    <q-btn dense flat><q-icon size="0.8rem" name="fas fa-yen-sign" ></q-icon>{{ props.row.quantity * props.row.amount }}</q-btn>
                 </q-td>
                 <q-td key="profit">
                     {{void (profit = props.row.quantity * (props.row.amount - props.row.cost) - props.row.refundAmount) }}
-                    <q-btn dense size="sm" :color="profit>0?'red':'green'"><q-icon size="0.5rem" name="fas fa-yen-sign"></q-icon>{{ profit }}</q-btn>
+                    <q-btn dense size="sm" :color="profit>0?'red':'green'"><q-icon size="0.6rem" name="fas fa-yen-sign"></q-icon>{{ profit }}</q-btn>
                 </q-td>
                 <q-td key="contact">
                     {{ props.row.contact }} /
@@ -183,11 +187,20 @@
                     </q-item>
                     <q-separator></q-separator>
                     <q-card-section class="q-pa-sm row">
-                        <strong class="col">{{ props.row.name }}<q-badge align="top" color="accent" class="text-italic">* {{ props.row.quantity }}</q-badge></strong>
+                        <div class="col text-weight-bolder">
+                            {{ void ( isNotify = (Quasar.date.getDateDiff(props.row.notifyDate,Date.now()) < @SiteContext.Config.OrderNotifyLastDays && Quasar.date.getDateDiff(props.row.notifyDate,Date.now()) > -@SiteContext.Config.OrderNotifyLastDays) )}}
+                            <q-icon v-if="isNotify" size="1.1rem" name="warning" color="negative">
+                                <q-tooltip>
+                                    {{ Quasar.date.formatDate(props.row.notifyDate,'YYYY-MM-DD HH:mm') }}
+                                </q-tooltip>
+                            </q-icon>
+                            {{ props.row.name }}
+                            <q-badge align="top" color="accent" class="text-italic">* {{ props.row.quantity }}</q-badge>
+                        </div>
                         <div class="col-auto">
-                            <q-btn dense flat><q-icon size="0.7rem" name="fas fa-yen-sign" class="q-mr-auto"></q-icon> {{ props.row.quantity * props.row.amount }}</q-btn>
+                            <q-btn dense flat><q-icon size="0.8rem" name="fas fa-yen-sign" class="q-mr-auto"></q-icon> {{ props.row.quantity * props.row.amount }}</q-btn>
                             {{void (profit = props.row.quantity * (props.row.amount - props.row.cost) - props.row.refundAmount) }}
-                            <q-btn dense size="sm" :color="profit>0?'red':'green'"><q-icon size="0.5rem" name="fas fa-yen-sign"></q-icon>{{ profit }}</q-btn>
+                            <q-btn dense size="sm" :color="profit>0?'red':'green'"><q-icon size="0.6rem" name="fas fa-yen-sign"></q-icon>{{ profit }}</q-btn>
                         </div>
                     </q-card-section>
                     <q-card-section class="q-pa-sm">

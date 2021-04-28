@@ -771,7 +771,16 @@ namespace TinyStore.Site.Controllers
             }
             return ApiResult.RCode(ApiResult.ECode.DataFormatError);
         }
+        
+        [HttpPost]
+        public IActionResult StoreOrderNotify()
+        {
+            UserModel user = UserCurrent();
 
+            var res = OrderBLL.QueryCountNotify(user.UserId,SiteContext.Config.OrderNotifyLastDays);
+            return ApiResult.RData(res);
+        }
+        
         public IActionResult Register([FromForm] string account, [FromForm] string password, [FromForm] string qq,
             [FromForm] string email, [FromForm] string telphone)
         {
@@ -839,6 +848,9 @@ namespace TinyStore.Site.Controllers
             return ApiResult.RCode("");
         }
 
+        
+
+        
         public dynamic OrderListStat(List<OrderModel> orders)
         {
             double incomme = 0,

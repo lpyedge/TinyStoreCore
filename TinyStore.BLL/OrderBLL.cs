@@ -312,5 +312,21 @@ namespace TinyStore.BLL
                     .ToList();
             }
         }
+
+        public static dynamic QueryCountNotify(int userId,int lastDays)
+        {
+            using (var conn = DbClient)
+            {
+                var dateNotify = DateTime.Now.AddDays(-lastDays);
+                return conn.Queryable<Model.OrderModel>()
+                    .Where(p => p.UserId == userId &&
+                                p.IsPay == true && p.IsDelivery == true && (p.Amount * p.Quantity) != p.RefundAmount &&
+                                p.NotifyDate != null && p.NotifyDate >= dateNotify)
+                    .OrderBy(p => p.NotifyDate, OrderByType.Asc)
+                    .GroupBy(p => p.StoreId)
+                    .Select(p => new {StoreId = p.StoreId, Count = SqlFunc.AggregateCount(p.StoreId)})
+                    .ToList();
+            }
+        }
     }
 }

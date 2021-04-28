@@ -7,6 +7,8 @@
         "SiteName": "27070",
         "ServiceQQ": "38798955",
         "ServiceEmail": "38798955@qq.com",
+        "OrderNotifyDays": 30,
+        "OrderNotifyLastDays": 7,
         "TaxConfigList": [
             {
                 "Level": 0,

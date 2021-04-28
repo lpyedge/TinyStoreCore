@@ -2,14 +2,12 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Mail;
 using System.Text;
 using LPayments;
-using LPayments.Plartform.AliPay;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using TinyStore.Model;
@@ -444,6 +442,17 @@ namespace TinyStore.Site
             public string ServiceQQ { get; set; } = "10000";
             
             public string ServiceEmail { get; set; } = "10000@qq.com";
+            
+            /// <summary>
+            /// 订单提醒默认天数
+            /// </summary>
+            public int OrderNotifyDays { get; set; } = 30;
+            
+            /// <summary>
+            /// 订单提醒预提示天数
+            /// </summary>
+            public int OrderNotifyLastDays { get; set; } = 7;
+            
             public string FormatDate { get; set; } = "yyyy-MM-dd";
 
             public string FormatDateTime { get; set; } = "yyyy-MM-dd HH:mm";
