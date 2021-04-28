@@ -13,16 +13,16 @@ Store.TokenRemove = function () {
 };
 
 //商户
-// Store.User = function (user) {
-//     if (user) {
-//         localStorage.setItem("User", JSON.stringify(user));
-//     } else {
-//         return JSON.parse(localStorage.getItem("User"));
-//     }
-// };
-// Store.UserRemove = function () {
-//     localStorage.removeItem("User");
-// };
+Store.User = function (user) {
+    if (user) {
+        localStorage.setItem("User", JSON.stringify(user));
+    } else {
+        return JSON.parse(localStorage.getItem("User"));
+    }
+};
+Store.UserRemove = function () {
+    localStorage.removeItem("User");
+};
 
 //商户信息
 Store.UserExtend = function (userextra) {

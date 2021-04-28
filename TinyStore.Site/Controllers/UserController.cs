@@ -34,7 +34,7 @@ namespace TinyStore.Site.Controllers
             return View();
         }
         
-        public IActionResult User_Withdraw()
+        public IActionResult User_Finance()
         {
             return View();
         }

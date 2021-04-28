@@ -30,13 +30,13 @@
                         <template v-slot:label>
                             <div class="text-subtitle1 text-weight-bold">
                                 {{ storeCurrent.name }}
-                                {{ void ( storeCurrentOrderNotify = _.find(storeOrderNotify,(o)=>{return o.storeId == storeCurrent.storeId;}) )}}
-                                <q-btn dense flat class="on-right" :icon="storeCurrentOrderNotify?'notifications_active':'notifications_off'">
-                                    <q-badge v-if="storeCurrentOrderNotify" color="red" floating>
-                                        {{storeCurrentOrderNotify.count}}
-                                    </q-badge>
-                                    <q-tooltip>订单提醒</q-tooltip>
-                                </q-btn>
+                                @* {{ void ( storeCurrentOrderNotify = _.find(storeOrderNotify,(o)=>{return o.storeId == storeCurrent.storeId;}) )}} *@
+                                @* <q-btn dense flat class="on-right" :icon="storeCurrentOrderNotify?'notifications_active':'notifications_off'"> *@
+                                @*     <q-badge v-if="storeCurrentOrderNotify" color="red" floating> *@
+                                @*         {{storeCurrentOrderNotify.count}} *@
+                                @*     </q-badge> *@
+                                @*     <q-tooltip>订单提醒</q-tooltip> *@
+                                @* </q-btn> *@
                             </div>
                         </template>
                         <q-list>
@@ -44,13 +44,6 @@
                                 <q-item-section>
                                     <q-item-label class="text-subtitle1 text-weight-bold">
                                         {{store.name}}
-                                        {{ void ( orderNotify = _.find(storeOrderNotify,(o)=>{return o.storeId == store.storeId;}) )}}
-                                        <q-btn dense flat class="on-right" :icon="orderNotify?'notifications_active':'notifications_off'">
-                                            <q-badge v-if="orderNotify" color="red" text-color="white" floating>
-                                                {{orderNotify.count}}
-                                            </q-badge>
-                                            <q-tooltip>订单提醒</q-tooltip>
-                                        </q-btn>
                                     </q-item-label>
                                 </q-item-section>
                             </q-item>
@@ -76,21 +69,17 @@
             :width="240">
             <q-scroll-area class="fit">
                 <q-list padding>
-                    <q-item-label header class="text-weight-bold text-uppercase">
-                        货源
-                    </q-item-label>
-                                        
-                    <q-item v-ripple clickable v-for="link in supplylinks" :key="link.text" @@click="Goto(link.url)" >
+                    <q-item v-ripple clickable @@click="Goto('@Url.ActionLink("index","user")')">
                         <q-item-section avatar>
-                            <q-icon  color="grey-8" :name="link.icon"/>
+                            <q-icon color="grey-8" name="home"/>
                         </q-item-section>
                         <q-item-section>
-                            <q-item-label class="text-h6 text-grey-8">{{ link.text }}</q-item-label>
+                            <q-item-label class="text-h6 text-grey-8">首页</q-item-label>
                         </q-item-section>
                     </q-item>
-                    
+
                     <q-separator class="q-my-sm"></q-separator>
-                    
+
                     <q-item-label header class="text-weight-bold text-uppercase">
                         商户
                         <q-badge class="on-right cursor-pointer" color="primary">
@@ -102,8 +91,8 @@
                             <q-tooltip>签帐额度</q-tooltip>
                         </q-badge>
                     </q-item-label>
-                    
-                    <q-item v-ripple clickable v-for="link in userlinks" :key="link.text" @@click="Goto(link.url)" >
+
+                    <q-item v-ripple clickable v-for="link in userlinks" :key="link.text" @@click="Goto(link.url)">
                         <q-item-section avatar>
                             <q-icon color="grey-8" :name="link.icon"/>
                         </q-item-section>
@@ -113,7 +102,22 @@
                     </q-item>
 
                     <q-separator class="q-my-sm"></q-separator>
-                    
+
+                    <q-item-label header class="text-weight-bold text-uppercase">
+                        货源
+                    </q-item-label>
+
+                    <q-item v-ripple clickable v-for="link in supplylinks" :key="link.text" @@click="Goto(link.url)">
+                        <q-item-section avatar>
+                            <q-icon color="grey-8" :name="link.icon"/>
+                        </q-item-section>
+                        <q-item-section>
+                            <q-item-label class="text-h6 text-grey-8">{{ link.text }}</q-item-label>
+                        </q-item-section>
+                    </q-item>
+
+                    <q-separator class="q-my-sm"></q-separator>
+
                     <q-item-label header class="text-weight-bold text-uppercase">
                         店铺<q-badge class="on-right cursor-pointer">{{storeCurrent.name}}</q-badge>
                     </q-item-label>
@@ -128,7 +132,7 @@
                     </q-item>
 
                     <q-separator class="q-mt-md q-mb-lg"></q-separator>
-                    
+
                     <q-item-label header class="text-weight-bold text-uppercase">
                         客服
                     </q-item-label>
@@ -140,7 +144,7 @@
                     {
                         <q-btn flat class="q-mb-sm text-grey-8" icon="email" label="@SiteContext.Config.ServiceEmail" type="a" target="_blank" href="mailto:@SiteContext.Config.ServiceEmail?subject=@Uri.EscapeDataString("问题提交")"></q-btn>
                     }
-                    </q-list>
+                </q-list>
             </q-scroll-area>
         </q-drawer>
 
@@ -156,21 +160,20 @@
      el: '#q-app',
      data : {
        leftDrawerOpen: false,
-       //user : Store.User(),
+       user : Store.User(),
        userExtend : Store.UserExtend(),
        storeList : Store.StoreList(),
        storeCurrent : Store.StoreCurrent(),
-       storeOrderNotify:[],
-       supplylinks: [
-           { icon: 'fas fa-dolly', text: '货源管理',url:'@Url.ActionLink("Supply_List", "User")' },
-           { icon: 'vpn_key', text: '卡密管理',url:'@Url.ActionLink("Supply_Stock", "User")'  },      
-         ],
        userlinks: [
            { icon: 'person', text: '商户资料',url:'@Url.ActionLink("User_Profile", "User")' },
            { icon: 'lock', text: '密码安全',url:'@Url.ActionLink("User_Secret","User")' },
-           { icon: 'local_atm', text: '资金提现',url:'@Url.ActionLink("User_Withdraw","User")' },
+           { icon: 'local_atm', text: '资金提现',url:'@Url.ActionLink("User_Finance","User")' },
            //{ icon: 'monetization_on', text: '提现管理' },     
            { icon: 'history', text: '操作日志',url:'@Url.ActionLink("User_Log","User")' }
+         ],
+       supplylinks: [
+           { icon: 'fas fa-dolly', text: '货源管理',url:'@Url.ActionLink("Supply_List", "User")' },
+           { icon: 'vpn_key', text: '卡密管理',url:'@Url.ActionLink("Supply_Stock", "User")'  },      
          ],
        storelinks: [
            { icon: 'store_mall_directory', text: '店铺资料',url:'@Url.ActionLink("Store_Info","User")'  },
@@ -217,15 +220,6 @@
     created(){
          //桌面下为 true，手机端为 undefined
          this.leftDrawerOpen=!!this.$q.platform.is.desktop;
-         UserApi('StoreOrderNotify',{})
-              .then((response)=> {
-                  if (response.data.code === 1){ 
-                      this.storeOrderNotify = response.data.data;
-                  }
-              })
-              .catch( (error)=> {
-                  console.error(error);
-              });
     },
      methods: {
          qqservice(qqnumber){
@@ -249,6 +243,7 @@
          },
          logoff(){
              Store.TokenRemove();
+             Store.UserRemove();
              Store.UserExtendRemove();
              Store.StoreListRemove();
              Store.StoreCurrentRemove();

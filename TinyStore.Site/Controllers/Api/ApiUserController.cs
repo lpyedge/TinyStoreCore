@@ -69,16 +69,16 @@ namespace TinyStore.Site.Controllers
                 
                 HeaderToken.SetHeaderToken(HttpContext, user.UserId.ToString(), user.ClientKey);
                 
-                // user.ClientKey = "";
-                // user.Salt = "";
-                // user.Password = "";
+                user.ClientKey = "";
+                user.Salt = "";
+                user.Password = "";
 
                 var storelist = StoreBLL.QueryListByUserId(user.UserId);
                 UserExtendModel userextra = UserExtendBLL.QueryModelByUserId(user.UserId);
 
                 UserLog(user.UserId, EUserLogType.登录, Request);
 
-                return ApiResult.RData(new {storeList = storelist, userExtend = userextra});
+                return ApiResult.RData(new {user,storeList = storelist, userExtend = userextra});
             }
 
             return ApiResult.RCode(ApiResult.ECode.AuthorizationFailed);
@@ -773,14 +773,40 @@ namespace TinyStore.Site.Controllers
         }
         
         [HttpPost]
-        public IActionResult StoreOrderNotify()
+        public IActionResult OrderNotifyList()
+        {
+            UserModel user = UserCurrent();
+        
+            var data = OrderBLL.QueryOrderListNotify(user.UserId,SiteContext.Config.OrderNotifyLastDays);
+            return ApiResult.RData(data);
+        }
+
+        [HttpPost]
+        public IActionResult OrderNotifyReset([FromForm]string orderIds,[FromForm]string notifyDate)
         {
             UserModel user = UserCurrent();
 
-            var res = OrderBLL.QueryCountNotify(user.UserId,SiteContext.Config.OrderNotifyLastDays);
-            return ApiResult.RData(res);
+            if (string.IsNullOrWhiteSpace(orderIds))
+                return ApiResult.RCode(ApiResult.ECode.DataFormatError);
+            var orderIdList = Global.Json.Deserialize<List<string>>(orderIds);
+            if (orderIdList==null || orderIdList.Count == 0)
+                return ApiResult.RCode(ApiResult.ECode.DataFormatError);
+            
+            DateTime? outNotifyDate = null;
+            if (DateTime.TryParse(notifyDate, out DateTime tempnotifyDate)) outNotifyDate = tempnotifyDate;
+
+            var res = OrderBLL.Update(p=> orderIdList.Contains(p.OrderId), 
+                p=> new OrderModel { NotifyDate = outNotifyDate }  );
+
+            if (res)
+            {
+                var data = OrderBLL.QueryOrderListNotify(user.UserId,SiteContext.Config.OrderNotifyLastDays);
+                return ApiResult.RData(data);
+            }
+
+            return ApiResult.RCode(ApiResult.ECode.UnKonwError);
         }
-        
+
         public IActionResult Register([FromForm] string account, [FromForm] string password, [FromForm] string qq,
             [FromForm] string email, [FromForm] string telphone)
         {

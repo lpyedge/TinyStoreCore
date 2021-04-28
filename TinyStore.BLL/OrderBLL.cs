@@ -65,7 +65,8 @@ namespace TinyStore.BLL
         }
 
         public static PageList<OrderModel> QueryPageListBySearch(string storeId, string productId, DateTime? datefrom,
-            DateTime? dateto, string keyname, bool? isPay, bool? isDelivery,bool? isSettle, int pageindex, int pagesize)
+            DateTime? dateto, string keyname, bool? isPay, bool? isDelivery, bool? isSettle, int pageindex,
+            int pagesize)
         {
             var expr = Expressionable.Create<OrderModel>()
                 .And(p => p.StoreId == storeId)
@@ -281,7 +282,7 @@ namespace TinyStore.BLL
             Update(expr.ToExpression(),
                 p => new OrderModel {IsSettle = isclose, LastUpdateDate = closedate, SettleDate = closedate});
         }
-        
+
         public static void UpdateCost(string orderId, double cost)
         {
             Update(p => p.OrderId == orderId, p => p.Cost == cost);
@@ -296,9 +297,9 @@ namespace TinyStore.BLL
 
             using (var conn = DbClient)
             {
-               return conn.Queryable<Model.OrderModel>()
+                return conn.Queryable<Model.OrderModel>()
                     .Where(expr.ToExpression())
-                    .OrderBy(p=>p.CreateDate,OrderByType.Asc)
+                    .OrderBy(p => p.CreateDate, OrderByType.Asc)
                     .Select(p => new Model.OrderModel()
                     {
                         OrderId = p.OrderId,
@@ -313,20 +314,33 @@ namespace TinyStore.BLL
             }
         }
 
-        public static dynamic QueryCountNotify(int userId,int lastDays)
+        public static List<Model.OrderModel> QueryOrderListNotify(int userId, int lastDays)
         {
             using (var conn = DbClient)
             {
-                var dateNotify = DateTime.Now.AddDays(-lastDays);
+                var dateNotify = DateTime.Now.AddDays(lastDays);
                 return conn.Queryable<Model.OrderModel>()
                     .Where(p => p.UserId == userId &&
                                 p.IsPay == true && p.IsDelivery == true && (p.Amount * p.Quantity) != p.RefundAmount &&
-                                p.NotifyDate != null && p.NotifyDate >= dateNotify)
+                                p.NotifyDate != null && p.NotifyDate <= dateNotify)
                     .OrderBy(p => p.NotifyDate, OrderByType.Asc)
-                    .GroupBy(p => p.StoreId)
-                    .Select(p => new {StoreId = p.StoreId, Count = SqlFunc.AggregateCount(p.StoreId)})
+                    .Select(p => new Model.OrderModel
+                    {
+                        StoreId = p.StoreId,
+                        OrderId = p.OrderId,
+                        Name = p.Name,
+                        Memo = p.Memo,
+                        Amount = p.Amount,
+                        Quantity = p.Quantity,
+                        RefundAmount = p.RefundAmount,
+                        Contact = p.Contact,
+                        Message = p.Message,
+                        CreateDate = p.CreateDate,
+                        NotifyDate = p.NotifyDate,
+                    })
                     .ToList();
             }
         }
+
     }
 }
