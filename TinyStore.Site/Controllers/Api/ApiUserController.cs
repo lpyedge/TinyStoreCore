@@ -66,19 +66,19 @@ namespace TinyStore.Site.Controllers
             {
                 user.ClientKey = Global.Generator.Guid();
                 UserBLL.Update(user);
-
+                
                 HeaderToken.SetHeaderToken(HttpContext, user.UserId.ToString(), user.ClientKey);
-
-                user.ClientKey = "";
-                user.Salt = "";
-                user.Password = "";
+                
+                // user.ClientKey = "";
+                // user.Salt = "";
+                // user.Password = "";
 
                 var storelist = StoreBLL.QueryListByUserId(user.UserId);
                 UserExtendModel userextra = UserExtendBLL.QueryModelByUserId(user.UserId);
 
                 UserLog(user.UserId, EUserLogType.登录, Request);
 
-                return ApiResult.RData(new {user, storeList = storelist, userExtend = userextra});
+                return ApiResult.RData(new {storeList = storelist, userExtend = userextra});
             }
 
             return ApiResult.RCode(ApiResult.ECode.AuthorizationFailed);
