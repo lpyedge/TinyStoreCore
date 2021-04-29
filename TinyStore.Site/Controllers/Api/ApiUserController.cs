@@ -807,6 +807,27 @@ namespace TinyStore.Site.Controllers
             return ApiResult.RCode(ApiResult.ECode.UnKonwError);
         }
 
+        [HttpPost]
+        public IActionResult BillPageList([FromForm] string from, [FromForm] string to,
+            [FromForm] int billType,
+            [FromForm] int pageIndex, [FromForm] int pageSize)
+        {
+            UserModel user = UserCurrent();
+
+            DateTime? dateFrom = null;
+            if (DateTime.TryParse(from, out DateTime tempdateFrom)) dateFrom = tempdateFrom;
+
+            DateTime? dateTo = null;
+            if (DateTime.TryParse(to, out DateTime tempdateTo)) dateTo = tempdateTo.AddDays(1);
+
+            if (dateFrom == null || dateTo == null)
+                return ApiResult.RCode(ApiResult.ECode.DataFormatError);
+
+            var data = BillBLL.QueryPageListBySearch(pageIndex,pageSize,user.UserId, billType,(DateTime)dateFrom, (DateTime)dateTo);
+
+            return ApiResult.RData(data);
+        }
+        
         public IActionResult Register([FromForm] string account, [FromForm] string password, [FromForm] string qq,
             [FromForm] string email, [FromForm] string telphone)
         {

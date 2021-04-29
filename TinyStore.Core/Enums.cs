@@ -3,6 +3,32 @@ using System.Runtime.Serialization;
 
 namespace TinyStore
 {
+    public enum EUserLogType : int
+    {
+        注册 = 1,
+        登录 = 2,
+        修改商户信息 = 3,
+        修改店铺信息 = 4,
+        分类管理 = 5,
+        产品管理 = 6,
+        订单管理 = 7,
+        优惠码管理 = 8,
+        库存管理 = 9,
+        提现 = 10,
+        货源管理 = 11,
+        结算记录 = 12
+    }
+
+    public enum EAdminLogType : int
+    {
+        登录 = 1,
+        管理员管理 = 2,
+        订单管理 = 3,
+        提现管理 = 4,
+        商户管理 = 5,
+        店铺管理 = 6
+    }
+
     public enum EBankType : int
     {
         支付宝 = 1,
@@ -56,6 +82,35 @@ namespace TinyStore
         模板五 = 5,
     }
 
+    public enum EBillType : int
+    {
+        收款 = 1,
+        退款 = 2,
+        
+        成本结算 = 10,
+        
+        充值 = 20,
+        提现 = 21,
+        
+        交易手续费 = 22,
+    }
+    
+    // 分割线
+    
+    public enum EPaymentType : int
+    {
+        [PaymentAttribute(0.006, "支付宝H5")] AliPayWap = 1,
+        [PaymentAttribute(0.006, "微信H5")] WeChatH5 = 2,
+        //[Description("支付宝QR")]
+        //AliPayQR = 3,
+        //[Description("微信QR")]
+        //WeChatQR = 4,
+        //[Description("支付宝App")]
+        //AliPayApp = 5,
+        //[Description("微信App")]
+        //WechatApp = 6,
+    }
+    
     public enum EState : int
     {
         客户下单 = 1,
@@ -73,46 +128,7 @@ namespace TinyStore
         备注 = 6
     }
 
-    public enum EPaymentType : int
-    {
-        [PaymentAttribute(0.006, "支付宝H5")] AliPayWap = 1,
-        [PaymentAttribute(0.006, "微信H5")] WeChatH5 = 2,
-        //[Description("支付宝QR")]
-        //AliPayQR = 3,
-        //[Description("微信QR")]
-        //WeChatQR = 4,
-        //[Description("支付宝App")]
-        //AliPayApp = 5,
-        //[Description("微信App")]
-        //WechatApp = 6,
-    }
 
-
-    public enum EUserLogType : int
-    {
-        注册 = 1,
-        登录 = 2,
-        修改商户信息 = 3,
-        修改店铺信息 = 4,
-        分类管理 = 5,
-        产品管理 = 6,
-        订单管理 = 7,
-        优惠码管理 = 8,
-        库存管理 = 9,
-        提现 = 10,
-        货源管理 = 11,
-        结算记录 = 12
-    }
-
-    public enum EAdminLogType : int
-    {
-        登录 = 1,
-        管理员管理 = 2,
-        订单管理 = 3,
-        提现管理 = 4,
-        商户管理 = 5,
-        店铺管理 = 6
-    }
 
     public enum EWithDrawState : int
     {

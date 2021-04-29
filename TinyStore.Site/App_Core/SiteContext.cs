@@ -54,6 +54,7 @@ namespace TinyStore.Site
                 TinyStore.BLL.BaseBLL.DbClient.DbMaintenance.CreateDatabase();
                 TinyStore.BLL.BaseBLL.DbClient.CodeFirst.InitTables<Model.AdminModel>();
                 TinyStore.BLL.BaseBLL.DbClient.CodeFirst.InitTables<Model.AdminLogModel>();
+                TinyStore.BLL.BaseBLL.DbClient.CodeFirst.InitTables<Model.BillModel>();
                 TinyStore.BLL.BaseBLL.DbClient.CodeFirst.InitTables<Model.OrderModel>();
                 TinyStore.BLL.BaseBLL.DbClient.CodeFirst.InitTables<Model.OrderTrashModel>();
                 TinyStore.BLL.BaseBLL.DbClient.CodeFirst.InitTables<Model.ProductModel>();
@@ -69,7 +70,7 @@ namespace TinyStore.Site
                 InitDevData();
 #endif
             }
-
+            
             if (BLL.AdminBLL.QueryCount(p => p.IsRoot) == 0)
             {
                 BLL.AdminBLL.Insert(new Model.AdminModel
@@ -79,7 +80,7 @@ namespace TinyStore.Site
                     CreateDate = DateTime.Now,
                     IsRoot = true,
                     Password = Global.Hash("admin", "tinystorecore"),
-                    Salt = "12345678"
+                    Salt = "012345"
                 });
             }
         }
@@ -415,6 +416,41 @@ namespace TinyStore.Site
             }
             
             BLL.OrderBLL.InsertRangeAsync(orderList);
+            
+            
+            var billList = new List<Model.BillModel>();
+            var billTypes = new List<EBillType>()
+            {
+                EBillType.收款,
+                EBillType.退款,
+                EBillType.成本结算,
+                EBillType.充值,
+                EBillType.提现,
+                EBillType.交易手续费,
+            };
+            for (int i = 0; i < 50; i++)
+            {
+                for (int j = 0; j < Global.Generator.Random.Next(3, 40); j++)
+                { 
+                    var ischarge = Global.Generator.Random.NextDouble() > 0.7;
+                    var isplus = Global.Generator.Random.NextDouble() > 0.4;
+                    var amount = Global.Generator.Random.Next(1, 30);
+                    var billType = billTypes[Global.Generator.Random.Next(0,6)];
+                    billList.Add(new BillModel()
+                    {
+                        BillId = Global.Generator.DateId(2),
+                        Amount = ischarge?0:(isplus?amount:-amount),
+                        AmountCharge = !ischarge?0:(isplus?amount:-amount),
+                        Extra = "",
+                        CreateDate = DateTime.Now.AddDays(-50+i),
+                        StoreId = "StoreId",
+                        UserId = 1,
+                        BillType = billType
+                    });
+                }
+            }
+            
+            BLL.BillBLL.InsertRangeAsync(billList);
         }
 
         public class ConfigModel
