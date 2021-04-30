@@ -132,6 +132,7 @@ namespace TinyStore.Site
                 {
                     new Payment()
                     {
+                        Subject = "支付宝",
                         Name = "A先生",
                         Account = "13101010101",
                         IsEnable = true,
@@ -158,13 +159,14 @@ namespace TinyStore.Site
                 {
                     new Payment()
                     {
+                        Subject = "微信",
                         Name = "B先生",
                         Account = "13101010101",
                         IsEnable = true,
                         IsSystem = false,
                         Rate = 0,
-                        QRCode = "alipay://xxxxx",
-                        Memo = "支付宝shoukuan",
+                        QRCode = "wechat://xxxxx",
+                        Memo = "微信 收款",
                     }
                 },
                 UniqueId = "test",
@@ -739,27 +741,39 @@ namespace TinyStore.Site
 
         }
 
+        private static readonly object _Locker = new object();
 
+        private static List<Model.Extend.Payment> _SystemPaymentList;
         public static List<Model.Extend.Payment> SystemPaymentList()
         {
-            var list = new List<Model.Extend.Payment>();
-
-            foreach (EPaymentType item in Enum.GetValues(typeof(EPaymentType)))
+            if (_SystemPaymentList == null)
             {
-                var attr = Utils.Reflection.Attribute.GetCustomAttribute<PaymentAttribute>(item).First();
-                var model = new Model.Extend.Payment()
+                lock (_Locker)
                 {
-                    Name = item.ToString(),
-                    Memo = attr.Memo,
-                    Rate = attr.Rate,
-                    IsSystem = true,
-                    IsEnable = true,
-                };
+                    if (_SystemPaymentList == null)
+                    {
+                        _SystemPaymentList = new List<Model.Extend.Payment>();
+                        foreach (EPaymentType item in Enum.GetValues(typeof(EPaymentType)))
+                        {
+                            var attr = Utils.Reflection.Attribute.GetCustomAttribute<PaymentAttribute>(item).First();
+                            var model = new Model.Extend.Payment()
+                            {
+                                Subject = attr.Subject,
+                                Name = item.ToString(),
+                                Account = item.ToString(),
+                                Memo = attr.Memo,
+                                Rate = attr.Rate,
+                                IsSystem = true,
+                                IsEnable = false,
+                            };
 
-                list.Add(model);
+                            _SystemPaymentList.Add(model);
+                        }
+                    }
+                }
             }
-
-            return list;
+            
+            return _SystemPaymentList;
         }
 
 

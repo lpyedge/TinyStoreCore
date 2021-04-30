@@ -148,8 +148,6 @@
                             '</span></div><div class="" id="ProductStock">库存：' + storenum + '</div></div></div></div>';
                     });
                 }
-                console.log(productlist);
-                console.log(listdiv);
                 $("#goodscount").text("商品列表 / " + productlist.length);
                 $("#productlist").html(listdiv);
                 $("#productlist").find("[data-productid]:first").trigger("click");

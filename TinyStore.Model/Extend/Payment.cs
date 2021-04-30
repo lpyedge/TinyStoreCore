@@ -22,9 +22,9 @@ namespace TinyStore.Model.Extend
         public double Rate { get; set; }
         
         /// <summary>
-        /// 支付名称
+        /// 标题
         /// </summary>
-        public string Name { get; set; }
+        public string Subject { get; set; }
         
         /// <summary>
         /// 收款说明
@@ -37,8 +37,18 @@ namespace TinyStore.Model.Extend
         public string QRCode { get; set; }
         
         /// <summary>
-        /// 收款帐号/姓名
+        /// 收款方式
+        /// </summary>
+        public EBankType BankType { get; set; }
+        
+        /// <summary>
+        /// 收款帐号
         /// </summary>
         public string Account { get; set; }
+        
+        /// <summary>
+        /// 收款名称
+        /// </summary>
+        public string Name { get; set; }
     }
 }

@@ -47,4 +47,27 @@
     <ProjectReference Include="..\TinyStore.Model\TinyStore.Model.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Views\Store\basicinfo.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Store\benifit.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Store\Index.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Store\Login.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Store\Order.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Store\Ordercloserecord.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Store\Product.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Store\pwdmodify.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Store\Register.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Store\Stock.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Store\stockrecycle.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Store\Store.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Store\Supplier.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Store\Userlog.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Store\Widgets\_Header.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Store\Widgets\_Plugin_Store.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Store\Widgets\_Plugin_Toast.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Store\Withdraw.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Store\_Layout.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Store\_ViewStart.cshtml" />
+  </ItemGroup>
+
 </Project>

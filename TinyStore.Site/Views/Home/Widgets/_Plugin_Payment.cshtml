@@ -64,6 +64,8 @@
     var $payment_dialog = $("#payment .dialog");
     //todo 需要根据店铺配置的支付方式展示
 
+
+
     Payment.Show = function () {
         $(".blackmask,#payment").fadeIn(150);
         $payment_dialog.addClass("fadeIn-up");
@@ -92,6 +94,21 @@
         if (!isVisibility && Payment.orderId) {
             location.href = "/o/" + Payment.orderId;
         }
+    }
+    
+    Payment.AlipayScan = function (url){
+        return "alipays://platformapi/startapp?appId=20000691&url=" +encodeURIComponent(url);
+    }
+    
+    Payment.BankTransfer = function (payment){
+        if (payment){
+            if (payment.IsSystem){
+                
+            }else{
+                
+            }
+        }
+        //alipays://platformapi/startapp?appId=09999988&actionType=toCard&sourceId=bill&cardNo=62xxxxxxxxxx1234567&bankAccount=张三&money=100.00&amount=100.00&bankMark=CCB&bankName=中国建设银行
     }
 
 
