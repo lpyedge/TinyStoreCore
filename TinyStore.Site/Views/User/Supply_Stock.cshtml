@@ -139,7 +139,7 @@
 </q-page>
 
 <q-dialog v-model="stockImportDialog">
-    <q-card class="q-pb-md" style="max-width: 500px; width: 500px;">
+    <q-card style="max-width: 500px; width: 500px;">
         <q-card-section class="row items-center q-pb-none">
             <div class="text-h6 text-primary on-left">
                 {{ stockFilter.supplyCurrent.name }}
@@ -158,10 +158,10 @@
                      v-model.trim="stockImportContent">
             </q-input>
         </q-card-section>
-        <q-card-section>
-            <q-btn class="float-right" color="warning" icon="edit" label="保存" :disable="stockImportContent.length === 0" @@click="stockImport"></q-btn>
-            <q-toggle class="float-right" v-model="stockImportIsShow" color="orange" :label="stockIsShowOptions[1].name" left-label></q-toggle>
-            <q-toggle class="float-right" v-model="stockImportIsAllowRepeat" color="primary" label="允许重复" left-label></q-toggle>
+        <q-card-section class="row justify-end">
+            <q-toggle v-model="stockImportIsAllowRepeat" color="primary" label="允许重复" left-label></q-toggle> 
+            <q-toggle v-model="stockImportIsShow" color="orange" :label="stockIsShowOptions[1].name" left-label></q-toggle>
+            <q-btn color="warning" icon="edit" label="保存" :disable="stockImportContent.length === 0" @@click="stockImport"></q-btn>
         </q-card-section>
     </q-card>
 </q-dialog>

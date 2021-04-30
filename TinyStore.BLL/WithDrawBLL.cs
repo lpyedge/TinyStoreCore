@@ -44,9 +44,9 @@ namespace TinyStore.BLL
                 if (estate == EWithDrawState.未处理)
                     expr = expr.And(p => p.IsFinish == false);
                 else if (estate == EWithDrawState.提现成功)
-                    expr = expr.And(p => p.IsFinish == true && p.Income > 0);
+                    expr = expr.And(p => p.IsFinish == true && p.AmountFinish > 0);
                 else
-                    expr = expr.And(p => p.IsFinish == true && p.Income == 0);
+                    expr = expr.And(p => p.IsFinish == true && p.AmountFinish == 0);
             }
 
             return QueryPageList(pageindex, pagesize, expr.ToExpression(), SortCreateDateDesc);

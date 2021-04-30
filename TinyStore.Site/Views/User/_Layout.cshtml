@@ -167,9 +167,8 @@
        userlinks: [
            { icon: 'person', text: '商户资料',url:'@Url.ActionLink("User_Profile", "User")' },
            { icon: 'lock', text: '密码安全',url:'@Url.ActionLink("User_Secret","User")' },
-           { icon: 'local_atm', text: '资金提现',url:'@Url.ActionLink("User_Finance","User")' },
-           //{ icon: 'monetization_on', text: '提现管理' },     
-           { icon: 'history', text: '操作日志',url:'@Url.ActionLink("User_Log","User")' }
+           { icon: 'local_atm', text: '资金提现',url:'@Url.ActionLink("User_Finance","User")' },  
+           // { icon: 'history', text: '操作日志',url:'@Url.ActionLink("User_Log","User")' }
          ],
        supplylinks: [
            { icon: 'fas fa-dolly', text: '货源管理',url:'@Url.ActionLink("Supply_List", "User")' },
@@ -210,7 +209,7 @@
        orderIsSettleOptions:[
           { icon:'done_all',name:'未结算',color:'warning',value :false},
           { icon:'done_all',name:'已结算',color:'accent',value :true},
-       ]
+       ],     
      },
      beforeCreate(){
          if(!Store.Token()){
@@ -220,6 +219,71 @@
     created(){
          //桌面下为 true，手机端为 undefined
          this.leftDrawerOpen=!!this.$q.platform.is.desktop;
+    },
+    computed:{
+         editorToolbar(){
+             return [
+                       [
+                         {
+                           label: this.$q.lang.editor.align,
+                           icon: this.$q.iconSet.editor.align,
+                           fixedLabel: true,
+                           options: ['left', 'center', 'right', 'justify']
+                         }
+                       ],
+                       ['bold', 'italic', 'strike', 'underline'],
+                       [ 'hr', 'link'],
+                       [
+                         {
+                           label: this.$q.lang.editor.fontSize,
+                           icon: this.$q.iconSet.editor.fontSize,
+                           fixedLabel: true,
+                           fixedIcon: true,
+                           list: 'no-icons',
+                           options: [
+                             'size-1',
+                             'size-2',
+                             'size-3',
+                             'size-4',
+                             'size-5',
+                             'size-6',
+                             'size-7'
+                           ]
+                         },
+                         {
+                           label: this.$q.lang.editor.defaultFont,
+                           icon: this.$q.iconSet.editor.font,
+                           fixedIcon: true,
+                           list: 'no-icons',
+                           options: [
+                             'default_font',
+                             'arial',
+                             'arial_black',
+                             'comic_sans',
+                             'courier_new',
+                             'impact',
+                             'lucida_grande',
+                             'times_new_roman',
+                             'verdana'
+                           ]
+                         }
+                       ],
+                         ['unordered', 'ordered'],
+                         ['removeFormat']
+                     ];
+         },
+         editorFonts(){
+             return {
+                      arial: 'Arial',
+                      arial_black: 'Arial Black',
+                      comic_sans: 'Comic Sans MS',
+                      courier_new: 'Courier New',
+                      impact: 'Impact',
+                      lucida_grande: 'Lucida Grande',
+                      times_new_roman: 'Times New Roman',
+                      verdana: 'Verdana'
+                    };
+         }
     },
      methods: {
          qqservice(qqnumber){

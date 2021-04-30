@@ -213,11 +213,9 @@
 </q-page>
 
 <q-dialog v-model="orderDialog" persistent>
-    <q-card class="q-pb-md" style="max-width: 500px; width: 500px;">
+    <q-card style="max-width: 500px; width: 500px;">
         <q-card-section class="row items-center q-pb-none">
-            <div class="text-h6 text-primary on-left">
-                订单详情
-            </div>
+            <div class="text-h6">订单详情</div>
             <q-space></q-space>
             <q-btn icon="close" flat round dense v-close-popup></q-btn>
         </q-card-section>
@@ -377,8 +375,8 @@
                      v-model.trim="orderCurrent.stockData">
             </q-input>
         </q-card-section>
-        <q-card-section>
-            <q-btn class="float-right" color="warning" icon="edit" label="保存" @@click="orderDialogEdit"></q-btn>
+        <q-card-section class="row justify-end">
+            <q-btn color="warning" icon="edit" label="保存" @@click="orderDialogEdit"></q-btn>
         </q-card-section>
     </q-card>
 </q-dialog>

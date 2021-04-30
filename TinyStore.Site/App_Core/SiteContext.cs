@@ -70,7 +70,7 @@ namespace TinyStore.Site
                 InitDevData();
 #endif
             }
-            
+
             if (BLL.AdminBLL.QueryCount(p => p.IsRoot) == 0)
             {
                 BLL.AdminBLL.Insert(new Model.AdminModel
@@ -451,6 +451,34 @@ namespace TinyStore.Site
             }
             
             BLL.BillBLL.InsertRangeAsync(billList);
+            
+            
+            var withDrawList = new List<Model.WithDrawModel>();
+            for (int i = 0; i < 10; i++)
+            {
+                var isfinish = Global.Generator.Random.NextDouble() > 0.7;
+                var isok = Global.Generator.Random.NextDouble() > 0.7;
+                var amount = Global.Generator.Random.Next(1, 30);
+                withDrawList.Add(new WithDrawModel()
+                {
+                    WithDrawId = Global.Generator.DateId(2),
+                    UserId = 1,
+                    Amount = amount,
+                    BankType = EBankType.支付宝,
+                    BankAccount = "BankAccount",
+                    BankPersonName =  "BankPersonName",
+                    CreateDate = DateTime.Now.AddDays(-30+i),
+                    
+                    Memo = "",
+                    
+                    IsFinish = isfinish,
+                    TranId = isfinish?"TranId":"",
+                    FinishDate = isfinish?DateTime.Now.AddDays(-25+i):null,
+                    AmountFinish = isfinish?(isok?amount:0):0,
+                });
+                
+            }
+            BLL.WithDrawBLL.InsertRangeAsync(withDrawList);
         }
 
         public class ConfigModel

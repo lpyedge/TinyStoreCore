@@ -8,18 +8,18 @@
                  readonly
                  class="col-xs-12 col-md-auto"
                  label="统计日期"
-                 :value="billFilter.dateRange ?  (Object.prototype.toString.call(billFilter.dateRange) === '[object String]' ? billFilter.dateRange + ' 至 ' + billFilter.dateRange : billFilter.dateRange.from + ' 至 ' + billFilter.dateRange.to)  : '' "
-                 @@clear="v=>billFilter.dateRange = null">
+                 :value="statFilter.dateRange ?  (Object.prototype.toString.call(statFilter.dateRange) === '[object String]' ? statFilter.dateRange + ' 至 ' + statFilter.dateRange : statFilter.dateRange.from + ' 至 ' + statFilter.dateRange.to)  : '' "
+                 @@clear="v=>statFilter.dateRange = null">
             <template v-slot:append>
                 <q-icon name="event" color="primary" class="cursor-pointer">
                     <q-popup-proxy transition-show="scale" transition-hide="scale">
                         <q-date range mask="YYYY-MM-DD"
-                                v-model="billFilter.dateRange"
+                                v-model="statFilter.dateRange"
                                 :options="dateRangeOptionsFn">
                             <div class="row items-center justify-between">
                                 <div class="col-auto">
-                                    <q-btn v-close-popup label="上月" color="accent" @@click="billFilter.dateRange = {from:Quasar.date.formatDate(Quasar.date.subtractFromDate(Quasar.date.adjustDate(Date.now(),{date:1}),{month:1}),'YYYY-MM-DD'),to:Quasar.date.formatDate(Quasar.date.subtractFromDate(Quasar.date.adjustDate(Date.now(),{date:1}),{days:1}),'YYYY-MM-DD')}" class="col-shrink self-start"></q-btn>
-                                    <q-btn v-close-popup label="本月" color="accent" @@click="billFilter.dateRange = {from:Quasar.date.formatDate(Quasar.date.adjustDate(Date.now(),{date:1}),'YYYY-MM-DD'),to:Quasar.date.formatDate(Date.now(),'YYYY-MM-DD')}" class="col-shrink self-start"></q-btn>
+                                    <q-btn v-close-popup label="上月" color="accent" @@click="statFilter.dateRange = {from:Quasar.date.formatDate(Quasar.date.subtractFromDate(Quasar.date.adjustDate(Date.now(),{date:1}),{month:1}),'YYYY-MM-DD'),to:Quasar.date.formatDate(Quasar.date.subtractFromDate(Quasar.date.adjustDate(Date.now(),{date:1}),{days:1}),'YYYY-MM-DD')}" class="col-shrink self-start"></q-btn>
+                                    <q-btn v-close-popup label="本月" color="accent" @@click="statFilter.dateRange = {from:Quasar.date.formatDate(Quasar.date.adjustDate(Date.now(),{date:1}),'YYYY-MM-DD'),to:Quasar.date.formatDate(Date.now(),'YYYY-MM-DD')}" class="col-shrink self-start"></q-btn>
                                 </div>
                                 <div class="col-auto">
                                     <q-btn v-close-popup :label="$q.lang.label.close" color="primary" flat></q-btn>
@@ -33,13 +33,13 @@
         <q-select outlined dense options-dense stack-label bg-color="white" style="min-width: 110px"
                  class="col-auto"
                   label="统计类型"
-                  v-model="billFilter.statType"
+                  v-model="statFilter.statType"
                   emit-value
                   map-options
-                  :options="billFilter.statTypeOptions">
+                  :options="statFilter.statTypeOptions">
         </q-select>
         <q-space></q-space>
-        <q-btn :loading="billFilter.loading" class="col-shrink" color="primary" icon="search" label="搜索" @@click="loadStat"></q-btn>
+        <q-btn :loading="statFilter.loading" class="col-shrink" color="primary" icon="search" label="搜索" @@click="loadStat"></q-btn>
     </div>
 
     <div class="row q-gutter-xs q-mx-none q-my-sm">
@@ -86,7 +86,7 @@
     <script>
    var _page = {
        data:{
-           billFilter:{
+           statFilter:{
                loading:false,
                statType:1,
                statFiled:'count',
@@ -349,14 +349,14 @@
            },
            loadStat(){
               var dateFrom='', dateTo='';
-              if(this.billFilter.dateRange){
-                  var dateRangeType = Object.prototype.toString.call(this.billFilter.dateRange);
+              if(this.statFilter.dateRange){
+                  var dateRangeType = Object.prototype.toString.call(this.statFilter.dateRange);
                   if (dateRangeType === '[object String]'){
-                       dateFrom = this.billFilter.dateRange;    
-                       dateTo = this.billFilter.dateRange;                    
+                       dateFrom = this.statFilter.dateRange;    
+                       dateTo = this.statFilter.dateRange;                    
                   }else{
-                       dateFrom = this.billFilter.dateRange.from;    
-                       dateTo = this.billFilter.dateRange.to; 
+                       dateFrom = this.statFilter.dateRange.from;    
+                       dateTo = this.statFilter.dateRange.to; 
                   }   
               }
               
@@ -365,10 +365,11 @@
                   return;
               }
               
-              UserApi('StoreStat',{ storeId:this.storeCurrent.storeId,from:dateFrom, to:dateTo,statType:this.billFilter.statType},true)
+              this.statFilter.loading = true;
+              UserApi('StoreStat',{ storeId:this.storeCurrent.storeId,from:dateFrom, to:dateTo,statType:this.statFilter.statType},true)
                  .then((response)=> {
                      if (response.data.code === 1){ 
-                         switch (this.billFilter.statType){
+                         switch (this.statFilter.statType){
                              case 1:
                                  this.statDataAll = response.data.data;
                                  this.loadProductStat();
@@ -377,16 +378,16 @@
                      } else{
                          Notify.Warning('卡密数据导出失败');
                      }
-                     this.billFilter.loading =false;
+                     this.statFilter.loading =false;
                  })
                  .catch( (error)=> {
-                     this.billFilter.loading =false;
+                     this.statFilter.loading =false;
                      Notify.Warning('接口通信错误');
                      console.error(error);
                  });
            },
            billExport(){
-               // UserApi('StockExport',{ supplyId:this.billFilter.supplyCurrent.supplyId,keyname:this.billFilter.keyname, isShow:this.billFilter.isShow},true)
+               // UserApi('StockExport',{ supplyId:this.statFilter.supplyCurrent.supplyId,keyname:this.statFilter.keyname, isShow:this.statFilter.isShow},true)
                //    .then((response)=> {
                //        if (response.data.code === 1){ 
                //            var blob = new Blob([response.data.data], {type: "text/plain;charset=utf-8"});
@@ -394,10 +395,10 @@
                //        } else{
                //            Notify.Warning('卡密数据导出失败');
                //        }
-               //        this.billFilter.loading =false;
+               //        this.statFilter.loading =false;
                //    })
                //    .catch( (error)=> {
-               //        this.billFilter.loading =false;
+               //        this.statFilter.loading =false;
                //        Notify.Warning('接口通信错误');
                //        console.error(error);
                //    });

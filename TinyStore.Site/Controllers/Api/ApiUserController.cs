@@ -129,7 +129,73 @@ namespace TinyStore.Site.Controllers
             return ApiResult.RData(userExtendOrigin);
         }
 
+        [HttpPost]
+        public IActionResult UserWithDrawSave(UserExtendModel userExtend)
+        {
+            UserModel user = UserCurrent();
 
+            if (string.IsNullOrEmpty(userExtend.BankAccount) || string.IsNullOrEmpty(userExtend.BankPersonName))
+                return ApiResult.RCode(ApiResult.ECode.DataFormatError);
+
+            UserExtendModel userExtendOrigin = UserExtendBLL.QueryModelByUserId(user.UserId);
+
+            userExtendOrigin.BankType = userExtend.BankType;
+            userExtendOrigin.BankAccount = userExtend.BankAccount;
+            userExtendOrigin.BankPersonName = userExtend.BankPersonName;
+
+            UserExtendBLL.Update(userExtendOrigin);
+            
+            UserLog(userExtendOrigin.UserId, EUserLogType.修改商户信息, Request, "", "个人信息修改");
+
+            return ApiResult.RData(userExtendOrigin);
+        }
+
+        
+        [HttpPost]
+        public IActionResult UserWithDraw([FromForm] double amount){
+            
+            UserModel user = UserCurrent();
+
+            var data1 = WithDrawBLL.QueryList(p => p.UserId == user.UserId && !p.IsFinish);
+            if (data1.Count > 0)
+                return ApiResult.RCode(ApiResult.ECode.TargetExist);
+            
+            var userExtend = BLL.UserExtendBLL.QueryModelById(user.UserId);
+            if(userExtend.Amount<amount)
+                return ApiResult.RCode(ApiResult.ECode.AuthorizationFailed);
+
+            BLL.UserExtendBLL.Update(p => p.UserId == user.UserId, p => new UserExtendModel(){Amount = p.Amount - amount});
+            var withDraw = new WithDrawModel()
+            {
+                WithDrawId = Global.Generator.DateId(1),
+                UserId = user.UserId,
+                Amount = amount,
+                BankType = userExtend.BankType,
+                BankPersonName = userExtend.BankPersonName,
+                BankAccount = userExtend.BankAccount,
+                CreateDate = DateTime.Now,
+                Memo = "",
+                IsFinish = false,
+                AmountFinish = 0,
+                TranId = "",
+                FinishDate = null,
+            };
+            BLL.WithDrawBLL.Insert(withDraw);
+            BLL.BillBLL.Insert(new BillModel()
+            {
+                BillId = Global.Generator.DateId(1),
+                UserId = user.UserId,
+                Amount = -amount,
+                AmountCharge = 0,
+                BillType = EBillType.提现,
+                CreateDate = DateTime.Now,
+                StoreId = "",
+                Extra = withDraw.WithDrawId
+            });
+            
+            return ApiResult.RData(BLL.UserExtendBLL.QueryModelById(user.UserId));
+        }
+        
         [HttpPost]
         public IActionResult UserPasswordModify([FromForm] string passwordOld, [FromForm] string passwordNew)
         {
@@ -828,6 +894,23 @@ namespace TinyStore.Site.Controllers
             return ApiResult.RData(data);
         }
         
+        [HttpPost]
+        public IActionResult WithDrawList(){
+            
+            UserModel user = UserCurrent();
+
+            var data1 = WithDrawBLL.QueryList(p => p.UserId == user.UserId && !p.IsFinish);
+            var data2 = WithDrawBLL.QueryList(3,p => p.UserId == user.UserId && p.IsFinish && p.AmountFinish > 0);
+            var data3 = WithDrawBLL.QueryList(3,p => p.UserId == user.UserId && p.IsFinish && p.AmountFinish == 0);
+
+            var data = new List<Model.WithDrawModel>();
+            data.AddRange(data1);
+            data.AddRange(data2);
+            data.AddRange(data3);
+            
+            return ApiResult.RData(data);
+        }
+        
         public IActionResult Register([FromForm] string account, [FromForm] string password, [FromForm] string qq,
             [FromForm] string email, [FromForm] string telphone)
         {
@@ -1393,7 +1476,7 @@ namespace TinyStore.Site.Controllers
                 BankType = (EBankType) bankType,
                 CreateDate = DateTime.Now,
                 FinishDate = DateTime.Now,
-                Income = 0,
+                AmountFinish = 0,
                 IsFinish = false,
                 Memo = string.Empty,
                 UserId = user.UserId,

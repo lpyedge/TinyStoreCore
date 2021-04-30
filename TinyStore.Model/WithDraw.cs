@@ -62,12 +62,12 @@ namespace TinyStore.Model
         public string TranId { get; set; }
         
         /// <summary>
-        /// 到账金额
+        /// 处理/到账金额
         /// </summary>
-        public double Income { get; set; }
+        public double AmountFinish { get; set; }
         
         /// <summary>
-        /// 已处理
+        /// 已结束
         /// </summary>
         [SqlSugar.SugarColumn(IndexGroupNameList = new []{"IsFinish"})]
         public bool IsFinish { get; set; }
@@ -75,6 +75,7 @@ namespace TinyStore.Model
         /// <summary>
         /// 结束日期
         /// </summary>
-        public DateTime FinishDate { get; set; }
+        [SqlSugar.SugarColumn(IsNullable = true)]
+        public DateTime? FinishDate { get; set; }
     }
 }

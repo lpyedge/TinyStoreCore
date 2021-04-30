@@ -430,7 +430,7 @@ namespace TinyStore.Site.Controllers.Api
                 return ApiResult.RCode("商户余额不足以提现");
             if (Income > withdraw.Amount)
                 return ApiResult.RCode("到账金额不能大于申请金额");
-            withdraw.Income = Income;
+            withdraw.AmountFinish = Income;
             withdraw.FinishDate = DateTime.Now;
             withdraw.TranId = TranId;
             withdraw.Memo = Memo;

@@ -62,7 +62,8 @@
                UserApi("UserExtendSave",this.userExtend)
                .then((response)=> {
                    if (response.data.code === 1){
-                       Store.UserExtend(response.data.data);                       
+                       Store.UserExtend(response.data.data);
+                       this.userExtend = Store.UserExtend();
                        Notify.Info('保存成功');
                    }
                    else{

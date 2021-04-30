@@ -72,7 +72,7 @@
 </q-page>
 
 <q-dialog v-model="paymentDialog">
-    <q-card class="q-pb-md" style="max-width: 500px; width: 500px;">
+    <q-card style="max-width: 500px; width: 500px;">
         <q-card-section class="row items-center q-pb-none">
             <div class="text-h6">收款方式</div>
             <q-space></q-space>
@@ -109,9 +109,9 @@
                      v-model.trim="paymentCurrent.memo">
             </q-input>
         </q-card-section>
-        <q-card-section>
-            <q-btn class="float-left" color="negative" icon="delete_forever" label="移除" @@click="paymentDialogRemove" v-if="paymentIndex >= 0"></q-btn>
-            <q-btn class="float-right" color="warning" icon="edit" :label="paymentIndex >= 0 ? '修改' : '新增'" @@click="paymentDialogEdit"></q-btn>
+        <q-card-section class="row justify-between">
+            <q-btn color="negative" icon="delete_forever" label="移除" @@click="paymentDialogRemove" v-if="paymentIndex >= 0"></q-btn>
+            <q-btn color="warning" icon="edit" :label="paymentIndex >= 0 ? '修改' : '新增'" @@click="paymentDialogEdit"></q-btn>
         </q-card-section>
     </q-card>
 </q-dialog>
