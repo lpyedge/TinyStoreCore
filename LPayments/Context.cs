@@ -29,7 +29,7 @@ namespace LPayments
             PayList = new HashSet<IPayChannel>();
             foreach (var item in extAssembly.GetTypes().Where(p=>p.IsClass && p.IsPublic ))
             {
-                if (item.Type2PlatformAttribute() != null && item.Type2ChannelAttribute() != null)
+                if (item.Type2ChannelAttribute() != null)
                 {
                     PayList.Add(Utils.Core.CreateInstance(item));
                 }
@@ -38,21 +38,20 @@ namespace LPayments
 
         public static PayChannelAttribute Type2ChannelAttribute(this Type p_Type)
         {
-            var cas = p_Type.GetCustomAttributes(typeof(PayChannelAttribute), false) as PayChannelAttribute[];
+            var cas = Type2Attribute<PayChannelAttribute>(p_Type) as PayChannelAttribute[];
             return cas?.Length == 1 ? cas[0] : null;
         }
-
-        public static PayPlatformAttribute Type2PlatformAttribute(this Type p_Type)
+        
+        public static IEnumerable<T> Type2Attribute<T>(this Type p_Type) where T : Attribute
         {
-            var cas = p_Type.GetCustomAttributes(typeof(PayPlatformAttribute), true) as PayPlatformAttribute[];
-            return cas?.Length == 1 ? cas[0] : null;
+            return p_Type.GetCustomAttributes<T>(true);
         }
 
 
-        public static IPayChannel Get(string p_PlatformName, EChannel p_EChannel, EPayType p_EPayType = EPayType.PC,
+        public static IPayChannel Get(EPlatform platform, EChannel p_EChannel, EPayType p_EPayType = EPayType.PC,
             string p_SettingJson = "")
         {
-            var data = PayList.FirstOrDefault(p => p.PayPlatform.Name == p_PlatformName && p.PayChannnel.eChannel == p_EChannel &&
+            var data = PayList.FirstOrDefault(p => p.Platform == platform && p.PayChannnel.eChannel == p_EChannel &&
                                                  p.PayChannnel.ePayType == p_EPayType);
             if (data != null)
             {

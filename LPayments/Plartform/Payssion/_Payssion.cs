@@ -6,7 +6,7 @@ using LPayments.Utils;
 
 namespace LPayments.Plartform.Payssion
 {
-    [PayPlatform("Payssion","",SiteUrl = "https://payssion.com")]
+   
     public abstract class _Payssion : IPayChannel
     {
         public const string ApiKey = "ApiKey";
@@ -14,6 +14,7 @@ namespace LPayments.Plartform.Payssion
 
         public _Payssion():base()
         {
+            Platform = EPlatform.Payssion;
         }
 
         public _Payssion(string p_SettingsJson):this()

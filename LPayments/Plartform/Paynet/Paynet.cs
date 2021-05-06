@@ -5,7 +5,7 @@ using System.Web;
 
 namespace LPayments.Plartform.Paynet
 {
-    [PayPlatformAttribute("Paynet", "法国支付平台", SiteUrl = "https://www.payment.net")]
+    
     [PayChannel(EChannel.CreditCard)]
     public class Paynet : IPayChannel, IPay
     {
@@ -14,6 +14,7 @@ namespace LPayments.Plartform.Paynet
 
         public Paynet() : base()
         {
+            Platform = EPlatform.Paynet;
         }
 
         public Paynet(string p_SettingsJson) : this()

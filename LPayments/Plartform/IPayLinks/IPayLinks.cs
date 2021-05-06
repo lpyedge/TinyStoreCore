@@ -7,8 +7,6 @@ using LPayments.Utils;
 
 namespace LPayments.Plartform.IPayLinks
 {
-    //启赟
-    [PayPlatform("IPayLinks", "", SiteUrl = "https://www.ipaylinks.com")]
     [PayChannel(EChannel.CreditCard)]
     public class IPayLinks : IPayChannel, IPay
     {
@@ -18,6 +16,7 @@ namespace LPayments.Plartform.IPayLinks
 
         public IPayLinks() : base()
         {
+            Platform = EPlatform.IPayLinks;
         }
 
         public IPayLinks(string p_SettingsJson) : this()

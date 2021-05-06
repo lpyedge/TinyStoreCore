@@ -7,8 +7,7 @@ using LPayments.Utils;
 
 namespace LPayments.Plartform.GPayTr
 {
-    [PayPlatformAttribute("GPayTr", "土耳其信用卡收款", SiteUrl = "https://gpay.com.tr/")]
-    [PayChannel(EChannel.GPayTr)]
+    [PayChannel(EChannel.CreditCard)]
     public class GPayTr : IPayChannel, IPay
     {
         public const string Username = "Username"; //demohesap
@@ -170,6 +169,7 @@ namespace LPayments.Plartform.GPayTr
 
         public GPayTr() : base()
         {
+            Platform = EPlatform.GPayTr;
         }
 
         public GPayTr(string p_SettingsJson) : this()

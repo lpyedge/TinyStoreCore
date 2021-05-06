@@ -26,7 +26,6 @@ namespace LPayments.Plartform.OrangeBank
     //签名结果
     //3e1051ed49081cf0c883e5311462e3d4
 
-    [PayPlatformAttribute("橙e付", "平安银行旗下支付平台", SiteUrl = "http://www.orangebank.com.cn")]
     public abstract class _OrangeBank : IPayChannel, IPay
     {
         public const string MerchantId = "MerchantId";
@@ -38,6 +37,7 @@ namespace LPayments.Plartform.OrangeBank
 
         protected _OrangeBank() : base()
         {
+            Platform = EPlatform.OrangeBank;
         }
 
         protected _OrangeBank(string p_SettingsJson) : this()

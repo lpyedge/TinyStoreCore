@@ -43,7 +43,7 @@ namespace LPayments.Plartform.UnionPay
     //APP交易请求地址
     //https://gateway.95516.com/gateway/api/appTransReq.do
 
-    [PayPlatformAttribute("UnionPay", "银联钱包", SiteUrl = "https://www.unionpay.com")]
+    
     [PayChannel(EChannel.ChinaBanks)]
     public class UnionPay : IPayChannel, IPay
     {
@@ -60,6 +60,7 @@ namespace LPayments.Plartform.UnionPay
 
         public UnionPay() : base()
         {
+            Platform = EPlatform.UnionPay;
         }
 
         public UnionPay(string p_SettingsJson) : this()

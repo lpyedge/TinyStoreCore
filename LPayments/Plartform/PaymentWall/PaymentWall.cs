@@ -7,7 +7,7 @@ using System.Web;
 
 namespace LPayments.Plartform.PaymentWall
 {
-    [PayPlatformAttribute("支付强", "Paymentwall一站式支付平台", SiteUrl = "https://www.paymentwall.com/")]
+    
     [PayChannel(EChannel.PaymentWall)]
     public class PaymentWall : IPayChannel, IPay
     {

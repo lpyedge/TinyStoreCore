@@ -1,6 +1,6 @@
-﻿namespace LPayments.Plartform.Weixin
+﻿namespace LPayments.Plartform.WeChat
 {
-    [PayChannel(EChannel.Wechat, ePayType = EPayType.Other)]
+    [PayChannel(EChannel.WeChat, ePayType = EPayType.Other)]
     public class Pay_MP : _PayBase
     {
         public Pay_MP() : base()

@@ -8,7 +8,7 @@ using System.Web;
 
 namespace LPayments.Plartform.Xfers
 {
-    [PayPlatformAttribute("Xfers", "新加坡支付平台", SiteUrl = "https://www.xfers.com")]
+    
     [PayChannel(EChannel.Xfers)]
     public class Xfers : IPayChannel, IPay
     {
@@ -17,6 +17,7 @@ namespace LPayments.Plartform.Xfers
 
         public Xfers() : base()
         {
+            Platform = EPlatform.Xfers;
         }
 
         public Xfers(string p_SettingsJson) : this()

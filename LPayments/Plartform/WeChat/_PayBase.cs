@@ -13,13 +13,12 @@ using System.Web;
 using System.Xml;
 using LPayments.Utils;
 
-namespace LPayments.Plartform.Weixin
+namespace LPayments.Plartform.WeChat
 {
     //https://pay.weixin.qq.com/wiki/doc/api/index.html
     //https://pay.weixin.qq.com/wiki/doc/api/H5.php?chapter=15_4
 
-    [PayPlatformAttribute("微信支付", "", SiteUrl = "https://pay.weixin.qq.com")]
-    public abstract class _PayBase : _Weixin
+    public abstract class _PayBase : _WeChat
     {
         protected string m_tradetype = "";
 

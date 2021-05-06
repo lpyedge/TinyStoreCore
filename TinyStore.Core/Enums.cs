@@ -33,12 +33,21 @@ namespace TinyStore
     {
         支付宝 = 1,
         微信 = 2,
+        银联 = 3,
+        
+        其它 = 9,
 
+        [BankMark(Global.AlipaySchema.EBankMark.ICBC)]
         工商银行 = 11,
+        [BankMark(Global.AlipaySchema.EBankMark.ABC)]
         农业银行 = 12,
+        [BankMark(Global.AlipaySchema.EBankMark.CCB)]
         建设银行 = 13,
+        [BankMark(Global.AlipaySchema.EBankMark.BOC)]
         中国银行 = 14,
+        [BankMark(Global.AlipaySchema.EBankMark.BCM)]
         交通银行 = 15,
+        [BankMark(Global.AlipaySchema.EBankMark.PSBC)]
         邮储银行 = 16,
 
         // 招商银行 = 51,
@@ -97,10 +106,14 @@ namespace TinyStore
     
     public enum EPaymentType : int
     {
-        [PaymentAttribute(0.006, "支付宝H5","手机端调用")] AliPayWap = 1,
-        [PaymentAttribute(0.006, "微信H5","手机端调用")] WeChatH5 = 2,
-        [PaymentAttribute(0.006, "支付宝扫码","电脑端调用")] AliPayQR = 3,
-        [PaymentAttribute(0.006, "微信扫码","电脑端调用")] WeChatQR = 4,
+        [PaymentAttribute(0.006, "支付宝H5","手机端调用")] 
+        AliPayWap = 1,
+        [PaymentAttribute(0.006, "微信H5","手机端调用")] 
+        WeChatH5 = 2,
+        [PaymentAttribute(0.006, "支付宝扫码","电脑端调用")] 
+        AliPayQR = 3,
+        [PaymentAttribute(0.006, "微信扫码","电脑端调用")] 
+        WeChatQR = 4,
     }
     
     // 分割线

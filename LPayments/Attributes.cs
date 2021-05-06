@@ -6,10 +6,10 @@ namespace LPayments
     /// <summary>
     /// 支付平台
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-    public class PayPlatformAttribute : Attribute
+    [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = true)]
+    public class PlatformAttribute : Attribute
     {
-        public PayPlatformAttribute(string p_name, string p_memo = "")
+        public PlatformAttribute(string p_name, string p_memo = "")
         {
             Name = p_name;
             Memo = p_memo;

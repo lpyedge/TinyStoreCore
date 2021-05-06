@@ -7,7 +7,7 @@ using LPayments.Utils;
 
 namespace LPayments.Plartform.G2APay
 {
-    [PayPlatformAttribute("全球数码", "G2A.COM", SiteUrl = "https://pay.g2a.com")]
+    
     [PayChannel(EChannel.G2APay)]
     public class G2APay : IPayChannel, IPay
     {
@@ -16,6 +16,7 @@ namespace LPayments.Plartform.G2APay
 
         public G2APay() : base()
         {
+            Platform = EPlatform.G2A;
         }
 
         public G2APay(string p_SettingsJson) : this()

@@ -10,7 +10,6 @@ using LPayments.Utils;
 
 namespace LPayments.Plartform.PaypalExpress
 {
-    [PayPlatformAttribute("Paypal", "贝宝", SiteUrl = "https://www.paypal.com", NotifyProxy = true)]
     public abstract class _PaypalExpress : IPayChannel
     {
         public readonly string Account = "Account";
@@ -20,6 +19,7 @@ namespace LPayments.Plartform.PaypalExpress
 
         public _PaypalExpress() : base()
         {
+            Platform = EPlatform.Paypal;
         }
 
         public _PaypalExpress(string p_SettingsJson) : this()

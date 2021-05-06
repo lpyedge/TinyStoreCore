@@ -11,7 +11,7 @@ namespace LPayments.Plartform.iJuHePay
     //安全码(密钥):1772   测试密钥:n0Ca6f0kgYjzrtwjk2jYDBzba2dlqvnV
 
     
-    [PayPlatformAttribute("聚合支付", "", SiteUrl = "http://www.ijuhepay.com")]
+    
     public abstract class _iJuHePay : IPayChannel
     {
         public const string MerchantId = "MerchantId";
@@ -20,6 +20,7 @@ namespace LPayments.Plartform.iJuHePay
 
         public _iJuHePay():base()
         {
+            Platform = EPlatform.iJuHePay;
         }
 
         public _iJuHePay(string p_SettingsJson):this()

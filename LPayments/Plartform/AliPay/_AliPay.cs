@@ -10,8 +10,6 @@ using LPayments.Utils;
 
 namespace LPayments.Plartform.AliPay
 {
-    [PayPlatformAttribute("蚂蚁金服", "支付宝开放平台", SiteUrl = "https://openhome.alipay.com/docCenter/docCenter.htm",
-        NotifyProxy = true)]
     public abstract class _AliPay : IPayChannel
     {
         protected const string GateWay = "https://openapi.alipay.com/gateway.do";
@@ -33,6 +31,7 @@ namespace LPayments.Plartform.AliPay
 
         public _AliPay() : base()
         {
+            Platform = EPlatform.Alipay;
         }
 
         public _AliPay(string p_SettingsJson) : this()

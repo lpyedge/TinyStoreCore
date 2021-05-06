@@ -8,7 +8,6 @@ using System.Web;
 
 namespace LPayments.Plartform.AliPayO
 {
-    [PayPlatformAttribute("支付宝旧版", "", SiteUrl = "https://www.alipay.com",NotifyProxy = true)]
     [PayChannel(EChannel.AliPay)]
     public class PayBase : IPayChannel,IPay
     {
@@ -17,6 +16,7 @@ namespace LPayments.Plartform.AliPayO
 
         public PayBase() : base()
         {
+            Platform = EPlatform.AlipayO;
         }
 
         public PayBase(string p_SettingsJson) : this()

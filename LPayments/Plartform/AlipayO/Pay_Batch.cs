@@ -7,7 +7,6 @@ using System.Web;
 
 namespace LPayments.Plartform.AliPayO
 {
-    [PayPlatformAttribute("支付宝旧版", "", SiteUrl = "https://www.alipay.com")]
     [PayChannel(EChannel.AliPayBatch)]
     public class Pay_Batch : IPayChannel, IPay
     {
@@ -16,6 +15,7 @@ namespace LPayments.Plartform.AliPayO
 
         public Pay_Batch() : base()
         {
+            Platform = EPlatform.AlipayO;
         }
 
         public Pay_Batch(string p_SettingsJson) : this()

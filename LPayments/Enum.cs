@@ -2,21 +2,136 @@ using System.ComponentModel;
 
 namespace LPayments
 {
+    public enum EPlatform:int
+    {
+        /// <summary>
+        /// Paypal
+        /// </summary>
+        [Platform("Paypal", "贝宝", SiteUrl = "https://www.paypal.com", NotifyProxy = true)]
+        Paypal=1,
+        /// <summary>
+        /// Skrill
+        /// </summary>
+        [Platform("Skrill", "原moneybooks支付", SiteUrl = "https://www.skrill.com")]
+        Skrill=2,
+        /// <summary>
+        /// 蚂蚁金服
+        /// </summary>
+        [PlatformAttribute("蚂蚁金服", "支付宝开放平台", SiteUrl = "https://openhome.alipay.com/docCenter/docCenter.htm", NotifyProxy = true)]
+        Alipay=5,
+        /// <summary>
+        /// 支付宝旧版
+        /// </summary>
+        [PlatformAttribute("支付宝旧版", "", SiteUrl = "https://www.alipay.com",NotifyProxy = true)]
+        AlipayO =6,
+        /// <summary>
+        /// 微信支付
+        /// </summary>
+        [Platform("微信支付", "", SiteUrl = "https://pay.weixin.qq.com")]
+        WeChat =7,
+        /// <summary>
+        /// UnionPay
+        /// </summary>
+        [Platform("UnionPay", "银联钱包", SiteUrl = "https://www.unionpay.com")]
+        UnionPay=8,
+        
+        
+        /// <summary>
+        /// 铠世宝
+        /// </summary>
+        [Platform("铠世宝", "CashRun瑞士支付平台", SiteUrl = "http://www.cashrun.com")]
+        CashRun =20,
+        /// <summary>
+        /// 全球数码
+        /// </summary>
+        [Platform("全球数码", "G2A.COM", SiteUrl = "https://pay.g2a.com")]
+        G2A =21,
+        /// <summary>
+        /// 支付墙
+        /// </summary>
+        [Platform("支付墙(强)", "Paymentwall一站式支付平台", SiteUrl = "https://www.paymentwall.com/")]
+        PaymentWall = 22,
+        /// <summary>
+        /// 快钱99Bill
+        /// </summary>
+        [Platform("快钱99Bill", "贝宝", SiteUrl = "https://www.99bill.com")]
+        KuaiQian=23,
+        /// <summary>
+        /// Xfers
+        /// </summary>
+        [Platform("Xfers", "新加坡支付平台", SiteUrl = "https://www.xfers.com")]
+        Xfers=24,
+        /// <summary>
+        /// WebMoney
+        /// </summary>
+        [Platform("WebMoney", "", SiteUrl = "https://www.wmtransfer.com")]
+        WebMoney=25,
+        
+        /// <summary>
+        /// SofortBank
+        /// </summary>
+        [Platform("SofortBank", "德国银行支付平台", SiteUrl = "http://www.sofortbank.be")]
+        SofortBank=26,
+        
+        /// <summary>
+        /// Smart2Pay
+        /// </summary>
+        [Platform("Smart2Pay", "", SiteUrl = "https://smart2pay.com")]
+        Smart2Pay=27,
+        
+        /// <summary>
+        /// Paynet
+        /// </summary>
+        [Platform("Paynet", "法国支付平台", SiteUrl = "https://www.payment.net")]
+        Paynet=28,
+        
+        /// <summary>
+        /// Payssion
+        /// </summary>
+        [Platform("Payssion","",SiteUrl = "https://payssion.com")]
+        Payssion=29,
+        
+        /// <summary>
+        /// GPayTr
+        /// </summary>
+        [Platform("GPayTr", "土耳其信用卡收款", SiteUrl = "https://gpay.com.tr/")]
+        GPayTr=50,
+        /// <summary>
+        /// 聚合支付
+        /// </summary>
+        [Platform("聚合支付", "", SiteUrl = "http://www.ijuhepay.com")]
+        iJuHePay=51,
+        /// <summary>
+        /// 启赟
+        /// </summary>
+        [Platform("IPayLinks", "", SiteUrl = "https://www.ipaylinks.com")]
+        IPayLinks=52,
+        /// <summary>
+        /// 橙e付
+        /// </summary>
+        [Platform("橙e付", "平安银行旗下支付平台", SiteUrl = "http://www.orangebank.com.cn")]
+        OrangeBank=53,
+        
+        /// <summary>
+        /// 盛付通
+        /// </summary>
+        [Platform("盛付通", "", SiteUrl = "https://www.shengpay.com")]
+        ShengPay=54,
+    }
+
     /// <summary>
     /// 支付通道
     /// </summary>
     public enum EChannel
     {
-        //[Description("汇款")] RemitMoney,
         [Description("支付宝")] AliPay,
 
         [Description("百度钱包")] BaiduPay,
         [Description("京东支付")] JdPay,
 
-        //[Description("快钱")] KQ99Bill,
         [Description("支付宝批量付款")] AliPayBatch,
 
-        [Description("微信")] Wechat,
+        [Description("微信")] WeChat,
         [Description("信用卡")] CreditCard,
         [Description("借记卡")] DebitCard,
         [Description("Palpal贝宝")] Paypal,
@@ -35,7 +150,6 @@ namespace LPayments
         [Description("Xfers新加坡")] Xfers,
         [Description("XfersExpress新加坡")] XfersExpress,
         [Description("G2APay全球数码聚合支付")] G2APay,
-        [Description("GPay.Com.Tr土耳其信用卡网关")] GPayTr,
         [Description("MINTprepaid现金预付费卡")] MINT,
         [Description("Bancodobrasil巴西")] Bancodobrasil,
         [Description("Boleto巴西")] Boleto,

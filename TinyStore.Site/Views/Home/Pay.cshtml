@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+    <partial name="Widgets/_Header" />
+</head>
+
+<body>
+    <!--主框架-->
+    <div id="page">
+        <div class="home-header flex flex-center items-center txt-white font-family-T">热门推荐</div>
+        <div class="home-box column">
+            <div class="stores-hot col-auto" id="storehot">
+            </div>
+            <div class="company col flex items-center">
+                <div class="row items-center">
+                    <div class="col">
+                        <div class="titile-EN">COMPANY</div>
+                        <div class="titile-CN">关于我们</div>
+                    </div>
+                    <div class="col-auto"><span class="more dialog-open">详情</span></div>
+                </div>
+                <div class="content">
+                    支持各种虚拟道具买卖，方便，安全快捷，买家无需注册，商家只需注册店铺，添加商品即可实现在线销售，可实时了解营收情况。
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var store =  @Json.Serialize(ViewBag.Store);
+        var order =  @Json.Serialize(ViewBag.Order);
+
+    </script>
+</body>
+</html>

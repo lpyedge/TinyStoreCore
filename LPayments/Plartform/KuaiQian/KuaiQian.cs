@@ -7,7 +7,6 @@ using System.Web;
 
 namespace LPayments.Plartform.KuaiQian
 {
-    [PayPlatformAttribute("快钱99Bill", "贝宝", SiteUrl = "https://www.99bill.com")]
     [PayChannel(EChannel.ChinaBanks)]
     public class KuaiQian : IPayChannel, IPay
     {
@@ -27,6 +26,7 @@ namespace LPayments.Plartform.KuaiQian
 
         public KuaiQian() : base()
         {
+            Platform = EPlatform.KuaiQian;
         }
 
         public KuaiQian(string p_SettingsJson) : this()

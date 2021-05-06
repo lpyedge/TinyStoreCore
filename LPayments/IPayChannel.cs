@@ -14,14 +14,13 @@ namespace LPayments
         protected IPayChannel()
         {
             PayChannnel = GetType().Type2ChannelAttribute();
-            PayPlatform = GetType().Type2PlatformAttribute();
 
             Name = "";
 
             Init();
         }
 
-        public PayPlatformAttribute PayPlatform { get; protected set; }
+        public EPlatform Platform { get; protected set; }
 
         public PayChannelAttribute PayChannnel { get; protected set; }
 

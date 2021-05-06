@@ -5,7 +5,7 @@ using System.Text;
 
 namespace LPayments.Plartform.SofortBank
 {
-    [PayPlatformAttribute("SofortBank", "德国银行支付平台", SiteUrl = "http://www.sofortbank.be")]
+    
     [PayChannel(EChannel.SofortBank)]
     public class SofortBank : IPayChannel, IPay
     {
@@ -20,6 +20,7 @@ namespace LPayments.Plartform.SofortBank
 
         public SofortBank() : base()
         {
+            Platform = EPlatform.SofortBank;
         }
 
         public SofortBank(string p_SettingsJson) : this()

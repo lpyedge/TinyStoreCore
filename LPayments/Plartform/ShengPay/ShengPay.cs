@@ -8,7 +8,7 @@ using System.Web;
 
 namespace LPayments.Plartform.ShengPay
 {
-    [PayPlatform("盛付通", "", SiteUrl = "https://www.shengpay.com")]
+   
     [PayChannel(EChannel.ChinaBanks)]
     public class ShengPay : IPayChannel, IPay
     {
@@ -22,6 +22,7 @@ namespace LPayments.Plartform.ShengPay
 
         public ShengPay() : base()
         {
+            Platform = EPlatform.ShengPay;
         }
 
         public ShengPay(string p_SettingsJson) : this()

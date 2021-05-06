@@ -6,7 +6,7 @@ using System.Web;
 
 namespace LPayments.Plartform.Smart2Pay
 {
-    [PayPlatformAttribute("Smart2Pay", "", SiteUrl = "https://smart2pay.com")]
+    
     [PayChannel(EChannel.CreditCard)]
     public class Smart2Pay : IPayChannel, IPay
     {
@@ -15,6 +15,7 @@ namespace LPayments.Plartform.Smart2Pay
 
         public Smart2Pay() : base()
         {
+            Platform = EPlatform.Smart2Pay;
         }
 
         public Smart2Pay(string p_SettingsJson) : this()

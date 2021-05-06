@@ -1,6 +1,6 @@
 ﻿namespace LPayments.Plartform.iJuHePay
 {
-    [PayChannel(EChannel.Wechat, ePayType = EPayType.QRcode)]
+    [PayChannel(EChannel.WeChat, ePayType = EPayType.QRcode)]
     public class WeixinQR : _PayBase
     {
         public WeixinQR() : base()

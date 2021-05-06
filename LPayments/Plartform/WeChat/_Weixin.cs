@@ -13,13 +13,12 @@ using System.Web;
 using System.Xml;
 using LPayments.Utils;
 
-namespace LPayments.Plartform.Weixin
+namespace LPayments.Plartform.WeChat
 {
     //https://pay.weixin.qq.com/wiki/doc/api/index.html
     //https://pay.weixin.qq.com/wiki/doc/api/H5.php?chapter=15_4
 
-    [PayPlatformAttribute("微信支付", "", SiteUrl = "https://pay.weixin.qq.com")]
-    public abstract class _Weixin : IPayChannel
+    public abstract class _WeChat : IPayChannel
     {
         //wxa173f208a85f859b
         //5627da0ed6d72e23f0bae320a3827e69
@@ -31,11 +30,12 @@ namespace LPayments.Plartform.Weixin
 
         public const string Domain = "Domain";
 
-        public _Weixin() : base()
+        public _WeChat() : base()
         {
+            Platform = EPlatform.WeChat;
         }
 
-        public _Weixin(string p_SettingsJson) : this()
+        public _WeChat(string p_SettingsJson) : this()
         {
             if (!string.IsNullOrWhiteSpace(p_SettingsJson)) SettingsJson = p_SettingsJson;
         }

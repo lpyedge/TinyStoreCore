@@ -8,7 +8,7 @@ using System.Web;
 
 namespace LPayments.Plartform.Paypal
 {
-    [PayPlatformAttribute("Paypal", "贝宝", SiteUrl = "https://www.paypal.com", NotifyProxy = true)]
+  
     public abstract class _Paypal : IPayChannel
     {
         public const string Account = "Account";

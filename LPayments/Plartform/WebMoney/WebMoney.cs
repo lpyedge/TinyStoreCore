@@ -6,7 +6,7 @@ using System.Web;
 
 namespace LPayments.Plartform.WebMoney
 {
-    [PayPlatformAttribute("WebMoney", "", SiteUrl = "https://www.wmtransfer.com")]
+    
     [PayChannel(EChannel.WebMoney)]
     public class WebMoney : IPayChannel, IPay
     {
@@ -15,6 +15,7 @@ namespace LPayments.Plartform.WebMoney
 
         public WebMoney() : base()
         {
+            Platform = EPlatform.WebMoney;
         }
 
         public WebMoney(string p_SettingsJson) : this()

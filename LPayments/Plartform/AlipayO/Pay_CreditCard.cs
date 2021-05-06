@@ -7,7 +7,6 @@ using LPayments.Utils;
 
 namespace LPayments.Plartform.AliPayO
 {
-    [PayPlatformAttribute("支付宝旧版", "", SiteUrl = "https://www.alipay.com")]
     [PayChannel(EChannel.CreditCard)]
     public class AliPayO_CreditCard : IPayChannel, IPay
     {
@@ -18,6 +17,7 @@ namespace LPayments.Plartform.AliPayO
 
         public AliPayO_CreditCard() : base()
         {
+            Platform = EPlatform.AlipayO;
         }
 
         public AliPayO_CreditCard(string p_SettingsJson) : this()

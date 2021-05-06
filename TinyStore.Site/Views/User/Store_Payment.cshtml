@@ -150,7 +150,7 @@
                 paymentIndex: -2,//默认 -2 新增 -1 其他 索引值
                 paymentDialog: false,
                 btnSaveLoading: false,
-                systemPaymentData:@Json.Serialize(SiteContext.SystemPaymentList())
+                systemPaymentData:@Json.Serialize(SiteContext.Payment.SystemPaymentList())
             },
             beforeMount() {
                 

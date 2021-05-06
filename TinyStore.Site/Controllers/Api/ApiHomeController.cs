@@ -20,10 +20,9 @@ namespace TinyStore.Site.Controllers.Api
     public class ApiHomeController : ControllerBase
     {
         public IActionResult OrderInsert([FromForm] string productid, [FromForm] int quantity,
-            [FromForm] string contact, [FromForm] string message, [FromForm] string paymentType)
+            [FromForm] string contact, [FromForm] string message)
         {
-            if (string.IsNullOrWhiteSpace(productid) || string.IsNullOrWhiteSpace(contact) ||
-                string.IsNullOrWhiteSpace(paymentType) || quantity <= 0)
+            if (string.IsNullOrWhiteSpace(productid) || string.IsNullOrWhiteSpace(contact) || quantity <= 0)
                 return ApiResult.RCode(ApiResult.ECode.AuthorizationFailed);
             try
             {
@@ -52,8 +51,6 @@ namespace TinyStore.Site.Controllers.Api
                         return ApiResult.RCode(ApiResult.ECode.Fail);
                 }
 
-                var price = product.Amount;
-
                 var order = new OrderModel
                 {
                     OrderId = Global.Generator.DateId(1),
@@ -63,7 +60,7 @@ namespace TinyStore.Site.Controllers.Api
                     SupplyId = product.SupplyId,
                     ProductId = product.ProductId,
                     Name = product.Name,
-                    Amount = price,
+                    Amount = product.Amount,
                     Contact = contact,
                     Cost = product.Cost,
                     Quantity = quantity,
@@ -80,33 +77,6 @@ namespace TinyStore.Site.Controllers.Api
                 };
 
                 OrderBLL.Insert(order);
-#if DEBUG
-                //order.IsPay = true;
-                //Delivery(order);
-#endif
-                if (!string.IsNullOrWhiteSpace(paymentType))
-                {
-                    // if (order.IsPay)
-                    //     return ApiResult.RCode( "订单不存在或已付款");
-
-                    Payment payment = store.PaymentList.FirstOrDefault(p =>
-                        p.IsEnable && string.Equals(p.Name, paymentType, StringComparison.OrdinalIgnoreCase));
-
-                    if (payment == null)
-                        return ApiResult.RCode(ApiResult.ECode.DataFormatError);
-
-                    if (paymentType != order.PaymentType)
-                    {
-                        order.PaymentFee = order.Amount * payment.Rate;
-                        order.PaymentType = paymentType;
-                        OrderBLL.Update(order);
-                    }
-                    
-                    var clietnIP = Utils.RequestInfo._ClientIP(Request);
-
-                    return ApiResult.RData(
-                        SiteContext.OrderHelper.GetPayTicket(order.PaymentType, order.OrderId, order.Amount,clietnIP));
-                }
 
                 return ApiResult.RData(order);
             }
@@ -117,35 +87,35 @@ namespace TinyStore.Site.Controllers.Api
         }
 
 
-        public IActionResult OrderPay([FromForm] string orderId, [FromForm] string paymentType)
-        {
-            OrderModel order = OrderBLL.QueryModelByOrderId(orderId);
-
-            if (order == null || order.IsPay)
-                return ApiResult.RCode(ApiResult.ECode.Fail);
-
-            StoreModel store = StoreBLL.QueryModelById(order.StoreId);
-            if (store == null)
-                return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
-
-            Payment payment = store.PaymentList.FirstOrDefault(p =>
-                p.IsEnable && string.Equals(p.Name, paymentType, StringComparison.OrdinalIgnoreCase));
-
-            if (payment == null)
-                return ApiResult.RCode(ApiResult.ECode.DataFormatError);
-
-            if (paymentType != order.PaymentType)
-            {
-                order.PaymentFee = order.Amount * payment.Rate;
-                order.PaymentType = paymentType;
-                OrderBLL.Update(order);
-            }
-
-            var clietnIP = Utils.RequestInfo._ClientIP(Request);
-
-            return ApiResult.RData(
-                SiteContext.OrderHelper.GetPayTicket(order.PaymentType, order.OrderId, order.Amount,clietnIP));
-        }
+        // public IActionResult OrderPay([FromForm] string orderId, [FromForm] string paymentType)
+        // {
+        //     OrderModel order = OrderBLL.QueryModelByOrderId(orderId);
+        //
+        //     if (order == null || order.IsPay)
+        //         return ApiResult.RCode(ApiResult.ECode.Fail);
+        //
+        //     StoreModel store = StoreBLL.QueryModelById(order.StoreId);
+        //     if (store == null)
+        //         return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
+        //
+        //     Payment payment = store.PaymentList.FirstOrDefault(p =>
+        //         p.IsEnable && string.Equals(p.Name, paymentType, StringComparison.OrdinalIgnoreCase));
+        //
+        //     if (payment == null)
+        //         return ApiResult.RCode(ApiResult.ECode.DataFormatError);
+        //
+        //     if (paymentType != order.PaymentType)
+        //     {
+        //         order.PaymentFee = order.Amount * payment.Rate;
+        //         order.PaymentType = paymentType;
+        //         OrderBLL.Update(order);
+        //     }
+        //
+        //     var clietnIP = Utils.RequestInfo._ClientIP(Request);
+        //
+        //     return ApiResult.RData(
+        //         SiteContext.OrderHelper.GetPayTicket(order.PaymentType, order.OrderId, order.Amount,clietnIP));
+        // }
 
         public IActionResult OrderInfo([FromForm] string orderId)
         {
@@ -160,15 +130,25 @@ namespace TinyStore.Site.Controllers.Api
             return ApiResult.RCode("");
         }
 
-        [HttpPost]
-        public async Task<IActionResult> PayNotify()
+        [Route("/paynotify/{payname}")]
+        public async Task<IActionResult> PayNotify(string payname)
         {
             using (Stream stream = Request.Body)
             {
                 var buffer = new byte[Request.ContentLength.Value];
                 await stream.ReadAsync(buffer, 0, buffer.Length);
                 var body = Encoding.UTF8.GetString(buffer);
-                return new JsonResult(SiteContext.OrderHelper.Notify(body));
+                
+                var msg = SiteContext.Payment.Notify(payname,
+                    Request.Form.ToDictionary(p => p.Key
+                        , p => p.Value.ToString()),
+                    Request.Query.ToDictionary(p => p.Key
+                        , p => p.Value.ToString()),
+                    Request.Headers.ToDictionary(p => p.Key
+                        , p => p.Value.ToString()),
+                    body, Utils.RequestInfo._ClientIP(Request).ToString());
+                
+                return Content(msg);
             }
         }
 

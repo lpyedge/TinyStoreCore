@@ -6,7 +6,7 @@ using System.Web;
 
 namespace LPayments.Plartform.CashRun
 {
-    [PayPlatformAttribute("铠世宝", "CashRun瑞士支付平台", SiteUrl = "http://www.cashrun.com")]
+    
     [PayChannel(EChannel.PaySafeCard)]
     public class Pay_PaySafeCard : IPayChannel, IPay
     {
@@ -15,6 +15,7 @@ namespace LPayments.Plartform.CashRun
 
         public Pay_PaySafeCard() : base()
         {
+            Platform = EPlatform.CashRun;
         }
 
         public Pay_PaySafeCard(string p_SettingsJson) : this()

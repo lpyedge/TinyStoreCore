@@ -6,7 +6,7 @@ using System.Web;
 
 namespace LPayments.Plartform.Skrill
 {
-    [PayPlatformAttribute("Skrill", "原moneybooks支付", SiteUrl = "https://www.skrill.com")]
+    
     [PayChannel(EChannel.CreditCard)]
     public class Skrill : IPayChannel, IPay
     {
@@ -15,6 +15,7 @@ namespace LPayments.Plartform.Skrill
 
         public Skrill() : base()
         {
+            Platform = EPlatform.Skrill;
         }
 
         public Skrill(string p_SettingsJson) : this()

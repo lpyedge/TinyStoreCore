@@ -303,7 +303,7 @@ namespace TinyStore.Site.Controllers
             if (storeOrigin == null)
                 return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
 
-            var systemPaymentList = SiteContext.SystemPaymentList();
+            var systemPaymentList = SiteContext.Payment.SystemPaymentList();
             foreach (Payment item in store.PaymentList.Where(p => p.IsSystem))
                 // ReSharper disable once PossibleNullReferenceException
                 systemPaymentList.FirstOrDefault(p => p.Name == item.Name).IsEnable = item.IsEnable;

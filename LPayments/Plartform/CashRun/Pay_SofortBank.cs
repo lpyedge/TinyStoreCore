@@ -6,7 +6,6 @@ using System.Web;
 
 namespace LPayments.Plartform.CashRun
 {
-    [PayPlatformAttribute("铠世宝", "CashRun瑞士支付平台", SiteUrl = "http://www.cashrun.com")]
     [PayChannel(EChannel.SofortBank)]
     public class Pay_SofortBank : IPayChannel, IPay
     {
@@ -17,6 +16,7 @@ namespace LPayments.Plartform.CashRun
 
         public Pay_SofortBank():base()
         {
+            Platform = EPlatform.CashRun;
         }
 
         public Pay_SofortBank(string p_SettingsJson) : this()
