@@ -1,6 +1,5 @@
 ﻿<script>
 var Store = {};
-//密钥
 Store.Token = function (token) {
     if (token) {
         localStorage.setItem("AdminToken", JSON.stringify(token));
@@ -13,14 +12,14 @@ Store.TokenRemove = function () {
     localStorage.removeItem("AdminToken");
 };
 
-Store.Admin = function (admin) {
-    if (admin) {
-        localStorage.setItem("Admin", JSON.stringify(admin));
+//管理员
+Store.Admin = function (user) {
+    if (user) {
+        localStorage.setItem("Admin", JSON.stringify(user));
     } else {
         return JSON.parse(localStorage.getItem("Admin"));
     }
 };
-
 Store.AdminRemove = function () {
     localStorage.removeItem("Admin");
 };

@@ -131,7 +131,7 @@ namespace TinyStore.Site.Controllers
                         ViewBag.Store = store;
                         ViewBag.Order = order;
 
-                        var OrderPayTickets = new List<LPayments.PayTicket>();
+                        var PayTickets = new List<LPayments.PayTicket>();
                         foreach (var payment in store.PaymentList.Where(p=>p.IsEnable))
                         {
                             if (payment.IsSystem)
@@ -144,7 +144,7 @@ namespace TinyStore.Site.Controllers
                                 
                                 payticket.Token = (pay as IPayChannel).Platform.ToString().ToLowerInvariant();
                                     
-                                OrderPayTickets.Add(payticket);
+                                PayTickets.Add(payticket);
                             }
                             else
                             {
@@ -152,7 +152,7 @@ namespace TinyStore.Site.Controllers
                                 {
                                     case EBankType.支付宝:
                                     {
-                                        OrderPayTickets.Add(new LPayments.PayTicket()
+                                        PayTickets.Add(new LPayments.PayTicket()
                                         {
                                             Action = EAction.QrCode,
                                             Uri = payment.QRCode,
@@ -165,7 +165,7 @@ namespace TinyStore.Site.Controllers
                                         break;
                                     case EBankType.微信:
                                     { 
-                                        OrderPayTickets.Add(new LPayments.PayTicket()
+                                        PayTickets.Add(new LPayments.PayTicket()
                                         {
                                             Action = EAction.QrCode,
                                             Uri = payment.QRCode,
@@ -176,50 +176,61 @@ namespace TinyStore.Site.Controllers
                                         });
                                     }
                                         break;
-                                    case EBankType.工商银行:
-                                    case EBankType.农业银行:
-                                    case EBankType.建设银行:
-                                    case EBankType.中国银行:
-                                    case EBankType.交通银行:
-                                    case EBankType.邮储银行:
-                                    default:
+                                    case EBankType.银联:
                                     {
                                         //https://blog.csdn.net/gsls200808/article/details/89490358
                                         
                                         //https://qr.95516.com/00010000/01116734936470044423094034227630
                                         //https://qr.95516.com/00010000/01126270004886947443855476629280
                                         //https://qr.95516.com/00010002/01012166439217005044479417630044
-                                        if (string.IsNullOrWhiteSpace(payment.QRCode) || !payment.QRCode.StartsWith("https://qr.95516.com/",StringComparison.OrdinalIgnoreCase))
+                                        PayTickets.Add(new LPayments.PayTicket()
                                         {
-                                            OrderPayTickets.Add(new LPayments.PayTicket()
-                                            {
-                                                Action = EAction.QrCode,
-                                                Uri = SiteContext.Payment.TransferToBank(payment, order.Amount),
-                                                Datas = new Dictionary<string, string>(),
-                                                Success = true,
-                                                Message = "支付宝扫码转账",
-                                                Token = "alipay"
-                                            });
-                                        }
-                                        else
+                                            Action = EAction.QrCode,
+                                            Uri = payment.QRCode,
+                                            Datas = new Dictionary<string, string>(),
+                                            Success = true,
+                                            Message = "银联扫码转账(云闪付,银行App)",
+                                            Token = "unionpay"
+                                        });
+                                    }
+                                        break;
+                                    case EBankType.工商银行:
+                                    case EBankType.农业银行:
+                                    case EBankType.建设银行:
+                                    case EBankType.中国银行:
+                                    case EBankType.交通银行:
+                                    case EBankType.邮储银行:
+                                    {
+                                        PayTickets.Add(new LPayments.PayTicket()
                                         {
-                                            OrderPayTickets.Add(new LPayments.PayTicket()
-                                            {
-                                                Action = EAction.QrCode,
-                                                Uri = payment.QRCode,
-                                                Datas = new Dictionary<string, string>(),
-                                                Success = true,
-                                                Message = "银联扫码转账(云闪付,银行App)",
-                                                Token = "unionpay"
-                                            });
-                                        }
+                                            Action = EAction.QrCode,
+                                            Uri = SiteContext.Payment.TransferToBank(payment, order.Amount),
+                                            Datas = new Dictionary<string, string>(),
+                                            Success = true,
+                                            Message = "支付宝扫码转账",
+                                            Token = "alipay"
+                                        });
+                                    }
+                                        break;
+                                    default:
+                                    { 
+                                        PayTickets.Add(new LPayments.PayTicket()
+                                        {
+                                            Action = EAction.QrCode,
+                                            Uri = payment.QRCode,
+                                            Datas = new Dictionary<string, string>(),
+                                            Success = true,
+                                            Message = payment.Memo,
+                                            Token = ""
+                                        });
                                     }
                                         break;
                                 }
                                 
                             }
                         }
-                        
+
+                        ViewBag.PayTickets = PayTickets;
                         
                         return View();
                     }

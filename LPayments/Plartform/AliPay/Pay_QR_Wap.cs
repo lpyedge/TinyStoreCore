@@ -123,7 +123,7 @@
 //                    ["url"] = url,
 //                });
 
-//            var json = Utils.Json.Deserialize<dynamic>(res);
+//            var json = Utils.DynamicJson.Parse(res);
 //            var pt = new PayTicket();
 //            if (res.Contains("\"status\":0"))
 //            {

@@ -148,7 +148,7 @@ namespace LPayments.Plartform.ShengPay
             var timestamp = TimeStamp();
             if (!string.IsNullOrWhiteSpace(timestamp) && timestamp.Contains("SUCCESS") &&
                 timestamp.Contains("timestamp"))
-                datas.Add("SendTime", Utils.Json.Deserialize<dynamic>(timestamp).timestamp);
+                datas.Add("SendTime", Utils.DynamicJson.Parse(timestamp).timestamp);
             datas.Add("OrderNo", p_OrderId);
             datas.Add("OrderAmount", p_Amount.ToString("0.##"));
             datas.Add("OrderTime", DateTime.UtcNow.AddHours(8).ToString("yyyyMMddHHmmss"));

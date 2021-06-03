@@ -2,80 +2,76 @@
     <div class="text-h5 text-weight-bold text-grey-8">
         <q-icon :name="storelinks[1].icon" size="md" class="on-left"></q-icon>{{storelinks[1].text}}
     </div>
-    <q-separator class="q-my-sm"></q-separator>
-    <q-list>
-        <q-item-label header class="text-weight-bold text-subtitle1 text-grey-8">
-            系统收款
-        </q-item-label>
-        <div class="row q-gutter-md q-ma-none">
-            <q-card class="col-auto" bordered v-for="(item,i) in paymentListSystem">
-                <q-item>
-                    <q-item-section>
-                        <q-item-label class="text-subtitle1">
-                            {{item.subject}}
-                            <q-badge v-if="item.rate" align="top">
-                                {{item.rate*100}}<q-icon name="fas fa-percent" size="0.6rem" class="q-ml-xs"/>
-                                <q-tooltip>手续费率</q-tooltip>
-                            </q-badge>
-                        </q-item-label>
-                        <q-item-label caption>
-                            {{item.memo}}
-                        </q-item-label>
-                    </q-item-section>
-                    <q-separator vertical class="q-mx-sm"></q-separator>
-                    <q-item-section side>
-                        <q-toggle v-model="item.isEnable" color="green" @@input="storePaymentListAutoSave">启用</q-toggle>
-                    </q-item-section>
-                </q-item>
-            </q-card>
-        </div>
+    <q-separator class="q-my-sm"></q-separator> 
+    <q-item-label header class="text-weight-bold text-subtitle1 text-grey-8">
+        系统收款
+    </q-item-label>
+    <q-list  class="q-gutter-md"  :class="$q.platform.is.desktop?'row':''">
+        <q-card class="col-auto" bordered v-for="(item,i) in paymentListSystem">
+            <q-item>
+                <q-item-section>
+                    <q-item-label class="text-subtitle1">
+                        {{item.subject}}
+                        <q-badge v-if="item.rate" align="top">
+                            {{item.rate*100}}<q-icon name="fas fa-percent" size="0.6rem" class="q-ml-xs"/>
+                            <q-tooltip>手续费率</q-tooltip>
+                        </q-badge>
+                    </q-item-label>
+                    <q-item-label caption>
+                        {{item.memo}}
+                    </q-item-label>
+                </q-item-section>
+                <q-separator vertical class="q-mx-sm"></q-separator>
+                <q-item-section side>
+                    <q-toggle v-model="item.isEnable" color="green" @@input="storePaymentListAutoSave">启用</q-toggle>
+                </q-item-section>
+            </q-item>
+        </q-card>
     </q-list>
-    <q-list>
-        <q-item-label header class="text-weight-bold text-subtitle1 text-grey-8">
-            自定义收款 <q-btn color="secondary" class="on-right" round dense icon="add" @@click="paymentDialogShow(-1)"></q-btn>
-        </q-item-label>
-        <div class="row q-gutter-md q-ma-none">
-            <q-card class="col-auto" bordered v-for="(item,i) in paymentListCustom">
-                <q-item>
-                    <q-item-section>
-                        <q-item-label class="text-subtitle1">
-                            {{item.subject}}
-                        </q-item-label>
-                        <q-item-label caption>
-                            {{item.memo}}
-                        </q-item-label>
-                    </q-item-section>
-                    <q-separator vertical class="q-mx-sm"></q-separator>
-                    <q-item-section side>
-                        <q-toggle v-model="item.isEnable" color="green" @@input="storePaymentListAutoSave">启用</q-toggle>
-                    </q-item-section>
-                </q-item>
-                <q-separator></q-separator>
-                <q-card-section class="row no-padding">
-                    <div class="col-shrink">
-                        <img v-if="item.qrCode" style="width: 5rem;height: 5rem;" :alt="item.qrCode" :src="qrcodeImg(item.qrCode)"/>
-                        <div v-else style="width: 5rem;height: 5rem;" class="relative-position">
-                            <q-icon name="fas fa-qrcode" size="md" class="absolute-center"></q-icon>
-                        </div>
+    <q-item-label header class="text-weight-bold text-subtitle1 text-grey-8">
+        自定义收款 <q-btn color="secondary" class="on-right" round dense icon="add" @@click="paymentDialogShow(-1)"></q-btn>
+    </q-item-label>
+    <q-list class="q-gutter-md" :class="$q.platform.is.desktop?'row':''">
+        <q-card class="col-auto" bordered v-for="(item,i) in paymentListCustom">
+            <q-item>
+                <q-item-section>
+                    <q-item-label class="text-subtitle1">
+                        {{item.subject}}
+                    </q-item-label>
+                    <q-item-label caption>
+                        {{item.memo}}
+                    </q-item-label>
+                </q-item-section>
+                <q-separator vertical class="q-mx-sm"></q-separator>
+                <q-item-section side>
+                    <q-toggle v-model="item.isEnable" color="green" @@input="storePaymentListAutoSave">启用</q-toggle>
+                </q-item-section>
+            </q-item>
+            <q-separator></q-separator>
+            <q-card-section class="row no-padding">
+                <div class="col-shrink">
+                    <img v-if="item.qrCode" style="width: 5rem;height: 5rem;" :alt="item.qrCode" :src="qrcodeImg(item.qrCode)"/>
+                    <div v-else style="width: 5rem;height: 5rem;" class="relative-position">
+                        <q-icon name="fas fa-qrcode" size="md" class="absolute-center"></q-icon>
                     </div>
-                    <div class="col column" style="text-align: center;height:5rem;width: 18rem">
-                        <div class="col text-h6 q-pt-sm">
-                            {{item.name}}
-                            <q-badge class="q-ma-sm" v-if="item.bankType" floating>
-                                {{bankTypeName(item.bankType)}}
-                                <q-tooltip>
-                                    收款方式
-                                </q-tooltip>
-                            </q-badge>
-                        </div>
-                        <div class="col text-subtitle1  q-pb-sm">{{item.account}}</div>
+                </div>
+                <div class="col column" style="text-align: center;height:5rem;width: 18rem">
+                    <div class="col text-h6 q-pt-sm">
+                        {{item.name}}
+                        <q-badge class="q-ma-sm" v-if="item.bankType" floating>
+                            {{bankTypeName(item.bankType)}}
+                            <q-tooltip>
+                                收款方式
+                            </q-tooltip>
+                        </q-badge>
+                    </div>
+                    <div class="col text-subtitle1  q-pb-sm">{{item.account}}</div>
+                    
                         
-                            
-                    </div>
-                    <q-icon class="cursor-pointer absolute-bottom-right q-ma-xs" color="negative" size="1.4rem" name="far fa-edit" @@click="paymentDialogShow(i)"></q-icon>
-                </q-card-section>
-            </q-card>
-        </div>
+                </div>
+                <q-icon class="cursor-pointer absolute-bottom-right q-ma-xs" color="negative" size="1.4rem" name="far fa-edit" @@click="paymentDialogShow(i)"></q-icon>
+            </q-card-section>
+        </q-card>
     </q-list>
 </q-page>
 
@@ -308,9 +304,6 @@
                     }
                 },
                bankTypeName(bankType){
-                    console.log(bankType);
-                    console.log(this.paymentListCustom);
-                    console.log(this.bankTypeOptions);
                    for (i in this.bankTypeOptions) {
                      if (this.bankTypeOptions[i].value === bankType){
                          return this.bankTypeOptions[i].label;

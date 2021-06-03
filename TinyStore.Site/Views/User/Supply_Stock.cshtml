@@ -3,7 +3,7 @@
         <q-icon :name="supplylinks[1].icon" size="md" class="on-left"></q-icon>{{supplylinks[1].text}}
     </div>
     <q-separator class="q-my-sm"></q-separator>
-    <div class="row q-gutter-xs q-mx-none q-my-sm">
+    <div class="row q-gutter-xs q-my-sm">
         <q-select outlined dense options-dense stack-label bg-color="white"
                   style="min-width: 240px"
                   class="col-xs-12 col-md-auto"
@@ -45,7 +45,7 @@
         <q-btn :loading="stockFilter.loading" class="col-shrink" color="primary" icon="search" label="搜索" @@click="loadStockData"></q-btn>
     </div>
 
-    <div class="row q-gutter-xs q-mx-none q-my-sm">
+    <div class="row q-gutter-xs q-my-sm">
         <q-btn class="q-mx-xs" color="primary" @@click="stockImportDialog = true"><q-icon class="on-left" size="xs" name="fas fa-file-import"></q-icon>导入</q-btn>
         <q-btn class="q-mx-xs" color="primary" @@click="stockExport"><q-icon class="on-left" size="xs" name="fas fa-file-export"></q-icon>导出</q-btn>
         <q-space ></q-space>

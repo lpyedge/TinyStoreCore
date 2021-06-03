@@ -129,7 +129,7 @@ namespace LPayments.Plartform.Xfers
             return pt;
         }
 
-        //todo  所有在paycheck里面的对HttpRequest的操作都要避免
+        //所有在paycheck里面的对HttpRequest的操作都要避免
         //private static string ValidateStr(HttpRequest p_Request)
         //{
         //    string validateStr;

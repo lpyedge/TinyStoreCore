@@ -29,14 +29,14 @@
                      clearable
                      class="on-right"
                      label="关键词"
-                     v-model="supplyFilter.keyname">
+                     v-model.trim="supplyFilter.keyname">
                 <template v-slot:prepend>
                     <q-icon name="fas fa-filter" color="primary" size="xs"/>
                 </template>
             </q-input>
         </q-toolbar>
     </div>
-    <q-list animated class="row q-gutter-md q-ma-none">
+    <q-list animated class="q-gutter-md q-mt-none" :class="$q.platform.is.desktop?'row':''">
         <q-card class="col-auto" bordered v-for="(item,i) in supplyListByFilter()">
             <q-item class="q-pa-xs" style="height:3rem;">
                 <q-item-section >
@@ -70,7 +70,7 @@
             </q-card-section>
             <q-icon class="cursor-pointer absolute-bottom-right q-ma-xs" color="primary" size="1.4rem" name="zoom_out_map" @@click="supplyDialogShow(i)"></q-icon>
         </q-card>
-        <q-card class="col-auto" style="width: 18rem;height: 8rem" bordered v-if="supplyType == 'custom'">
+        <q-card class="col-auto" style="min-width: 18rem;height: 8rem" bordered v-if="supplyType == 'custom'">
             <q-icon class="cursor-pointer absolute-center" name="add" size="xl" color="primary" @@click="supplyDialogShow(-1)"></q-icon>
         </q-card>
     </q-list>

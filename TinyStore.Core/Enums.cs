@@ -104,20 +104,7 @@ namespace TinyStore
         交易手续费 = 22,
     }
     
-    public enum EPaymentType : int
-    {
-        [PaymentAttribute(0.006, "支付宝H5","手机端调用")] 
-        AliPayWap = 1,
-        [PaymentAttribute(0.006, "微信H5","手机端调用")] 
-        WeChatH5 = 2,
-        [PaymentAttribute(0.006, "支付宝扫码","电脑端调用")] 
-        AliPayQR = 3,
-        [PaymentAttribute(0.006, "微信扫码","电脑端调用")] 
-        WeChatQR = 4,
-    }
-    
     // 分割线
-    
     
     public enum EState : int
     {
@@ -135,8 +122,6 @@ namespace TinyStore
         交易编号 = 5,
         备注 = 6
     }
-
-
 
     public enum EWithDrawState : int
     {

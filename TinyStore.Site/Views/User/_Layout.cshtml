@@ -1,8 +1,8 @@
 ﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <title>@TinyStore.Site.SiteContext.Config.SiteName</title>
     <partial name="Widgets/_Header"/>
+    <title>@TinyStore.Site.SiteContext.Config.SiteName</title>
 </head>
 <body>
 <div id="q-app">
@@ -171,14 +171,14 @@
            // { icon: 'history', text: '操作日志',url:'@Url.ActionLink("User_Log","User")' }
          ],
        supplylinks: [
-           { icon: 'fas fa-dolly', text: '货源管理',url:'@Url.ActionLink("Supply_List", "User")' },
-           { icon: 'vpn_key', text: '卡密管理',url:'@Url.ActionLink("Supply_Stock", "User")'  },      
+           { icon: 'fas fa-dolly', text: '货源列表',url:'@Url.ActionLink("Supply_List", "User")' },
+           { icon: 'vpn_key', text: '卡密列表',url:'@Url.ActionLink("Supply_Stock", "User")'  },      
          ],
        storelinks: [
            { icon: 'store_mall_directory', text: '店铺资料',url:'@Url.ActionLink("Store_Info","User")'  },
            { icon: 'fas fa-hand-holding-usd', text: '收款设置',url:'@Url.ActionLink("Store_Payment","User")'  },
-           { icon: 'card_travel', text: '商品管理',url:'@Url.ActionLink("Store_Product","User")'  },
-           { icon: 'local_grocery_store', text: '订单管理',url:'@Url.ActionLink("Store_Order","User")'  },
+           { icon: 'card_travel', text: '商品列表',url:'@Url.ActionLink("Store_Product","User")'  },
+           { icon: 'local_grocery_store', text: '订单列表',url:'@Url.ActionLink("Store_Order","User")'  },
            { icon: 'insert_chart', text: '销售统计',url:'@Url.ActionLink("Store_Stat","User")' },
          ],
          deliveryTypeOptions:[
@@ -319,7 +319,7 @@
     function DeepMerge(target, source) {
         function DeepClone(source){
             if (Object.prototype.toString.call(source) === "[object Date]") {
-                return  new Date(source.valueOf());
+                return new Date(source.valueOf());
             } else {
                 return source;
             }
@@ -334,7 +334,19 @@
                     }else{
                         target[name] = DeepClone(source[name]);
                     }
-                }else{
+                }
+                // else if (Object.prototype.toString.call(source[name]) === "[object Function]"){
+                //      if (target[name]){
+                //         var merge = target[name];
+                //         target[name] = (()=>{
+                //             merge.call(this);
+                //             source[name].call(this);
+                //         })();
+                //      }else{
+                //         target[name] = DeepClone(source[name]);
+                //      }
+                //  }
+                else{
                     target[name] = DeepClone(source[name]);
                 }
             }

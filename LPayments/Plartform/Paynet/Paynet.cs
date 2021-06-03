@@ -69,7 +69,7 @@ namespace LPayments.Plartform.Paynet
                 Message = "fail"
             };
 
-            var Notifydata = Utils.Json.Deserialize<dynamic>(body);
+            var Notifydata = Utils.DynamicJson.Parse(body);
             var order = Notifydata.oData.oOrderCreated;
             //if (string.Equals(order.oApplication.sReference.ToString(), this[ClientID], StringComparison.OrdinalIgnoreCase))
             if (string.Equals(order.sOrderExternalReference.ToString(), this[ClientID],
@@ -138,7 +138,7 @@ namespace LPayments.Plartform.Paynet
 
             if (authorizationres.Contains("access_token"))
             {
-                var authorizationJson = Utils.Json.Deserialize<dynamic>(authorizationres);
+                var authorizationJson = Utils.DynamicJson.Parse(authorizationres);
                 var checkoutUri
 #if DEBUG
                     = new Uri("https://sandbox-api.payment.net/v1/order");
@@ -157,7 +157,7 @@ namespace LPayments.Plartform.Paynet
                 var checkoutres = _HWU.Response(checkoutUri, Utils.HttpWebUtility.HttpMethod.Post, dic, head);
                 if (checkoutres.Contains("success"))
                 {
-                    var checkoutJson = Utils.Json.Deserialize<dynamic>(checkoutres);
+                    var checkoutJson = Utils.DynamicJson.Parse(checkoutres);
 
                     var gateurl
 #if DEBUG

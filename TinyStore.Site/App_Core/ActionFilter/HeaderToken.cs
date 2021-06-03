@@ -74,18 +74,6 @@ namespace TinyStore.Site
             }
         }
 
-        // public override void OnActionExecuted(ActionExecutedContext context)
-        // {
-        //     base.OnActionExecuted(context);
-        //     var tokendata = context.HttpContext.Items[ItemKey] as TokenModel;
-        //     if (tokendata != null)
-        //     {
-        //         context.HttpContext.Response.Headers.Add("Access-Control-Allow-Headers", HeaderKey);
-        //         context.HttpContext.Response.Headers.Add("Access-Control-Expose-Headers", HeaderKey);
-        //         context.HttpContext.Response.Headers.Add(HeaderKey, HeaderToken.ToToken(tokendata));
-        //     }
-        // }
-
         public static void SetHeaderToken(HttpContext httpContext, string Id, string Key)
         {
             var tokendata = new TokenModel()

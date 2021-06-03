@@ -264,24 +264,7 @@ namespace LPayments
     {
         bool Refund(string p_OrderId, string p_TxnId);
     }
-
-    // /// <summary>
-    // /// 银行转账 / 代付下发
-    // /// </summary>
-    // public abstract class IBankTransfer
-    // {
-    //     /// <param name="p_OrderId">代付下发订单号</param>
-    //     /// <param name="p_EBank">银行类型</param>
-    //     /// <param name="p_ChannelAccount">渠道帐号</param>
-    //     /// <param name="p_ChannelName">渠道名称</param>
-    //     /// <param name="p_Amount">交易金额</param>
-    //     /// <param name="extend_params">额外参数</param>
-    //     public abstract bool BankTransfer(string p_OrderId, EChinaBank p_EBank, string p_ChannelAccount,
-    //         string p_ChannelName,
-    //         double p_Amount,
-    //         ECurrency p_Currency, dynamic extend_params = null);
-    // }
-
+   
     /// <summary>
     /// 转账
     /// </summary>

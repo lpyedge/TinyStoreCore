@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using TinyStore.Model;
 
 namespace TinyStore.Site.Controllers.Api
@@ -36,24 +37,18 @@ namespace TinyStore.Site.Controllers.Api
             });
         }
 
-        public IActionResult Login([FromForm] string Account, [FromForm] string Password)
+        [HttpPost]
+        public IActionResult Login([FromForm] string account, [FromForm] string password)
         {
-            if (string.IsNullOrWhiteSpace(Account) || string.IsNullOrWhiteSpace(Password))
-                return ApiResult.RCode("传参错误");
+            if (string.IsNullOrWhiteSpace(account) || string.IsNullOrWhiteSpace(password))
+                return ApiResult.RCode(ApiResult.ECode.DataFormatError);
 
-
-            //var s = Global.HashArray("Tiny_12345", "219504");
-            var admin = BLL.AdminBLL.QueryModelByAccount(Account);
-            if (admin != null && string.Equals(admin.Password, Global.Hash(Password, admin.Salt)))
+            var admin = BLL.AdminBLL.QueryModelByAccount(account);
+            if (admin != null && string.Equals(admin.Password, Global.Hash(password, admin.Salt),StringComparison.OrdinalIgnoreCase))
             {
                 admin.ClientKey = Global.Generator.Guid();
                 BLL.AdminBLL.Update(admin);
-                //Response.Headers.Add("Access-Control-Allow-Headers", "Token");
-                //Response.Headers.Add("Access-Control-Expose-Headers", "Token");
-                //Response.Headers.Add("Token", HeaderToken.ToToken(new { AdminId = admin.AdminId, ClientKey = admin.ClientKey }));
-                // HttpContext.Items[AdminHeaderToken.ItemKey] =
-                //     new {AdminId = admin.AdminId, ClientKey = admin.ClientKey};
-                //todo untest
+                
                 HeaderToken.SetHeaderToken(HttpContext, admin.AdminId.ToString(), admin.ClientKey);
                 
                 admin.ClientKey = "";
@@ -66,102 +61,124 @@ namespace TinyStore.Site.Controllers.Api
             }
             else
             {
-                return ApiResult.RCode("账号或密码不正确");
+                return ApiResult.RCode(ApiResult.ECode.AuthorizationFailed);
             }
         }
 
-        public IActionResult AdminLogPageList([FromForm] int PageIndex, [FromForm] int PageSize, [FromForm] int AdminId,
-            [FromForm] int LogType, [FromForm] DateTime Begin, [FromForm] DateTime End)
+        
+        [HttpPost]
+        public IActionResult ConfigLoad()
         {
-            var current = AdminCurrent();
-            Begin = Begin.Date;
-            End = End.Date.AddDays(1).AddSeconds(-1);
-            if (!current.IsRoot)
-                AdminId = current.AdminId;
-            var res = BLL.AdminLogBLL.QueryPageListByAdminIdAndType(AdminId, LogType, Begin, End, PageIndex,
-                PageSize);
-            return ApiResult.RData(new GridData<Model.AdminLogModel>(res.Rows, (int) res.Total));
+            AdminModel admin = AdminCurrent();
+
+            return ApiResult.RData(SiteContext.Config);
+        }
+        [HttpPost]
+        public IActionResult ConfigSave(SiteContext.ConfigModel config)
+        {
+            AdminModel admin = AdminCurrent();
+
+            if (config != null)
+            {
+                SiteContext.Config = config;
+                SiteContext.ConfigSave();
+            }
+
+            return ApiResult.RData(SiteContext.Config);
         }
 
-        public IActionResult AdminSave([FromForm] int AdminId, [FromForm] string Account, [FromForm] string Password,
-            [FromForm] bool IsRoot)
+        [HttpPost]
+        public IActionResult AdminPageList([FromForm] int pageIndex, [FromForm] int pageSize)
         {
-            var current = AdminCurrent();
-            if (string.IsNullOrEmpty(Account))
-                return ApiResult.RCode("账号名称不能为空");
-            if (AdminId == 0)
+            AdminModel admin = AdminCurrent();
+            
+            var res = BLL.AdminBLL.QueryPageList(pageIndex, pageSize);
+            
+            return ApiResult.RData(res);
+        }
+        
+        [HttpPost]
+        public IActionResult AdminSave(AdminModel adminModel)
+        {
+            AdminModel admin = AdminCurrent();
+
+            if (adminModel == null)
+                return ApiResult.RCode(ApiResult.ECode.DataFormatError);
+            
+            if (adminModel.AdminId == 0)
             {
-                if (BLL.AdminBLL.QueryModelByAccount(Account) != null)
-                    return ApiResult.RCode("账号名称重复");
+                if (BLL.AdminBLL.QueryModelByAccount(adminModel.Account) != null)
+                    return ApiResult.RCode(ApiResult.ECode.TargetExist);
                 var salt = Global.Generator.Guid().Substring(0, 6);
-                var admin = new Model.AdminModel
-                {
-                    Account = Account,
-                    ClientKey = string.Empty,
-                    CreateDate = DateTime.Now,
-                    IsRoot = IsRoot,
-                    Password = Global.Hash(Password, salt),
-                    Salt = salt
-                };
-                BLL.AdminBLL.Insert(admin);
-                AdminLog(current.AdminId, EAdminLogType.管理员管理, Request, "管理员添加" + admin.AdminId);
+                adminModel.ClientKey = "";
+                adminModel.Salt = salt;
+                adminModel.Password = Global.Hash(adminModel.Password, salt);
+                BLL.AdminBLL.Insert(adminModel);
+                AdminLog(admin.AdminId, EAdminLogType.管理员管理, Request, "管理员添加" + adminModel.AdminId);
                 return ApiResult.RCode("");
             }
             else
             {
-                var admin = BLL.AdminBLL.QueryModelById(AdminId);
-                if (admin == null)
-                    return ApiResult.RCode("管理员不存在或已被删除");
-                var datacompare = BLL.AdminBLL.QueryModelByAccount(Account);
+                var adminOrgin = BLL.AdminBLL.QueryModelById(adminModel.AdminId);
+                if (adminOrgin == null)
+                    return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
+                var datacompare = BLL.AdminBLL.QueryModelByAccount(adminModel.Account);
                 if (datacompare != null && admin.AdminId != datacompare.AdminId)
-                    return ApiResult.RCode("账号名称重复");
-                admin.IsRoot = IsRoot;
-                admin.Account = Account;
-                if (!string.IsNullOrEmpty(Password))
-                    admin.Password = Global.Hash(Password, admin.Salt);
-                BLL.AdminBLL.Update(admin);
-                AdminLog(current.AdminId, EAdminLogType.管理员管理, Request, "管理员修改" + admin.AdminId);
+                    return ApiResult.RCode(ApiResult.ECode.AuthorizationFailed);
+                
+                if (!string.IsNullOrEmpty(adminModel.Password))
+                    adminModel.Password = Global.Hash(adminModel.Password, admin.Salt);
+                BLL.AdminBLL.Update(adminModel);
+                AdminLog(admin.AdminId, EAdminLogType.管理员管理, Request, "管理员修改" + adminModel.AdminId);
                 return ApiResult.RCode("");
             }
         }
-
-        public IActionResult AdminDelete([FromForm] int AdminId)
+        
+        [HttpPost]
+        public IActionResult AdminDelete([FromForm] List<int> adminIds)
         {
             var current = AdminCurrent();
 
-            if (AdminId == 0)
-                return ApiResult.RCode("管理员不存在或已被删除");
-            if (BLL.AdminBLL.QueryModelById(AdminId) == null)
-                return ApiResult.RCode("管理员不存在或已被删除");
-            BLL.AdminBLL.DeleteById(AdminId);
+            if (adminIds.Count == 0)
+                return ApiResult.RCode(ApiResult.ECode.DataFormatError);
+            
+            BLL.AdminBLL.DeleteByIds(adminIds);
 
-            AdminLog(current.AdminId, EAdminLogType.管理员管理, Request, "管理员删除" + AdminId);
+            AdminLog(current.AdminId, EAdminLogType.管理员管理, Request, "管理员删除" + adminIds);
 
             return ApiResult.RCode("");
         }
-
-        public IActionResult AdminPageList([FromForm] int PageIndex, [FromForm] int PageSize)
+        
+        public IActionResult AdminLogPageList([FromForm] int pageIndex, [FromForm] int pageSize, [FromForm] int adminId,
+            [FromForm] int logType, [FromForm] DateTime begin, [FromForm] DateTime end)
         {
-            var res = BLL.AdminBLL.QueryPageList(PageIndex, PageSize);
-            return ApiResult.RData(new GridData<Model.AdminModel>(res.Rows, (int) res.Total));
+            var current = AdminCurrent();
+            begin = begin.Date;
+            end = end.Date.AddDays(1).AddSeconds(-1);
+            if (!current.IsRoot)
+                adminId = current.AdminId;
+            var res = BLL.AdminLogBLL.QueryPageListByAdminIdAndType(adminId, logType, begin, end, pageIndex,
+                pageSize);
+            return ApiResult.RData(new GridData<Model.AdminLogModel>(res.Rows, (int) res.Total));
         }
 
-        public IActionResult OrderPageList([FromForm] int PageIndex, [FromForm] int PageSize, [FromForm] int State,
-            [FromForm] int Keykind, [FromForm] string Key, [FromForm] bool IsHasreturn, [FromForm] int TimeType,
-            [FromForm] DateTime Begin, [FromForm] DateTime End)
+
+        public IActionResult OrderPageList([FromForm] int pageIndex, [FromForm] int pageSize, [FromForm] int state,
+            [FromForm] int keykind, [FromForm] string key, [FromForm] bool isHasreturn, [FromForm] int timeType,
+            [FromForm] DateTime begin, [FromForm] DateTime end)
         {
             var current = AdminCurrent();
 
-            if (State == (int) EState.客户下单 && TimeType == (int) EOrderTimeType.付款日期)
+            if (state == (int) EState.客户下单 && timeType == (int) EOrderTimeType.付款日期)
             {
                 return ApiResult.RData(
                     new GridData<Model.OrderModel>(new List<Model.OrderModel>(), 0));
             }
 
-            Begin = Begin.Date;
-            End = End.Date.AddDays(1).AddSeconds(-1);
-            var res = BLL.OrderBLL.QueryPageList(Begin, End, State, Keykind, Key, string.Empty, IsHasreturn,
-                (EOrderTimeType) TimeType, PageIndex, PageSize);
+            begin = begin.Date;
+            end = end.Date.AddDays(1).AddSeconds(-1);
+            var res = BLL.OrderBLL.QueryPageList(begin, end, state, keykind, key, string.Empty, isHasreturn,
+                (EOrderTimeType) timeType, pageIndex, pageSize);
             if (res != null && res.Rows.Count > 0)
             {
                 var storeids = res.Rows.Select(p => p.StoreId).Distinct().ToList();
@@ -180,49 +197,49 @@ namespace TinyStore.Site.Controllers.Api
             return ApiResult.RData(new GridData<Model.OrderModel>(res.Rows, res.Total));
         }
 
-        public IActionResult OrderUpdateCost([FromForm] string OrderId, [FromForm] double Cost)
+        public IActionResult OrderUpdateCost([FromForm] string orderId, [FromForm] double cost)
         {
             var current = AdminCurrent();
-            if (string.IsNullOrEmpty(OrderId))
+            if (string.IsNullOrEmpty(orderId))
                 return ApiResult.RCode("订单不存在");
 
-            var order = BLL.OrderBLL.QueryModelByOrderId(OrderId);
+            var order = BLL.OrderBLL.QueryModelByOrderId(orderId);
             if (order == null)
                 return ApiResult.RCode("订单不存在");
-            BLL.OrderBLL.UpdateCost(order.OrderId, Cost);
+            BLL.OrderBLL.UpdateCost(order.OrderId, cost);
 
-            AdminLog(current.AdminId, EAdminLogType.订单管理, Request, "修改成本" + OrderId);
+            AdminLog(current.AdminId, EAdminLogType.订单管理, Request, "修改成本" + orderId);
 
             return ApiResult.RCode("");
         }
 
-        public IActionResult OrderPay([FromForm] string OrderId, [FromForm] double Income, [FromForm] string Txnid)
+        public IActionResult OrderPay([FromForm] string orderId, [FromForm] double income, [FromForm] string txnid)
         {
             var current = AdminCurrent();
-            if (string.IsNullOrEmpty(OrderId))
+            if (string.IsNullOrEmpty(orderId))
                 return ApiResult.RCode("订单不存在");
 
-            var order = BLL.OrderBLL.QueryModelByOrderId(OrderId);
+            var order = BLL.OrderBLL.QueryModelByOrderId(orderId);
             if (order == null)
                 return ApiResult.RCode("订单不存在");
             if (order.IsPay)
                 return ApiResult.RCode("订单已付款，不能操作");
 
-            SiteContext.OrderHelper.Pay(order.OrderId, Income, Txnid);
+            SiteContext.OrderHelper.Pay(order.OrderId, income, txnid);
 
-            AdminLog(current.AdminId, EAdminLogType.订单管理, Request, "订单手动变已付款状态" + OrderId);
+            AdminLog(current.AdminId, EAdminLogType.订单管理, Request, "订单手动变已付款状态" + orderId);
 
             return ApiResult.RCode("");
         }
 
-        public IActionResult OrderReturn([FromForm] string OrderId)
+        public IActionResult OrderReturn([FromForm] string orderId)
         {
             var current = AdminCurrent();
 
-            if (string.IsNullOrEmpty(OrderId))
+            if (string.IsNullOrEmpty(orderId))
                 return ApiResult.RCode("订单不存在");
 
-            var order = BLL.OrderBLL.QueryModelByOrderId(OrderId);
+            var order = BLL.OrderBLL.QueryModelByOrderId(orderId);
             if (order == null)
                 return ApiResult.RCode("订单不存在");
             if (!order.IsPay)
@@ -239,29 +256,29 @@ namespace TinyStore.Site.Controllers.Api
             }
 
             //todo 支付平台收款 调用平台方法退款
-            if (Global.EnumsDic<EPaymentType>().Values.Contains(order.PaymentType))
-            {
-                var userExtend = BLL.UserExtendBLL.QueryModelById(order.UserId);
-                if (userExtend == null)
-                    return ApiResult.RCode("商户不存在，请检查数据库");
-                if (userExtend.Amount < order.RefundAmount)
-                    return ApiResult.RCode("商户资金小于退款金额，请联系店铺管理人员解决");
-                BLL.UserExtendBLL.ChangeAmount(userExtend.UserId, -order.RefundAmount);
-            }
+            // if (Global.EnumsDic<EPaymentType>().Values.Contains(order.PaymentType))
+            // {
+            //     var userExtend = BLL.UserExtendBLL.QueryModelById(order.UserId);
+            //     if (userExtend == null)
+            //         return ApiResult.RCode("商户不存在，请检查数据库");
+            //     if (userExtend.Amount < order.RefundAmount)
+            //         return ApiResult.RCode("商户资金小于退款金额，请联系店铺管理人员解决");
+            //     BLL.UserExtendBLL.ChangeAmount(userExtend.UserId, -order.RefundAmount);
+            // }
 
             BLL.OrderBLL.Update(order);
-            AdminLog(current.AdminId, EAdminLogType.订单管理, Request, "订单退款" + OrderId);
+            AdminLog(current.AdminId, EAdminLogType.订单管理, Request, "订单退款" + orderId);
 
             return ApiResult.RCode("");
         }
 
-        public IActionResult OrderDelete([FromForm] string OrderId)
+        public IActionResult OrderDelete([FromForm] string orderId)
         {
             var current = AdminCurrent();
-            if (string.IsNullOrEmpty(OrderId))
+            if (string.IsNullOrEmpty(orderId))
                 return ApiResult.RCode("订单不存在");
 
-            var order = BLL.OrderBLL.QueryModelByOrderId(OrderId);
+            var order = BLL.OrderBLL.QueryModelByOrderId(orderId);
             if (order == null)
                 return ApiResult.RCode("订单不存在");
 
@@ -270,33 +287,33 @@ namespace TinyStore.Site.Controllers.Api
             BLL.OrderTrashBLL.Insert(ordertrash);
 
             BLL.OrderBLL.DeleteByOrderId(order.OrderId);
-            AdminLog(current.AdminId, EAdminLogType.订单管理, Request, "删除订单" + OrderId);
+            AdminLog(current.AdminId, EAdminLogType.订单管理, Request, "删除订单" + orderId);
             return ApiResult.RCode("");
         }
 
         //订单结算   OrderCloseNo => OrderSettle
-        public IActionResult OrderSettle([FromForm] string OrderIds, [FromForm] bool IsSettle)
+        public IActionResult OrderSettle([FromForm] string orderIds, [FromForm] bool isSettle)
         {
             var current = AdminCurrent();
-            var orderids = Global.Json.Deserialize<List<string>>(OrderIds);
+            var orderids = Global.Json.Deserialize<List<string>>(orderIds);
 
-            BLL.OrderBLL.UpdateIsSettle(orderids, string.Empty, IsSettle, DateTime.Now);
+            BLL.OrderBLL.UpdateIsSettle(orderids, string.Empty, isSettle, DateTime.Now);
 
             AdminLog(current.AdminId, EAdminLogType.订单管理, Request, "批量设置未结算");
             return ApiResult.RCode("");
         }
 
-        public IActionResult OrderDeletePageList([FromForm] int PageIndex, [FromForm] int PageSize,
-            [FromForm] int State, [FromForm] int Keykind, [FromForm] string Key, [FromForm] DateTime Begin,
-            [FromForm] DateTime End)
+        public IActionResult OrderDeletePageList([FromForm] int pageIndex, [FromForm] int pageSize,
+            [FromForm] int state, [FromForm] int keykind, [FromForm] string key, [FromForm] DateTime begin,
+            [FromForm] DateTime end)
         {
             var current = AdminCurrent();
             if (current.IsRoot)
             {
-                Begin = Begin.Date;
-                End = End.Date.AddDays(1).AddSeconds(-1);
-                var res = BLL.OrderTrashBLL.QueryPageList(string.Empty, Begin, End, State, Keykind, Key,
-                    string.Empty, PageIndex, PageSize);
+                begin = begin.Date;
+                end = end.Date.AddDays(1).AddSeconds(-1);
+                var res = BLL.OrderTrashBLL.QueryPageList(string.Empty, begin, end, state, keykind, key,
+                    string.Empty, pageIndex, pageSize);
                 if (res != null && res.Rows.Count > 0)
                 {
                     var storeids = res.Rows.Select(p => p.StoreId).Distinct().ToList();
@@ -321,29 +338,29 @@ namespace TinyStore.Site.Controllers.Api
             }
         }
 
-        public IActionResult ProductSupplyPageList([FromForm] int PageIndex, [FromForm] int PageSize)
+        public IActionResult ProductSupplyPageList([FromForm] int pageIndex, [FromForm] int pageSize)
         {
-            var res = BLL.SupplyBLL.QueryPageListByUserId(SiteContext.Config.SupplyUserIdSys, PageIndex, PageSize);
+            var res = BLL.SupplyBLL.QueryPageListByUserId(SiteContext.Config.SupplyUserIdSys, pageIndex, pageSize);
             return ApiResult.RData(new GridData<Model.SupplyModel>(res.Rows, res.Total));
         }
 
-        public IActionResult ProductSupplyUpdatePriceStock([FromForm] string List)
+        public IActionResult ProductSupplyUpdatePriceStock([FromForm] string list)
         {
-            var list = Global.Json.Deserialize<List<Model.SupplyModel>>(List);
-            BLL.SupplyBLL.UpdatePriceStock(list);
+            var sulllylist = Global.Json.Deserialize<List<Model.SupplyModel>>(list);
+            BLL.SupplyBLL.UpdatePriceStock(sulllylist);
             return ApiResult.RCode("");
         }
 
-        public IActionResult UserPageList([FromForm] int PageIndex, [FromForm] int PageSize, [FromForm] string Key)
+        public IActionResult UserPageList([FromForm] int pageIndex, [FromForm] int pageSize, [FromForm] string key)
         {
-            var res = BLL.UserBLL.QueryPageListByKey(Key, PageIndex, PageSize);
+            var res = BLL.UserBLL.QueryPageListByKey(key, pageIndex, pageSize);
 
             return ApiResult.RData(new GridData<Model.UserModel>(res.Rows, res.Total));
         }
 
-        public IActionResult UserStorePageList([FromForm] int PageIndex, [FromForm] int PageSize, [FromForm] string Key)
+        public IActionResult UserStorePageList([FromForm] int pageIndex, [FromForm] int pageSize, [FromForm] string key)
         {
-            var res = BLL.StoreBLL.QueryPageListByKey(Key, PageIndex, PageSize);
+            var res = BLL.StoreBLL.QueryPageListByKey(key, pageIndex, pageSize);
             return ApiResult.RData(new GridData<Model.StoreModel>(res.Rows, res.Total));
         }
 
@@ -352,73 +369,73 @@ namespace TinyStore.Site.Controllers.Api
             return ApiResult.RData(BLL.UserExtendBLL.QueryModelByUserId(id));
         }
 
-        public IActionResult UserPwdModify([FromForm] int Id, [FromForm] string Pwd)
+        public IActionResult UserPwdModify([FromForm] int id, [FromForm] string pwd)
         {
             var current = AdminCurrent();
-            if (string.IsNullOrEmpty(Pwd))
+            if (string.IsNullOrEmpty(pwd))
                 return ApiResult.RCode("密码不能为空");
 
-            var user = Id == 0 ? null : BLL.UserBLL.QueryModelById(Id);
+            var user = id == 0 ? null : BLL.UserBLL.QueryModelById(id);
             if (user == null)
                 return ApiResult.RCode("商户不存在");
             
-            user.Password = Global.Hash(Pwd, user.Salt);
+            user.Password = Global.Hash(pwd, user.Salt);
             BLL.UserBLL.Update(user);
-            AdminLog(current.AdminId, EAdminLogType.商户管理, Request, "密码修改" + Id);
+            AdminLog(current.AdminId, EAdminLogType.商户管理, Request, "密码修改" + id);
             return ApiResult.RCode("");
         }
 
-        public IActionResult UserLevelModify([FromForm] int Id, [FromForm] int Level)
+        public IActionResult UserLevelModify([FromForm] int id, [FromForm] int level)
         {
             var current = AdminCurrent();
 
-            var userExtend = BLL.UserExtendBLL.QueryModelById(Id);
+            var userExtend = BLL.UserExtendBLL.QueryModelById(id);
             if (userExtend == null)
                 return ApiResult.RCode("商户不存在");
 
-            BLL.UserExtendBLL.ModifyLevel(userExtend.UserId, (EUserLevel) Level);
-            AdminLog(current.AdminId, EAdminLogType.店铺管理, Request, "商户级别修改" + Id);
+            BLL.UserExtendBLL.ModifyLevel(userExtend.UserId, (EUserLevel) level);
+            AdminLog(current.AdminId, EAdminLogType.店铺管理, Request, "商户级别修改" + id);
             return ApiResult.RCode("");
         }
 
-        public IActionResult UserLogin([FromForm] int Id)
+        public IActionResult UserLogin([FromForm] int id)
         {
-            var user = Id == 0 ? null : BLL.UserBLL.QueryModelById(Id);
+            var user = id == 0 ? null : BLL.UserBLL.QueryModelById(id);
             if (user == null)
                 return ApiResult.RCode("商户不存在");
             //todo UserContext.Login(user, false);
             return ApiResult.RCode("");
         }
 
-        public IActionResult UserLogPageList([FromForm] int PageIndex, [FromForm] int PageSize, [FromForm] int UserId,
-            string StoreId, [FromForm] int Logtype, [FromForm] DateTime Begin, [FromForm] DateTime End)
+        public IActionResult UserLogPageList([FromForm] int pageIndex, [FromForm] int pageSize, [FromForm] int userId,
+            string storeId, [FromForm] int logtype, [FromForm] DateTime begin, [FromForm] DateTime end)
         {
-            Begin = Begin.Date;
-            End = End.Date.AddDays(1).AddSeconds(-1);
-            var res = BLL.UserLogBLL.QueryPageListByUserIdOrStoreIdOrType(UserId, StoreId, Logtype, Begin, End,
-                PageIndex, PageSize);
+            begin = begin.Date;
+            end = end.Date.AddDays(1).AddSeconds(-1);
+            var res = BLL.UserLogBLL.QueryPageListByUserIdOrStoreIdOrType(userId, storeId, logtype, begin, end,
+                pageIndex, pageSize);
 
             return ApiResult.RData(new GridData<Model.UserLogModel>(res.Rows, res.Total));
         }
 
-        public IActionResult WithDrawPageList([FromForm] int PageIndex, [FromForm] int PageSize, [FromForm] int state,
-            [FromForm] DateTime Begin, [FromForm] DateTime End)
+        public IActionResult WithDrawPageList([FromForm] int pageIndex, [FromForm] int pageSize, [FromForm] int state,
+            [FromForm] DateTime begin, [FromForm] DateTime end)
         {
             var current = AdminCurrent();
 
-            Begin = Begin.Date;
-            End = End.Date.AddDays(1).AddSeconds(-1);
-            var res = BLL.WithDrawBLL.QueryPageList(0, state, Begin, End, PageIndex, PageSize);
+            begin = begin.Date;
+            end = end.Date.AddDays(1).AddSeconds(-1);
+            var res = BLL.WithDrawBLL.QueryPageList(0, state, begin, end, pageIndex, pageSize);
             return ApiResult.RData(new GridData<Model.WithDrawModel>(res.Rows, (int) res.Total));
         }
 
-        public IActionResult WithDrawCheck([FromForm] string Id, [FromForm] double Income, [FromForm] string TranId,
-            [FromForm] string Memo)
+        public IActionResult WithDrawCheck([FromForm] string id, [FromForm] double income, [FromForm] string tranId,
+            [FromForm] string memo)
         {
             var current = AdminCurrent();
-            if (string.IsNullOrEmpty(Id))
+            if (string.IsNullOrEmpty(id))
                 return ApiResult.RCode("ID不能为空");
-            var withdraw = BLL.WithDrawBLL.QueryModelByWithDrawId(Id);
+            var withdraw = BLL.WithDrawBLL.QueryModelByWithDrawId(id);
             if (withdraw == null)
                 return ApiResult.RCode("数据不存在或已被删除");
             var userExtend = BLL.UserExtendBLL.QueryModelById(withdraw.UserId);
@@ -428,50 +445,50 @@ namespace TinyStore.Site.Controllers.Api
                 return ApiResult.RCode("提现申请已处理，不能删除");
             if (withdraw.Amount > userExtend.Amount)
                 return ApiResult.RCode("商户余额不足以提现");
-            if (Income > withdraw.Amount)
+            if (income > withdraw.Amount)
                 return ApiResult.RCode("到账金额不能大于申请金额");
-            withdraw.AmountFinish = Income;
+            withdraw.AmountFinish = income;
             withdraw.FinishDate = DateTime.Now;
-            withdraw.TranId = TranId;
-            withdraw.Memo = Memo;
+            withdraw.TranId = tranId;
+            withdraw.Memo = memo;
             withdraw.IsFinish = true;
             BLL.WithDrawBLL.Update(withdraw);
             BLL.UserExtendBLL.ChangeAmount(userExtend.UserId, -withdraw.Amount);
-            AdminLog(current.AdminId, EAdminLogType.提现管理, Request, "提现申请成功" + Id);
+            AdminLog(current.AdminId, EAdminLogType.提现管理, Request, "提现申请成功" + id);
             return ApiResult.RCode("");
         }
 
-        public IActionResult WithDrawCheckNo([FromForm] string Id, [FromForm] string Memo)
+        public IActionResult WithDrawCheckNo([FromForm] string id, [FromForm] string memo)
         {
             var current = AdminCurrent();
-            if (string.IsNullOrEmpty(Id))
+            if (string.IsNullOrEmpty(id))
                 return ApiResult.RCode("数据不存在或已被删除");
-            var withdraw = BLL.WithDrawBLL.QueryModelByWithDrawId(Id);
+            var withdraw = BLL.WithDrawBLL.QueryModelByWithDrawId(id);
             if (withdraw == null)
                 return ApiResult.RCode("数据不存在或已被删除");
             if (withdraw.IsFinish)
                 return ApiResult.RCode("提现申请已处理，不能拒绝");
             withdraw.FinishDate = DateTime.Now;
-            withdraw.Memo = Memo;
+            withdraw.Memo = memo;
             withdraw.IsFinish = true;
             BLL.WithDrawBLL.Update(withdraw);
-            AdminLog(current.AdminId, EAdminLogType.提现管理, Request, "提现申请拒绝" + Id);
+            AdminLog(current.AdminId, EAdminLogType.提现管理, Request, "提现申请拒绝" + id);
             return ApiResult.RCode("");
         }
 
-        public IActionResult WithDrawDelete([FromForm] string Id)
+        public IActionResult WithDrawDelete([FromForm] string id)
         {
             var current = AdminCurrent();
-            if (string.IsNullOrEmpty(Id))
+            if (string.IsNullOrEmpty(id))
                 return ApiResult.RCode("数据不存在或已被删除");
-            var withdraw = BLL.WithDrawBLL.QueryModelByWithDrawId(Id);
+            var withdraw = BLL.WithDrawBLL.QueryModelByWithDrawId(id);
             if (withdraw == null)
                 return ApiResult.RCode("数据不存在或已被删除");
             if (withdraw.IsFinish)
                 return ApiResult.RCode("提现申请已处理，不能删除");
 
-            BLL.WithDrawBLL.DeleteByWithDrawId(Id);
-            AdminLog(current.AdminId, EAdminLogType.提现管理, Request, "提现申请删除" + Id);
+            BLL.WithDrawBLL.DeleteByWithDrawId(id);
+            AdminLog(current.AdminId, EAdminLogType.提现管理, Request, "提现申请删除" + id);
             return ApiResult.RCode("");
         }
     }

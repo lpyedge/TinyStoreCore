@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,6 +6,9 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace TinyStore
 {
@@ -15,6 +17,43 @@ namespace TinyStore
         static Global()
         {
         }
+        
+        public class AppSettings
+        {
+            //nuget Microsoft.Extensions.DependencyInjection
+            public static ServiceProvider ServiceProvider { get; private set; }
+            public static IConfiguration Configuration { get; private set; }
+
+            /// <summary>
+            ///     HttpContext_Current
+            /// </summary>
+            public static HttpContext Current
+            {
+                get
+                {
+                    var factory = (HttpContextAccessor) ServiceProvider?.GetService(typeof(IHttpContextAccessor));
+                    return factory?.HttpContext;
+                }
+            }
+
+            /// <summary>
+            ///     初始化
+            /// </summary>
+            /// <param name="services"></param>
+            /// <param name="configuration"></param>
+            public static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+            {
+                ServiceProvider = services.BuildServiceProvider();
+
+                Configuration = configuration;
+
+                if (Inited != null)
+                    Inited(ServiceProvider,Configuration);
+            }
+
+            public static Action<ServiceProvider,IConfiguration> Inited;
+        }
+        
 
         // public static class Json
         // {

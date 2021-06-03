@@ -3,7 +3,7 @@
         <q-icon :name="storelinks[3].icon" size="md" class="on-left"></q-icon>{{storelinks[3].text}}
     </div>
     <q-separator class="q-my-sm"></q-separator>
-    <div class="row q-gutter-xs q-mx-none q-my-sm">
+    <div class="row q-gutter-xs q-my-sm">
         @* <q-select outlined dense options-dense stack-label bg-color="white" style="min-width: 240px" *@
         @*           class="col-xs-12 col-md-auto" *@
         @*           label="商品" *@
@@ -59,7 +59,7 @@
                  clearable
                  class="col-xs-12 col-md-shrink"
                  label="关键词"
-                 v-model="orderFilter.keyname">
+                 v-model.trim="orderFilter.keyname">
             <template v-slot:prepend>
                 <q-icon name="fas fa-filter" color="primary" size="xs"/>
             </template>
@@ -71,7 +71,7 @@
         <q-btn :loading="orderFilter.loading" class="col-shrink" color="primary" icon="search" label="搜索" @@click="loadOrderData"></q-btn>
     </div>
 
-    <div class="row q-gutter-xs q-mx-none q-my-sm">
+    <div class="row q-gutter-xs q-my-sm">
         <q-btn class="q-mx-xs" color="primary" @@click="orderDialogShow(-1)"><q-icon class="on-left" size="xs" name="pan_tool"></q-icon>手动订单</q-btn>
         @* <q-btn class="q-mx-xs" color="primary" @@click="stockExport"><q-icon class="on-left" size="xs" name="fas fa-file-export"></q-icon>导出</q-btn> *@
         <q-space ></q-space>
@@ -111,7 +111,7 @@
                     <q-checkbox v-model="props.selected"></q-checkbox>
                 </q-td>
                 <q-td key="name" class="text-weight-bolder">
-                    {{ void ( isNotify = (Quasar.date.getDateDiff(props.row.notifyDate,Date.now()) < @SiteContext.Config.OrderNotifyLastDays && Quasar.date.getDateDiff(props.row.notifyDate,Date.now()) > -@SiteContext.Config.OrderNotifyLastDays) )}}
+                    {{ void ( isNotify = (Quasar.date.getDateDiff(props.row.notifyDate,Date.now()) < @SiteContext.Config.OrderNotifyPreDays && Quasar.date.getDateDiff(props.row.notifyDate,Date.now()) > -@SiteContext.Config.OrderNotifyPreDays) )}}
                     <q-icon v-if="isNotify" size="1.1rem" name="warning" color="negative">
                         <q-tooltip>
                             {{ Quasar.date.formatDate(props.row.notifyDate,'YYYY-MM-DD HH:mm') }}
@@ -188,7 +188,7 @@
                     <q-separator></q-separator>
                     <q-card-section class="q-pa-sm row">
                         <div class="col text-weight-bolder">
-                            {{ void ( isNotify = (Quasar.date.getDateDiff(props.row.notifyDate,Date.now()) < @SiteContext.Config.OrderNotifyLastDays && Quasar.date.getDateDiff(props.row.notifyDate,Date.now()) > -@SiteContext.Config.OrderNotifyLastDays) )}}
+                            {{ void ( isNotify = (Quasar.date.getDateDiff(props.row.notifyDate,Date.now()) < @SiteContext.Config.OrderNotifyPreDays && Quasar.date.getDateDiff(props.row.notifyDate,Date.now()) > -@SiteContext.Config.OrderNotifyPreDays) )}}
                             <q-icon v-if="isNotify" size="1.1rem" name="warning" color="negative">
                                 <q-tooltip>
                                     {{ Quasar.date.formatDate(props.row.notifyDate,'YYYY-MM-DD HH:mm') }}

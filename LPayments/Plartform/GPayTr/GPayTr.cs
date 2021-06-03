@@ -275,7 +275,7 @@ namespace LPayments.Plartform.GPayTr
 
             if (res.Contains("\"state\":1"))
             {
-                var json = Utils.Json.Deserialize<dynamic>(res);
+                var json = Utils.DynamicJson.Parse(res);
 
                 // pt.Uri = json.link;
                 // pt.FormHtml = "<script>location.href='" + (string) json.redirect_url + "';</script>";

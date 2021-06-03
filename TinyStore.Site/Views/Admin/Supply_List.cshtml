@@ -1,0 +1,345 @@
+﻿<q-page padding>
+    <div class="text-h5 text-weight-bold text-grey-8">
+        <q-icon :name="supplylinks[0].icon" size="md" class="on-left"></q-icon>{{supplylinks[0].text}}
+    </div>
+    <q-separator class="q-my-sm"></q-separator>
+    <div class="row q-gutter-y-sm justify-between">
+        <q-tabs
+            class="col-xs-auto col-md-auto text-grey-8"
+            active-color="primary"
+            indicator-color="primary"
+            content-class="text-h5"
+            align="left"
+            narrow-indicator
+            inline-label
+            v-model="supplyType">
+            <q-tab :icon="supplyTypeOptions[0].icon" :name="supplyTypeOptions[0].value" :label="supplyTypeOptions[0].name + '货源'"></q-tab>
+            <q-tab :icon="supplyTypeOptions[1].icon" :name="supplyTypeOptions[1].value" :label="supplyTypeOptions[1].name + '货源'"></q-tab>
+        </q-tabs>
+        <q-toolbar class="col-xs-12 col-md-auto">
+            <q-select outlined dense options-dense stack-label bg-color="white"
+                    style="min-width: 180px"
+                    label="分类"
+                    v-model="supplyFilter.category"
+                    emit-value
+                    map-options
+                    :options="supplyFilter.categoryOptions">
+            </q-select>
+            <q-input outlined dense stack-label bg-color="white"
+                     clearable
+                     class="on-right"
+                     label="关键词"
+                     v-model.trim="supplyFilter.keyname">
+                <template v-slot:prepend>
+                    <q-icon name="fas fa-filter" color="primary" size="xs"/>
+                </template>
+            </q-input>
+        </q-toolbar>
+    </div>
+    <q-list animated class="row q-gutter-md q-ma-none">
+        <q-card class="col-auto" bordered v-for="(item,i) in supplyListByFilter()">
+            <q-item class="q-pa-xs" style="height:3rem;">
+                <q-item-section >
+                    <q-item-label class="text-subtitle1" :lines="1">
+                        {{item.name}}
+                    </q-item-label>
+                    <q-item-label caption :lines="1">
+                        {{item.category}}
+                        <q-icon class="float-right" color="primary" :name="deliveryTypeOption(item.deliveryType).icon">
+                            <q-tooltip>{{deliveryTypeOption(item.deliveryType).name}}</q-tooltip>
+                        </q-icon>
+                    </q-item-label>
+                </q-item-section>
+                <q-separator vertical class="q-mx-sm"></q-separator>
+                <q-icon class="col-auto" name="fas fa-yen-sign" size="lg" color="primary"></q-icon>
+                <q-item-section side>
+                    <div class="col-4">
+                        <q-badge class="float-right" color="accent">
+                            {{parseFloat(item.faceValue).toFixed(2)}}
+                        </q-badge>
+                    </div>
+                    <q-item-label class="col-8">
+                        <label class="text-h6 text-primary">{{parseInt(item.cost)}}</label>
+                        <label class="text-caption text-italic text-grey-8">.{{parseFloat(item.cost).toFixed(2).split('.')[1]}}</label>
+                    </q-item-label>
+                </q-item-section>
+            </q-item>
+            <q-separator ></q-separator>
+            <q-card-section style="height: 4.7rem;width: 18rem;">
+                <label class="ellipsis-2-lines" v-html="item.memo"></label>
+            </q-card-section>
+            <q-icon class="cursor-pointer absolute-bottom-right q-ma-xs" color="primary" size="1.4rem" name="zoom_out_map" @@click="supplyDialogShow(i)"></q-icon>
+        </q-card>
+        <q-card class="col-auto" style="width: 18rem;height: 8rem" bordered v-if="supplyType == 'custom'">
+            <q-icon class="cursor-pointer absolute-center" name="add" size="xl" color="primary" @@click="supplyDialogShow(-1)"></q-icon>
+        </q-card>
+    </q-list>
+</q-page>
+
+<q-dialog v-model="supplyDialog">
+    <q-card style="max-width: 500px; width: 500px;">
+        <q-card-section class="row items-center q-pb-none">
+            <div class="text-h6">货源详情</div>
+            <q-space ></q-space>
+            <q-btn icon="close" flat round dense v-close-popup></q-btn>
+        </q-card-section>
+        <q-card-section class="q-gutter-sm">
+            <q-input outlined dense stack-label bg-color="white"
+                     label="商品名称"
+                     :readonly="supplyDialogReadonly"
+                     v-model.trim="supplyCurrent.name"
+                     ref="supplyCurrent_name"
+                     :rules="[val => !!val || '必须输入商品名称',val => val.length <= 10 || '商品名称长度限制10位']">
+            </q-input>
+            <div class="row">
+                <q-select outlined dense options-dense stack-label bg-color="white"
+                          class="col"
+                          label="商品分类"
+                          use-input hide-selected fill-input @@input-value="createCategory"
+                          :readonly="supplyDialogReadonly"
+                          v-model.trim="supplyCurrent.category"
+                          emit-value
+                          map-options
+                          :options="supply.categoryOptions">
+                </q-select>
+                <q-space class="col-auto q-mx-xs"></q-space>
+                <q-select outlined dense options-dense stack-label bg-color="white"
+                          class="col"
+                          label="发货方式"
+                          :readonly="supplyDialogReadonly"
+                          v-model="supplyCurrent.deliveryType"
+                          emit-value
+                          map-options
+                          option-value="value"
+                          option-label="name"
+                          :options="deliveryTypeOptions">
+                    <template v-slot:selected-item="scope">
+                        <q-chip
+                            dense
+                            class="transparent q-ma-none q-pa-none">
+                            <q-icon class="on-left" color="primary" text-color="white" :name="scope.opt.icon" size="xs"></q-icon>
+                            {{ scope.opt.name }}
+                        </q-chip>
+                    </template>
+                    <template v-slot:option="scope">
+                        <q-item
+                            v-bind="scope.itemProps"
+                            v-on="scope.itemEvents">
+                            <q-chip
+                                class="transparent q-ma-none q-pa-none">
+                                <q-icon class="on-left" color="primary" text-color="white" :name="scope.opt.icon" size="xs"></q-icon>
+                                {{ scope.opt.name }}
+                            </q-chip>
+                        </q-item>
+                    </template>
+                </q-select>
+            </div>
+            <div class="row">
+                <q-input outlined dense stack-label bg-color="white"
+                         class="col"
+                         label="面值"
+                         hint="建议零售价"
+                         :readonly="supplyDialogReadonly"
+                         v-model.number="supplyCurrent.faceValue"
+                         ref="supplyCurrent_faceValue"
+                         :rules="[val => !!val || '必须输入面值']">
+                </q-input>
+                <q-space class="col-auto q-mx-xs"></q-space>
+                <q-input outlined dense stack-label bg-color="white"
+                         class="col"
+                         label="成本"
+                         hint="结算价格"
+                         :readonly="supplyDialogReadonly"
+                         v-model.number="supplyCurrent.cost"
+                         ref="supplyCurrent_cost"
+                         :rules="[val => !!val || '必须输入成本']">
+                </q-input>
+            </div>
+            @* <q-input outlined dense stack-label bg-color="white" *@
+            @*          autogrow *@
+            @*          label="商品说明" *@
+            @*          v-model.trim="supplyCurrent.memo" *@
+            @*          maxlength="4000"> *@
+            @* </q-input> *@
+            <q-editor v-model="supplyCurrent.memo" min-height="5rem" dense
+                     :readonly="supplyDialogReadonly"
+                      placeholder="商品说明" 
+                      :toolbar="supplyCurrent.userId === userExtend.userId? editorToolbar : [] "
+                      :fonts="editorFonts"
+                      >
+            </q-editor>
+        </q-card-section>
+        <q-card-section v-if="supplyCurrent.userId === userExtend.userId" class="row justify-between">
+            <q-btn color="negative" icon="delete_forever" label="移除" @@click="supplyDialogRemove" v-if="supplyCurrent.userId === userExtend.userId && supplyIndex >= 0"></q-btn>
+            <q-btn color="warning" icon="edit" v-if="supplyCurrent.userId === userExtend.userId" :label="supplyIndex >= 0 ? '修改' : '新增'" @@click="supplyDialogEdit"></q-btn>
+        </q-card-section>
+    </q-card>
+</q-dialog>
+
+@section Scripts{
+    <script>
+   var _page = {
+       data:{
+           supplyType:'system',
+           supply:{
+             custom:[],
+             system:[],  
+             categoryOptions:[],
+           },
+           supplyFilter:{
+               keyname:'',
+               category:'',
+               categoryOptions:[],
+           },
+           supplyCurrent:{},
+           supplyIndex:-2,//默认 -2 新增 -1 其他 索引值
+           supplyDialog:false,
+       },
+       beforeMount(){
+           UserApi("SupplyList",{},true)
+              .then((response)=> {
+                  if (response.data.code === 1){ 
+                      this.supply.custom = response.data.data.supplyCustom;
+                      this.supply.system = response.data.data.supplySystem;
+                      this.supplyFilterReset();
+                  } else{
+                      Notify.Warning('货源数据加载失败');
+                  }
+              })
+              .catch( (error)=> {
+                  Notify.Warning('接口通信错误');
+                  console.error(error);
+              });
+       },
+       watch: {
+             supplyType: function (val, oldVal) {
+                 if (val!==oldVal){
+                     this.supplyFilterReset();
+                 }
+             },
+        },
+       computed:{
+           supplyDialogReadonly(){
+               return this.supplyCurrent.userId !== this.userExtend.userId;
+           }
+       },
+       methods: {
+           createCategory(val){
+               this.supplyCurrent.category = val;
+           },
+           supplyFilterReset(){
+               this.supplyFilter.keyname='';
+               this.supplyFilter.category='';
+               
+               this.supply.categoryOptions = [];
+               this.supplyFilter.categoryOptions = [];
+               
+               this.supplyFilter.categoryOptions.push({label:"全部*",value:''});
+               var datas = _.groupBy(this.supply[this.supplyType], 'category');
+               for (var categoty in datas) {
+                   if(categoty){
+                       this.supply.categoryOptions.push({label:categoty,value:categoty});
+                       this.supplyFilter.categoryOptions.push({label:categoty,value:categoty});
+                   }
+               }
+           },
+           supplyListByFilter(){
+               return _.filter(this.supply[this.supplyType],(data)=>{
+                   var res = true;
+                   if (this.supplyFilter.category){
+                        res = res && data.category === this.supplyFilter.category ;
+                   }
+                   var keyname = ''
+                   if (this.supplyFilter.keyname)
+                       keyname = this.supplyFilter.keyname.trim().toLowerCase();
+                   if (keyname){
+                       res = res && (data.name.toLowerCase().indexOf(keyname) > -1 || data.memo.toLowerCase().indexOf(keyname) > -1)
+                   }
+                   return res;
+               });
+           },
+           supplyDialogShow(i){
+               this.supplyDialog=true;
+               this.supplyIndex =i;
+               if (i>=0){
+                   this.supplyCurrent= JSON.parse(JSON.stringify(this.supply[this.supplyType][i]));
+               }else{
+                   this.supplyCurrent = {userId:this.userExtend.userId,category:'', deliveryType:this.deliveryTypeOptions[0].value,name:'',memo:'', isShow:true};
+               }
+           },
+           supplyDialogEdit(){
+               if (this.supplyCurrent.memo.length > 4000){
+                   Notify.Warning('商品说明内容过长');
+                   return;
+               }
+               this.$refs.supplyCurrent_name.validate();
+               this.$refs.supplyCurrent_faceValue.validate();
+               this.$refs.supplyCurrent_cost.validate();
+               if (!this.$refs.supplyCurrent_name.hasError && !this.$refs.supplyCurrent_faceValue.hasError && !this.$refs.supplyCurrent_cost.hasError){
+                   if (this.supplyIndex >= 0 ){
+                       var index = 0;
+                       for (i in this.supply[this.supplyType]){
+                           if (!this.supply[this.supplyType].isSystem){
+                               if (index === this.supplyIndex){
+                                   this.$set(this.supply[this.supplyType], i, JSON.parse(JSON.stringify(this.supplyCurrent)))
+                                   break;
+                               }
+                               index++;
+                           }
+                       }
+                   }else if (this.supplyIndex === -1){
+                       this.$set(this.supply[this.supplyType], this.supply[this.supplyType].length, JSON.parse(JSON.stringify(this.supplyCurrent)))
+                   }
+                   this.supplyListAutoSave();
+                   this.supplyIndex = -2;
+                   this.supplyDialog=false;
+                   this.supplyCurrent = {};
+               }
+           },
+           supplyDialogRemove(){
+               this.$q.dialog({
+                title: '再次确认',
+                message: '确定要移除名称为['+this.supplyCurrent.name+']的货源?',
+                cancel: true,
+                persistent: true
+              }).onOk(() => {
+                if (this.supplyIndex !== -2){
+                      var index = 0;
+                      for (i in this.supply[this.supplyType]){
+                          if (!this.supply[this.supplyType].isSystem){                              
+                              if (index === this.supplyIndex){
+                                  this.supply[this.supplyType].splice(i,1);
+                                  break;
+                              }
+                          }
+                          index++;
+                      }
+                      this.supplyListAutoSave();
+                  }
+                  this.supplyIndex = -2;
+                  this.supplyDialog=false;
+                  this.supplyCurrent = {};
+              })
+           },
+           supplyListAutoSave(){
+               UserApi("SupplyListSave", this.supply.custom)
+                  .then((response)=> {
+                      if (response.data.code === 1){ 
+                          this.supply.custom = response.data.data.supplyCustom;
+                          this.supply.system = response.data.data.supplySystem;
+                          this.supplyFilterReset();
+                      } else{
+                          //Notify.Warning('保存失败，数据格式错误');
+                      }
+                  })
+                  .catch( (error)=> {
+                      Notify.Warning('接口通信错误');
+                      console.error(error);
+                  });
+           }
+       }
+   };
+   DeepMerge(_layout,_page);
+   new Vue(_layout);
+    </script>
+}

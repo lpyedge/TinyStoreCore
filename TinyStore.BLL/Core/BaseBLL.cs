@@ -55,7 +55,12 @@ namespace TinyStore.BLL
                     _ConnStr = connStr;
                     break;
                 case DbType.Sqlite:
-                    _ConnStr = "Data Source=" + connStr;
+                    _ConnStr = "Data Source=" + connStr+";Cache=Shared;";
+                    //https://www.runoob.com/sqlite/sqlite-pragma.html
+                    //https://blog.csdn.net/comhaqs/article/details/53518133
+                    //https://docs.microsoft.com/zh-cn/dotnet/api/microsoft.data.sqlite.sqliteconnectionstringbuilder?view=msdata-sqlite-5.0.0
+                    //除了 Data Source=xxxx;Cache=Shared; 其它配置参数在Microsoft.Data.Sqlite下调用都报错
+                    //_ConnStr = "Data Source=" + connStr + "Data.db;Cache=Shared;Journal Mode=Off;Synchronous=Normal;Pooling=True;Max Pool Size=100;";
                     break;
             }
         }
@@ -351,12 +356,12 @@ namespace TinyStore.BLL
             }
         }
 
-        public static bool DeleteByIds(IEnumerable<dynamic> idlist)
+        public static bool DeleteByIds(params dynamic[] idlist)
         {
             return DeleteByIdsAsync(idlist).Result;
         }
 
-        public static Task<bool> DeleteByIdsAsync(IEnumerable<dynamic> idlist)
+        public static Task<bool> DeleteByIdsAsync(params dynamic[] idlist)
         {
             using (var db = DbClient)
             {
@@ -367,7 +372,7 @@ namespace TinyStore.BLL
                     db.Utilities.RemoveCacheAll<T>();
                 }
 #endif
-                return Task.FromResult(client.DeleteByIds(idlist.ToArray()));
+                return Task.FromResult(client.DeleteByIds(idlist));
             }
         }
 

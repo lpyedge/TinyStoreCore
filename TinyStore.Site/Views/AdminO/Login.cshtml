@@ -1,0 +1,113 @@
+﻿@{
+    Layout =null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <partial name="Widgets/_Header" />
+</head>
+<body class="bg-inverse">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col" style="height: 220px;"></div>
+        </div>
+        <div class="row">
+            <div class="col-4  hidden-sm-down">
+            </div>
+            <div class="col">
+                <form id="login" class="text-center bg-faded" style="-ms-border-radius: 4px; border-radius: 4px; border: 1px solid slategray; padding: 15px 25px;">
+                    <div class="form-group">
+                        <div class="h2">
+                            <b>管理员</b>登录
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <i class="input-group-text fa fa-user"></i>
+                            </div>
+                            <input name="Account" placeholder="帐号" class="form-control" type="text" maxlength="15" autocomplete="off" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <i class="input-group-text fa fa-lock"></i>
+                            </div>
+                            <input name="Password" placeholder="密码" class="form-control" type="password" maxlength="20" autocomplete="off" />
+                        </div>
+                    </div>
+                    @*<div class="form-group">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <i class="fa fa-key"></i>
+                                </div>
+                                <input name="Code" placeholder="验证码" class="form-control" type="text" maxlength="5" onkeydown="EnterLogin(event)" autocomplete="off" />
+                                <div class="input-group-btn">
+                                    @(new CY_Common.Web.ReCaptchaLocal().ClientCaptcha())
+                                </div>
+                            </div>
+                        </div>*@
+                    <div class="form-group text-center">
+                        <div class="btn btn-info btn-block sys_button">
+                            <i class="fa fa-paper-plane"></i>
+                            登录
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-4  hidden-sm-down">
+            </div>
+        </div>
+    </div>
+        <script>
+           
+            //$("#login").validate_popover({
+            //    
+            //    rules: {
+            //        Account: {
+            //            required: true,
+            //            rangelength: [2, 10],
+            //        },
+            //        Password: {
+            //            required: true,
+            //            rangelength: [2, 10],
+            //        },
+            //        Code: {
+            //            required: true,
+            //            rangelength: [5, 5],
+            //        }
+            //    }
+            //});
+
+            $("#login").find("input").keypress(function (e) {
+                var e = CY.EventFix(e);
+                if (e.keyCode === 13) {
+                    AdminLogin();
+                }
+            });
+            function AdminLogin() {
+                //if ($("#login").valid()) {
+                CY.Ajax("Login",
+                    {
+                        "account": $("#login").find("[name='Account']").val(),
+                        "password": $("#login").find("[name='Password']").val(),
+                        "code": $("#login").find("[name='Code']").val()
+                    },
+                    function (msg, xhr) {
+                        if (msg.Result) {
+                            Store.Token(xhr.getResponseHeader("Token"));
+                            Store.Admin(msg.Data);
+                            location.href = "/admin/index";
+
+                        } else {
+                            $.toast(msg.Message);
+                            //RefreshVerifyCodeImage();
+                        }
+                    });
+                //}
+            }
+            $("#login").find(".sys_button").on("click", AdminLogin);
+        </script>
+    </body>
+</html>

@@ -133,7 +133,7 @@ namespace LPayments.Plartform.Payssion
 
                 if (res.Contains("\"result_code\":200"))
                 {
-                    var json = Utils.Json.Deserialize<dynamic>(res);
+                    var json = Utils.DynamicJson.Parse(res);
                     // pt.Uri = (string) json.redirect_url;
                     // pt.FormHtml = "<script>location.href='" + (string) json.redirect_url + "';</script>";
                     return new PayTicket()

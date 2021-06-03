@@ -18,7 +18,7 @@
                 </q-toolbar-title>
                 <q-space></q-space>
                 <div class="q-gutter-sm row items-center no-wrap">
-                    <q-btn flat class="mobile-hide" style="color:#cdbfe3" size="lg" dense><q-icon name="fab fa-qq" size="sm" class="on-left"></q-icon>联系客服</q-btn>
+                    <q-btn flat class="mobile-hide" style="color:#cdbfe3" size="lg" dense type="a" target="_blank" :href="qqservice('@SiteContext.Config.ServiceQQ')"><q-icon name="fab fa-qq" size="sm" class="on-left"></q-icon>联系客服</q-btn>
                     <q-btn outline class="q-px-sm" color="warning" size="lg" dense label="商户注册"></q-btn>
                 </div>
             </q-toolbar>
@@ -41,29 +41,29 @@
                                 </div>
                             </q-carousel-slide>
                             <q-carousel-slide name="slide2" class="column no-wrap flex-center">
-                                <div class="text-primary text-h2 text-weight-bolder">2全新购卡体验</div>
+                                <div class="text-primary text-h2 text-weight-bolder">全新购卡体验</div>
                                 <div class="q-mt-xl text-center text-h5">
-                                    2致力于解决虚拟商品的快捷寄售服务，为商户及其买家提供，便捷、绿色、安全、快速的销售和购买体验。
+                                    致力于解决虚拟商品的快捷寄售服务，为商户及其买家提供，便捷、绿色、安全、快速的销售和购买体验。
                                 </div>
                             </q-carousel-slide>
                         </q-carousel>
                     </div>
                     <div class="col">
-                        <div class="bg-grey-4 q-pa-xl flex-center q-gutter-y-lg">
+                        <div class="bg-grey-4 q-pa-md flex-center q-gutter-y-lg">
                             <div class="text-primary text-center  text-h4 text-weight-bolder q-mb-xl">商户登录</div>
                             <q-input outlined v-model.trim="loginForm.account" label="帐号" label-color="primary" bg-color="white">
                                 <template v-slot:prepend>
-                                    <q-icon name="person" size="lg"/>
+                                    <q-icon name="person" size="lg"></q-icon>
                                 </template>
                             </q-input>
                             <q-input outlined v-model="loginForm.password" label="密码" label-color="primary" bg-color="white"
                                      :type="loginForm.passwordShow?'text':'password'">
                                 <template v-slot:prepend>
-                                    <q-icon name="lock" size="lg"/>
+                                    <q-icon name="lock" size="lg"></q-icon>
                                 </template>
                                 <template v-if="loginForm.password" v-slot:append>
                                     <q-icon :name="loginForm.passwordShow?'visibility':'visibility_off'" size="lg"
-                                            @@click="loginForm.passwordShow=!loginForm.passwordShow"/>
+                                            @@click="loginForm.passwordShow=!loginForm.passwordShow"></q-icon>
                                 </template>
                             </q-input>
                             <q-btn :loading="btnLoginLoading" color="secondary" size="lg" class="full-width" @@click="login" ><q-icon name="fas fa-paper-plane" size="md" class="on-left"></q-icon>登录</q-btn>
@@ -71,7 +71,7 @@
                     </div>
                 </div>
                 <q-page-sticky position="bottom-right" :offset="[25, 25]">
-                    <q-btn round color="primary" icon="fab fa-qq" size="lg"/>
+                    <q-btn round color="primary" icon="fab fa-qq" size="lg" type="a" target="_blank" :href="qqservice('@SiteContext.Config.ServiceQQ')" ></q-btn>
                 </q-page-sticky>
             </q-page>
         </q-page-container>
@@ -91,6 +91,13 @@
           carouselslide:'slide1',
         },
         methods: {
+         qqservice(qqnumber){
+            if (/(iPhone|iPad|iPod|iOS|Android)/i.test(navigator.userAgent)) { //移动端
+                return 'mqqwpa://im/chat?chat_type=wpa&uin=' + qqnumber + '&version=1&src_type=web&web_src=';
+            } else {
+                return 'http://wpa.qq.com/msgrd?V=3&uin=' + qqnumber + '&Site=&Menu=yes';
+            }
+         },
             login (){
                 if (this.loginForm.account && this.loginForm.password){
                     this.btnLoginLoading = true;

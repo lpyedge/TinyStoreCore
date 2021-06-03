@@ -1,0 +1,27 @@
+﻿<q-page padding>
+    
+    <div class="text-h5 text-weight-bold text-grey-8">
+        <q-icon :name="adminlinks[1].icon" size="md" class="on-left"></q-icon>{{adminlinks[0].text}}
+    </div>
+
+    <q-separator class="q-my-sm"></q-separator>
+
+</q-page>
+
+@section Scripts{
+    <script>
+   var _page = {
+       data:{
+           btnSaveLoading:false
+       },
+       beforeMount(){
+           
+       },
+       methods: {
+           
+       }
+   };
+   DeepMerge(_layout,_page);
+   new Vue(_layout);
+    </script>
+}

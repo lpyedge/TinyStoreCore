@@ -17,7 +17,7 @@
                  clearable
                  class="col-xs-grow col-md-shrink col-auto"
                  label="关键词"
-                 v-model="productFilter.keyname">
+                 v-model.trim="productFilter.keyname">
             <template v-slot:prepend>
                 <q-icon name="fas fa-filter" color="primary" size="xs"/>
             </template>

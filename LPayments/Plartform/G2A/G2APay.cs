@@ -157,7 +157,7 @@ namespace LPayments.Plartform.G2APay
                 };
             }
 
-            var json = Utils.Json.Deserialize<dynamic>(res);
+            var json = Utils.DynamicJson.Parse(res);
 
             // var formhtml =
             //     new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +

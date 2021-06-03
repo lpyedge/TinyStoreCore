@@ -15,6 +15,11 @@ namespace TinyStore.BLL
             Delete(p => p.AdminId == adminid);
         }
 
+        public static void DeleteByIds(List<int> adminids)
+        {
+            Delete(p => adminids.Contains(p.AdminId));
+        }
+        
         public static List<Model.AdminModel> QueryListAll()
         {
             using (var db = DbClient)

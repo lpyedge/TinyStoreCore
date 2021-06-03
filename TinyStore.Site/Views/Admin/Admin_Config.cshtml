@@ -1,0 +1,280 @@
+﻿<q-page padding>
+    <div class="text-h5 text-weight-bold text-grey-8">
+        <q-icon :name="adminlinks[0].icon" size="md" class="on-left"></q-icon>{{adminlinks[0].text}}
+    </div>
+    
+    <q-separator class="q-my-sm"></q-separator>
+    
+    <q-tabs 
+        class="text-grey-8"
+        active-color="primary"
+        indicator-color="primary"
+        content-class="text-h5"
+        dense
+        align="left"
+        narrow-indicator
+        inline-label
+        v-model="tab">
+        <q-tab name="basic" icon="info_outline" label="基础设置" ></q-tab>
+        <q-tab name="email" icon="email" label="邮箱设置" ></q-tab>
+        <q-tab name="user" icon="person" label="商户设置" ></q-tab>
+        <q-tab name="payment" icon="fas fa-hand-holding-usd" label="支付接口" ></q-tab>
+    </q-tabs>
+    <q-separator class="q-my-sm"></q-separator>
+    <q-tab-panels v-model="tab" animated>
+        <q-tab-panel class="q-pa-none" name="basic">
+            <q-form class="q-gutter-md">
+                <q-input outlined dense stack-label bg-color="white"
+                         label="网站域名"
+                         v-model.trim="config.siteDomain"
+                         ref="config_siteDomain"
+                         :rules="[val => !!val || '必须输入网站域名']">
+                </q-input>
+            
+                <q-input outlined dense stack-label bg-color="white"
+                         label="网站名称"
+                         v-model.trim="config.siteName"
+                         ref="config_siteName"
+                         :rules="[val => !!val || '必须输入网站名称']">
+                </q-input>
+            
+                <q-input outlined dense stack-label bg-color="white"
+                         label="客服QQ"
+                         v-model.trim="config.serviceQQ">
+                </q-input>
+            
+                <q-input outlined dense stack-label bg-color="white"
+                         label="客服邮箱"
+                         v-model.trim="config.serviceEmail">
+                </q-input>
+            
+            
+                <q-input outlined dense stack-label bg-color="white"
+                         label="订单提醒（默认天数）"
+                         hint="输入0 关闭订单提醒功能"
+                         v-model.number="config.orderNotifyDays"
+                         ref="config_orderNotifyDays"
+                         :rules="[val => val >= 0 || '必须输入大于等于0的值']">
+                </q-input>
+            
+                <q-input outlined dense stack-label bg-color="white"
+                         label="订单提醒（提前提示天数）"
+                         v-model.number="config.orderNotifyPreDays"
+                         ref="config_orderNotifyPreDays"
+                         :rules="[val => val >= 0 || '必须输入大于等于0的值']">
+                </q-input>
+            
+                <q-input outlined dense stack-label bg-color="white"
+                         label="提现金额（最小值）"
+                         hint="输入0 不限制最小提现金额"
+                         v-model.number="config.withDrawMin"
+                         ref="config_withDrawMin"
+                         :rules="[val => !!val || '必须输入此字段',val => val >= 0 || '必须输入大于等于0的值']">
+                </q-input>
+            
+                <q-input outlined dense stack-label bg-color="white"
+                         label="提现金额（最大值）"
+                         hint="必须大于 提现金额（最小值）"
+                         v-model.number="config.withDrawMax"
+                         ref="config_withDrawMax"
+                         :rules="[val => !!val || '必须输入此字段',val => val >= 0 || '必须输入大于等于0的值']">
+                </q-input>
+            
+                <q-btn :loading="btnSaveLoading" class="float-right" color="primary" icon="save" label="保存" @@click="configBasicSave"></q-btn>
+            </q-form>
+        </q-tab-panel>
+
+        <q-tab-panel class="q-pa-none" name="email">
+            <q-form class="q-gutter-md">
+                <q-input outlined dense stack-label bg-color="white"
+                         label="发件邮箱"
+                         v-model.trim="emailServer.posterAddress"
+                         ref="emailServer_posterAddress"
+                         :rules="[val => !!val || '必须输入发件邮箱',val => val.indexOf('@@') > -1 || '邮箱格式不正确']">
+                </q-input>
+            
+                <q-input outlined dense stack-label bg-color="white"
+                         label="发件人"
+                         v-model.trim="emailServer.posterName"
+                         ref="emailServer_posterName"
+                         :rules="[val => !!val || '必须输入发件人']">
+                </q-input>
+            
+                <q-input outlined dense stack-label bg-color="white"
+                         label="服务器地址:端口"
+                         hint="示例 smtp.exmail.qq.com:465"
+                         v-model.trim="emailServer.address"
+                         ref="emailServer_address"
+                         :rules="[val => !!val || '必须输入服务器地址:端口',val => val.indexOf(':') > -1 || '格式不正确']">
+                </q-input>
+
+                <q-toggle v-model="emailServer.enableSsl" label="加密传输" ></q-toggle>
+            
+                <q-input outlined dense stack-label bg-color="white"
+                         label="帐号"
+                         hint="帐号一般为发件邮箱"
+                         v-model.trim="emailServer.username"
+                         ref="emailServer_username"
+                         :rules="[val => !!val || '必须输入帐号']">
+                </q-input>
+            
+                <q-input outlined dense stack-label bg-color="white"
+                         label="密码"
+                         type="password"
+                         v-model.trim="emailServer.password"
+                         ref="emailServer_password"
+                         :rules="[val => !!val || '必须输入密码']">
+                </q-input>
+            
+                <q-btn :loading="btnSaveLoading" class="float-right" color="primary" icon="save" label="保存" @@click="emailServerSave"></q-btn>
+            </q-form>
+        </q-tab-panel>
+
+        <q-tab-panel class="q-pa-none" name="user">
+            <q-form class="q-gutter-md">
+                <q-input outlined dense stack-label bg-color="white" 
+                         :label="key"
+                         v-model.number="config.userRates[key]"
+                         :rules="[val => !!val || '必须输入网站域名']"
+                         v-for="(value,key) in config.userRates"
+                >
+                </q-input>
+                
+                <q-btn :loading="btnSaveLoading" class="float-right" color="primary" icon="save" label="保存" @@click="configUserRatesSave"></q-btn>
+            </q-form>
+        </q-tab-panel>
+
+        <q-tab-panel class="q-pa-none" name="payment">
+            <div class="text-h6">Movies</div>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit.
+        </q-tab-panel>
+        
+    </q-tab-panels>
+    
+</q-page>
+
+@section Scripts{
+    <script>
+   var _page = {
+       data:{
+           tab:'basic',
+           configOrgin:{
+               
+           },
+           config:{
+           },
+           emailServer:{
+               
+           },
+           btnSaveLoading:false
+       },
+       beforeMount(){
+           AdminApi("ConfigLoad")
+             .then(response=>{
+                 if (response.data.code === 1){
+                   this.configSet(response.data.data);
+                 }
+             })
+             .catch(Error =>{
+                 Notify.Warning('接口通信错误');
+                 console.error(error);
+             });
+       },
+       methods: {
+           configSet(config){               
+               this.configOrgin = config;            
+               this.config = JSON.parse(JSON.stringify(config)) ;
+               this.emailServer = JSON.parse(JSON.stringify(config.emailServer));
+               this.$set(this.emailServer,"address",this.emailServer.host +':'+this.emailServer.port);
+               console.log(this.emailServer);
+           },
+           emailServerSave(){
+               this.$refs.emailServer_posterAddress.validate();
+               this.$refs.emailServer_posterName.validate();
+               this.$refs.emailServer_address.validate();
+               this.$refs.emailServer_username.validate();
+               this.$refs.emailServer_password.validate();
+              
+              if (!this.$refs.emailServer_posterAddress.hasError && !this.$refs.emailServer_posterName.hasError 
+              && !this.$refs.emailServer_address.hasError 
+              && !this.$refs.emailServer_username.hasError && !this.$refs.emailServer_password.hasError){
+                  this.btnSaveLoading = true;
+                  this.emailServer.host = this.emailServer.address.split(':')[0];
+                  this.emailServer.port = parseInt(this.emailServer.address.split(':')[1]);
+                  this.configOrgin.emailServer = this.emailServer;
+                  AdminApi("ConfigSave",this.configOrgin)
+                     .then((response)=> {
+                         if (response.data.code === 1){                
+                             Notify.Info('保存成功');
+                             this.configSet(response.data.data);
+                         }
+                         this.btnSaveLoading = false;
+                     })
+                     .catch( (error)=> {
+                         Notify.Warning('接口通信错误');
+                         console.error(error);
+                         this.btnSaveLoading = false;
+                     });
+              }
+           },
+           configBasicSave(){
+               this.$refs.config_siteDomain.validate();
+               this.$refs.config_siteName.validate();
+               this.$refs.config_orderNotifyDays.validate();
+               this.$refs.config_orderNotifyPreDays.validate();
+               this.$refs.config_withDrawMin.validate();
+               this.$refs.config_withDrawMax.validate();
+               
+               if (!this.$refs.config_siteDomain.hasError && !this.$refs.config_siteName.hasError 
+               && !this.$refs.config_orderNotifyDays.hasError && !this.$refs.config_orderNotifyPreDays.hasError 
+               && !this.$refs.config_withDrawMin.hasError && !this.$refs.config_withDrawMax.hasError){
+                   this.btnSaveLoading = true;
+                  this.configOrgin.siteDomain = this.config.siteDomain;
+                  this.configOrgin.siteName = this.config.siteName;
+                  this.configOrgin.orderNotifyDays = this.config.orderNotifyDays;
+                  this.configOrgin.orderNotifyPreDays = this.config.orderNotifyPreDays;
+                  this.configOrgin.serviceQQ = this.config.serviceQQ;
+                  this.configOrgin.serviceEmail = this.config.serviceEmail;
+                  this.configOrgin.withDrawMin = this.config.withDrawMin;
+                  this.configOrgin.withDrawMax = this.config.withDrawMax;
+                  AdminApi("ConfigSave",this.configOrgin)
+                     .then((response)=> {
+                         if (response.data.code === 1){                
+                             Notify.Info('保存成功');
+                             this.configSet(response.data.data);
+                         }
+                         this.btnSaveLoading = false;
+                     })
+                     .catch( (error)=> {
+                         Notify.Warning('接口通信错误');
+                         console.error(error);
+                         this.btnSaveLoading = false;
+                     });
+               }
+           },           
+           configUserRatesSave(){
+              this.btnSaveLoading = true;
+              this.configOrgin.userRates = this.config.userRates;
+              console.log(this.config.userRates);
+              AdminApi("ConfigSave",this.configOrgin)
+                 .then((response)=> {
+                     if (response.data.code === 1){                
+                         Notify.Info('保存成功');
+                         this.configSet(response.data.data);
+                     }
+                     this.btnSaveLoading = false;
+                 })
+                 .catch( (error)=> {
+                     Notify.Warning('接口通信错误');
+                     console.error(error);
+                     this.btnSaveLoading = false;
+                 });
+              
+           },
+       }
+   };
+   DeepMerge(_layout,_page);
+   
+   new Vue(_layout);
+    </script>
+}

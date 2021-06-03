@@ -68,6 +68,25 @@
     <_ContentIncludedByDefault Remove="Views\Store\Withdraw.cshtml" />
     <_ContentIncludedByDefault Remove="Views\Store\_Layout.cshtml" />
     <_ContentIncludedByDefault Remove="Views\Store\_ViewStart.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Admin\Index.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Admin\Pay.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Admin\Stores.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Admin\T1\Order.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Admin\T1\Store.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Admin\T2\Order.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Admin\T2\Store.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Admin\T3\Order.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Admin\T3\Store.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Admin\T4\Order.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Admin\T4\Store.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Admin\T5\Order.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Admin\T5\Store.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Admin\Widgets\_Header.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Admin\Widgets\_Plugin_Payment.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Admin\Widgets\_Plugin_Toast.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Admin\Widgets\_Script_Order.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Admin\Widgets\_Script_Store.cshtml" />
+    <_ContentIncludedByDefault Remove="Views\Admin\_ViewStart.cshtml" />
   </ItemGroup>
 
 </Project>

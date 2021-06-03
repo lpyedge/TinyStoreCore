@@ -1,17 +1,203 @@
-﻿<div class="row align-items-center" style="box-shadow: 0 0 30px #dfdcff">
-    <div class="order-md-1 text-center text-md-left pr-md-5">
-        <div class="main-top">
-            <h5 class="bd-text-purple-bright">尊敬的管理员：<span id="adminaccount"></span>，欢迎您！ </h5>
-        </div>
+﻿<q-page padding>
+    <div class="text-h5 text-weight-bold text-grey-8">
+        <q-icon name="home" size="md" class="on-left"></q-icon>首页
     </div>
-</div>
+
+    <q-separator class="q-my-sm"></q-separator>
+
+    
+    <q-table
+        :grid="!$q.platform.is.desktop"
+
+        row-key="orderId"
+        :data="orderSettleData"
+        :columns="orderSettleColumns"
+        
+        hide-pagination
+        :pagination.sync="pagination"
+        
+        selection="multiple"
+        :selected.sync="orderSettleSelected">
+        <template v-slot:top>
+            <label class="text-h6">订单提醒</label>
+            <q-space></q-space>
+            <q-btn :loading="loading" color="warning" label="清除提醒"
+                   :disable="orderSettleSelected.length === 0" 
+                   @@click="orderSettleDateReset(null)"></q-btn>
+            <q-btn :loading="loading" class="on-right" color="accent" label="重设提醒"
+                   :disable="orderSettleSelected.length === 0" >
+                <q-popup-proxy transition-show="scale" transition-hide="scale">
+                    <q-date v-model="notifyDate">
+                        <div class="row items-center justify-end">
+                            <q-btn v-close-popup :label="$q.lang.label.set" color="primary" flat
+                                   @@click="orderSettleDateReset">
+                            </q-btn>
+                        </div>
+                    </q-date>
+                </q-popup-proxy>
+            </q-btn>
+        </template>
+        <template v-slot:body="props">
+            <q-tr :props="props">
+                <q-td>
+                    <q-checkbox v-model="props.selected"></q-checkbox>
+                </q-td>
+                <q-td key="name" class="text-weight-bolder">
+                    {{ props.row.name }}
+                    <q-badge align="top" color="accent" class="text-italic">* {{ props.row.quantity }}</q-badge>
+                </q-td>
+                <q-td key="amount">
+                    <q-btn dense flat><q-icon size="0.8rem" name="fas fa-yen-sign"></q-icon>{{ props.row.quantity * props.row.amount }}</q-btn>
+                    <q-btn dense v-if="props.row.refundAmount>0" size="sm" color="green"><q-icon size="0.6rem" name="fas fa-yen-sign"></q-icon>-{{ props.row.refundAmount }}</q-btn>
+                </q-td>
+                <q-td key="contact">
+                    {{ props.row.contact }} /
+                    {{ props.row.message }}
+                </q-td>
+                <q-td key="createDate">
+                    {{ Quasar.date.formatDate(props.row.createDate,'YYYY-MM-DD HH:mm') }}
+                </q-td>
+                <q-td key="notifyDate">
+                    <q-icon size="1.1rem" name="warning" color="negative">
+                        <q-tooltip>
+                            提醒日期
+                        </q-tooltip>
+                    </q-icon>
+                    {{ Quasar.date.formatDate(props.row.notifyDate,'YYYY-MM-DD') }}
+                </q-td>
+            </q-tr>
+        </template>
+        <template v-slot:item="props">
+            <div class="q-pa-xs col-xs-12 col-sm-6 col-md-4">
+                <q-card>
+                    <q-item dense class="q-px-sm">
+                        <q-item-section side>
+                            <q-checkbox dense v-model="props.selected"></q-checkbox>
+                        </q-item-section>
+                        <q-item-section class="text-center">
+                            {{ Quasar.date.formatDate(props.row.createDate,'YYYY-MM-DD HH:mm') }}
+                        </q-item-section>
+                        <q-item-section>
+                            <q-item-label>
+                                <q-icon size="1.1rem" name="warning" color="negative">
+                                    <q-tooltip>
+                                        提醒日期
+                                    </q-tooltip>
+                                </q-icon>
+                                {{ Quasar.date.formatDate(props.row.notifyDate,'YYYY-MM-DD') }}
+                            </q-item-label>
+                        </q-item-section>
+                    </q-item>
+                    <q-separator></q-separator>
+                    <q-card-section class="q-pa-sm row">
+                        <div class="col text-weight-bolder">
+                            {{ props.row.name }}
+                            <q-badge align="top" color="accent" class="text-italic">* {{ props.row.quantity }}</q-badge>
+                        </div>
+                        <div class="col-auto">
+                            <q-btn dense flat><q-icon size="0.8rem" name="fas fa-yen-sign" class="q-mr-auto"></q-icon> {{ props.row.quantity * props.row.amount }}</q-btn>
+                            <q-btn dense v-if="props.row.refundAmount>0" size="sm" color="green"><q-icon size="0.6rem" name="fas fa-yen-sign"></q-icon>-{{ props.row.refundAmount }}</q-btn>
+                        </div>
+                    </q-card-section>
+                    <q-card-section class="q-pa-sm">
+                        {{ props.row.contact }} / {{ props.row.message }}
+                    </q-card-section>
+                </q-card>
+            </div>
+        </template>
+    </q-table>
+</q-page>
 
 @section Scripts{
     <script>
-        var admin = Store.Admin();
-        if (admin) {
-            $("#adminaccount").text(admin.Account);
-        }
+   var _page = {
+       data:{
+           loading:false,
+           notifyDate:null,
+           orderSettleData:[],
+           orderSettleColumns:[
+               {
+                   align: 'left',
+                   name:'name',
+                   label:'商品名称',
+               },
+               {
+                   align: 'left',
+                   name:'amount',
+                   label:'订单总额',
+               },
+               {
+                   align: 'left',
+                   name:'contact',
+                   label:'客户资料',
+               },
+               {
+                   align: 'left',
+                   name:'createDate',
+                   label:'订单日期',
+               },
+               {
+                   align: 'left',
+                   name:'notifyDate',
+                   label:'结算日期',
+               }
+           ],
+           pagination:{                   
+               page: 1,
+               rowsPerPage: 0,
+           },
+           orderSettleSelected:[],
+       },
+       beforeMount(){
+           //this.loadorderSettleData();
+       },
+       methods: {
+           loadorderSettleData(){
+               UserApi('orderSettleList',{})
+                  .then((response)=> {
+                      if (response.data.code === 1){ 
+                          this.orderSettleData = response.data.data;
+                      }
+                  })
+                  .catch( (error)=> {
+                      console.error(error);
+                  });
+           },
+           orderSettleDateReset(e){
+               if (e==null){
+                   this.notifyDate = null;
+               }else{
+                   if (this.notifyDate == null){
+                      Notify.Warning('必须选择重设日期');
+                      return;
+                   }
+                   var lastdays=Quasar.date.getDateDiff(this.notifyDate, Date.now());
+                   if (lastdays <= 0){
+                      Notify.Warning('重设日期必须大于当前日期');
+                      return;
+                   }
+               }
+               this.loading =true;
+               var orderIds = _.map(this.orderSettleSelected, 'orderId');
+               UserApi('orderSettleReset',{orderIds:JSON.stringify(orderIds),notifyDate:this.notifyDate},true)
+                  .then((response)=> {
+                      if (response.data.code === 1){ 
+                          this.orderSettleData = response.data.data;
+                      } else{
+                          Notify.Warning('订单提醒操作失败');
+                      }
+                      this.loading = false;
+                  })
+                  .catch( (error)=> {
+                      this.loading = false;
+                      Notify.Warning('接口通信错误');
+                      console.error(error);
+                  });
+           }
+       }
+   };
+   DeepMerge(_layout,_page);
+   new Vue(_layout);
     </script>
 }
 

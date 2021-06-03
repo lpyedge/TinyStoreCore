@@ -3,11 +3,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Mail;
 using System.Text;
 using LPayments;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,38 +19,31 @@ namespace TinyStore.Site
 {
     public class SiteContext
     {
-        public static ServiceProvider ServiceProvider { get; private set; }
-        public static IConfiguration Configuration { get; private set; }
+        public static ConfigModel Config { get; set; }
 
-        /// <summary>
-        ///     HttpContext_Current
-        /// </summary>
-        public static HttpContext Current
+        public static void ConfigSave()
         {
-            get
-            {
-                var factory = (HttpContextAccessor) ServiceProvider?.GetService(typeof(IHttpContextAccessor));
-                return factory?.HttpContext;
-            }
+            var configJson =  Global.Json.SerializePretty(new {Config = Config});
+            File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory+ "App_Data/config.json",configJson);
         }
-
-        public static ConfigModel Config => Configuration.GetSection("Config").Get<ConfigModel>();
 
         /// <summary>
         ///     初始化
         /// </summary>
-        /// <param name="services"></param>
-        /// <param name="configuration"></param>
-        public static void ConfigurationService(IServiceCollection services, IConfiguration configuration)
+        public static void Inited(ServiceProvider services, IConfiguration configuration)
         {
-            ServiceProvider = services.BuildServiceProvider();
+            // var ConnStr1 = configuration.GetSection("Config:ConnStr").Value;
+            // var ConnStr2 = configuration.GetSection("Config:ConnStr").Get<string>();
+            // configuration.GetSection("Config").Get<ConfigModel>();
+            //Global.AppSettings.Configuration.GetSection("Config").Bind(Config);
+            
+            Config = configuration.GetSection("Config").Get<ConfigModel>();
+                
+            InitData();
+        }
 
-            Configuration = configuration;
-
-            // var ConnStr1 = Configuration.GetSection("Config:ConnStr").Value;
-            // var ConnStr2 = Configuration.GetSection("Config:ConnStr").Get<string>();
-            // Configuration.GetSection("Config").Get<ConfigModel>();
-
+        private static void InitData()
+        {
             BaseBLL.Init(DbType.Sqlite, Config.AppData + "Data.db");
 
             if (!File.Exists(Config.AppData + "Data.db"))
@@ -84,7 +75,12 @@ namespace TinyStore.Site
                     ClientKey = Guid.NewGuid().ToString(),
                     CreateDate = DateTime.Now,
                     IsRoot = true,
-                    Password = Global.Hash("admin", "tinystorecore"),
+                    Password = 
+#if DEBUG
+                        Global.Hash("admin", "012345"),
+#else
+                        Global.Hash("tinystorecore", "012345"),
+#endif
                     Salt = "012345"
                 });
         }
@@ -480,12 +476,51 @@ namespace TinyStore.Site
 
         public class ConfigModel
         {
+            [System.Text.Json.Serialization.JsonIgnore]
             public int SupplyUserIdSys => 0;
-
-
+            [System.Text.Json.Serialization.JsonIgnore]
+            public double SysPaymentRate => 0.006;
+            [System.Text.Json.Serialization.JsonIgnore]
+            public string FormatDate => "yyyy-MM-dd";
+            [System.Text.Json.Serialization.JsonIgnore]
+            public string FormatDateTime => "yyyy-MM-dd HH:mm";
+            [System.Text.Json.Serialization.JsonIgnore]
             public string AppData => AppDomain.CurrentDomain.BaseDirectory + "App_Data/";
-
+            [System.Text.Json.Serialization.JsonIgnore]
             public string UserData => AppDomain.CurrentDomain.BaseDirectory + "User_Data/";
+
+
+            /// <summary>
+            /// 网站域名
+            /// </summary>
+            public string SiteDomain { get; set; } = "";
+
+            /// <summary>
+            /// 网站名称
+            /// </summary>
+            public string SiteName { get; set; } = "";
+
+            /// <summary>
+            /// 客户QQ
+            /// </summary>
+            public string ServiceQQ { get; set; } = "";
+
+            /// <summary>
+            /// 客户邮箱
+            /// </summary>
+            public string ServiceEmail { get; set; } = "";
+
+            
+            
+            /// <summary>
+            ///     订单提醒默认天数,0 即不提醒
+            /// </summary>
+            public int OrderNotifyDays { get; set; } = 30;
+
+            /// <summary>
+            ///     订单提醒到期预先提示天数
+            /// </summary>
+            public int OrderNotifyPreDays { get; set; } = 7;
 
             /// <summary>
             ///     提现最低金额
@@ -497,37 +532,29 @@ namespace TinyStore.Site
             /// </summary>
             public double WithDrawMax { get; set; } = 10000;
 
-            public string SiteDomain { get; set; } = "tiny.store";
-
-            public string SiteName { get; set; } = "TinyStore";
-
-            public string ServiceQQ { get; set; } = "10000";
-
-            public string ServiceEmail { get; set; } = "10000@qq.com";
 
             /// <summary>
-            ///     订单提醒默认天数
+            /// 发件邮箱配置
             /// </summary>
-            public int OrderNotifyDays { get; set; } = 30;
+            public EmailContext.EmailServer EmailServer { get; set; } = new() { };
 
+            
             /// <summary>
-            ///     订单提醒预提示天数
+            /// 代理等级&amp;折扣
             /// </summary>
-            public int OrderNotifyLastDays { get; set; } = 7;
+            public Dictionary<EUserLevel, double> UserRates { get; set; } = new ()
+            {
+                [EUserLevel.无] = 1,
+                [EUserLevel.一星] = 0.999,
+                [EUserLevel.二星] = 0.998,
+                [EUserLevel.三星] = 0.997,
+                [EUserLevel.合作商] = 0.995
+            };
 
-            public string FormatDate { get; set; } = "yyyy-MM-dd";
+            public Dictionary<string, string> WechatPaySettings { get; set; }
 
-            public string FormatDateTime { get; set; } = "yyyy-MM-dd HH:mm";
+            public Dictionary<string, string> AliPaySettings { get; set; }
 
-            public Dictionary<EUserLevel, double> TaxConfigList { get; set; }
-
-            public Dictionary<EUserLevel, double> SupplyRates { get; set; }
-
-            public List<KeyValuePair<string, string>> WechatPaySettings { get; set; }
-
-            public List<KeyValuePair<string, string>> AliPaySettings { get; set; }
-
-            public EmailContext.EmailServer EmailServer { get; set; }
         }
 
 
@@ -737,7 +764,7 @@ namespace TinyStore.Site
                                 Name = EPlatform.Alipay + "|" + EChannel.AliPay + "|" + EPayType.H5,
                                 Account = "",
                                 Memo = "手机端调用",
-                                Rate = 0.006,
+                                Rate = SiteContext.Config.SysPaymentRate,
                                 IsSystem = true,
                                 IsEnable = false
                             });
@@ -748,7 +775,7 @@ namespace TinyStore.Site
                                 Name = EPlatform.Alipay + "|" + EChannel.AliPay + "|" + EPayType.QRcode,
                                 Account = "",
                                 Memo = "电脑端调用",
-                                Rate = 0.006,
+                                Rate = SiteContext.Config.SysPaymentRate,
                                 IsSystem = true,
                                 IsEnable = false
                             });
@@ -759,7 +786,7 @@ namespace TinyStore.Site
                                 Name = EPlatform.Alipay + "|" + EChannel.AliPay + "|" + EPayType.PC,
                                 Account = "",
                                 Memo = "电脑端调用",
-                                Rate = 0.006,
+                                Rate = SiteContext.Config.SysPaymentRate,
                                 IsSystem = true,
                                 IsEnable = false
                             });
@@ -770,7 +797,7 @@ namespace TinyStore.Site
                                 Name = EPlatform.WeChat + "|" + EChannel.WeChat + "|" + EPayType.H5,
                                 Account = "",
                                 Memo = "手机端调用",
-                                Rate = 0.006,
+                                Rate = SiteContext.Config.SysPaymentRate,
                                 IsSystem = true,
                                 IsEnable = false
                             });
@@ -781,7 +808,7 @@ namespace TinyStore.Site
                                 Name = EPlatform.WeChat + "|" + EChannel.WeChat + "|" + EPayType.QRcode,
                                 Account = "",
                                 Memo = "电脑端调用",
-                                Rate = 0.006,
+                                Rate = SiteContext.Config.SysPaymentRate,
                                 IsSystem = true,
                                 IsEnable = false
                             });
@@ -810,6 +837,10 @@ namespace TinyStore.Site
 
             private static void PayName2Enum(string name,out EPlatform platform,out EChannel channel,out EPayType payType)
             {
+                platform = (EPlatform) 0;
+                channel = EChannel.AliPay;
+                payType = EPayType.PC;
+                
                 if (name.Contains('|'))
                 {
                     var strs = name.Split('|');
@@ -822,14 +853,10 @@ namespace TinyStore.Site
                             payType = Enum.GetValues<EPayType>().First(p => p.ToString() == strs[2]);
                         }
                         catch
-                        {
+                        { 
                         }
                     } 
                 }
-
-                platform = (EPlatform) 0;
-                channel = EChannel.AliPay;
-                payType = EPayType.PC;
             }
             
             
@@ -989,24 +1016,21 @@ namespace TinyStore.Site
                     OrderModel order = OrderBLL.QueryModelByOrderId(orderid);
                     if (order != null)
                     {
-                        if (order != null && !order.IsPay && string.Equals(
-                            order.Amount.ToString("f2"), incomme.ToString("f2"),
+                        if (!order.IsPay && string.Equals(
+                            (order.Amount * order.Quantity).ToString("f2"), incomme.ToString("f2"),
                             StringComparison.OrdinalIgnoreCase))
                         {
                             order.TranId = txnId;
                             order.IsPay = true;
+                            order.PaymentDate = DateTime.Now;
+                            order.PaymentFee = order.Amount * order.Quantity * SiteContext.Config.SysPaymentRate;
                             order.LastUpdateDate = DateTime.Now;
-                            //if (order.IsNeedEmail2Supplyer)
-                            //    order.SupplyerCode = Global.Generator.Password(); //8位有效数字
-                            //else
-                            //    order.SupplyerCode = string.Empty;
                             OrderBLL.Update(order);
                         }
 
                         if (!order.IsDelivery)
                         {
                             Delivery(order);
-                            ;
                         }
                     }
                 }

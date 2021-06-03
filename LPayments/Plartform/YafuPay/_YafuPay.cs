@@ -143,7 +143,7 @@
 //                 if (res.Contains("\"code\":\"000000\""))
 //                 {
 //                     //{"busContent":"weixin://wxpay/bizpayurl?pr=TzE7Rjt","contentType":"01","orderNo":"20170615124414956972","merOrderNo":"636331273905756443","consumerNo":"12004","transAmt":"0.50","orderStatus":"0","code":"000000","msg":"success","sign":"668EE27187A6C78A002F67CD75307444"}
-//                     var json = Utils.Json.Deserialize<dynamic>(res);
+//                     var json = Utils.DynamicJson.Parse(res);
 //                     var tempdic = new Dictionary<string, string>();
 //                     foreach (var item in res.Trim('{', '}', '"').Split(new[] {"\",\""}, StringSplitOptions.None))
 //                     {

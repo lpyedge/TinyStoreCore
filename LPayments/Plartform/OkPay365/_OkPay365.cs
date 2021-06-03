@@ -192,7 +192,7 @@
 //
 //             var res = _HWU.Response(uri, HttpWebUtility.HttpMethod.Post, dic);
 //
-//             var json = Utils.Json.Deserialize<dynamic>(res);
+//             var json = Utils.DynamicJson.Parse(res);
 //
 //             var pl_res = "";
 //             sign = (json.pl_sign as string).Replace(" ", "+"); //替换空格为+符号
@@ -310,7 +310,7 @@
 //
 //             if (res.Contains("\"pl_code\":\"0000\""))
 //             {
-//                 var json = Utils.Json.Deserialize<dynamic>(res);
+//                 var json = Utils.DynamicJson.Parse(res);
 //                 var pl_res = "";
 //                 sign = (json.pl_sign as string).Replace(" ", "+"); //替换空格为+符号
 //                 if (!string.IsNullOrWhiteSpace(sign))

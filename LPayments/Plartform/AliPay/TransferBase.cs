@@ -155,7 +155,7 @@ namespace LPayments.Plartform.AliPay
                 );
 
                 var res = _HWU.Response(new Uri(GateWay), HttpWebUtility.HttpMethod.Post, dic);
-                var json = Utils.Json.Deserialize<dynamic>(res);
+                var json = Utils.DynamicJson.Parse(res);
 
                 if (res.Contains("\"sign\":") && res.Contains("\"alipay_fund_trans_toaccount_transfer_response\":"))
                 {

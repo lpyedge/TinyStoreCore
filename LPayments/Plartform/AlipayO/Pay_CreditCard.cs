@@ -70,7 +70,7 @@ namespace LPayments.Plartform.AliPayO
             var res = _HWU.Response(uri);
             if (res.Contains("code\":\"000"))
             {
-                var json = Utils.Json.Deserialize<dynamic>(res);
+                var json = Utils.DynamicJson.Parse(res);
                 result = new PayResult
                 {
                     OrderName = json.customParameters.ALIRISK_item1ItemProductName,
@@ -164,7 +164,7 @@ namespace LPayments.Plartform.AliPayO
 #endif
 
             var res = _HWU.Response(uri, HttpWebUtility.HttpMethod.Post, data);
-            var json = Utils.Json.Deserialize<dynamic>(res);
+            var json = Utils.DynamicJson.Parse(res);
             if (res.Contains("code\":\"000"))
                 checkoutId = json.id;
 

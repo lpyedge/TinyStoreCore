@@ -3,7 +3,7 @@
         <q-icon :name="storelinks[4].icon" size="md" class="on-left"></q-icon>{{storelinks[4].text}}
     </div>
     <q-separator class="q-my-sm"></q-separator>
-    <div class="row q-gutter-xs q-mx-none q-my-sm">
+    <div class="row q-gutter-xs q-my-sm">
         <q-input outlined dense stack-label bg-color="white" style="min-width: 230px;"
                  readonly
                  class="col-xs-12 col-md-auto"
@@ -42,7 +42,7 @@
         <q-btn :loading="statFilter.loading" class="col-shrink" color="primary" icon="search" label="搜索" @@click="loadStat"></q-btn>
     </div>
 
-    <div class="row q-gutter-xs q-mx-none q-my-sm">
+    <div class="row q-gutter-xs q-my-sm">
         <q-tabs 
             class="text-grey-8"
             active-color="primary"
@@ -54,12 +54,12 @@
             inline-label
             v-model="statFiled"
             @@input="loadProductStat">
-            <q-tab name="count" icon="timeline" label="订单量" ></q-tab>
-            <q-tab name="amount" icon="timeline" label="收入" ></q-tab>
-            <q-tab name="profit" icon="timeline" label="利润" ></q-tab>
+            <q-tab name="count" icon="local_grocery_store" label="订单量" ></q-tab>
+            <q-tab name="amount" icon="fas fa-hand-holding-usd" label="收入" ></q-tab>
+            <q-tab name="profit" icon="local_atm" label="利润" ></q-tab>
         </q-tabs>
     </div>
-    <div class="row q-gutter-xs q-mx-none q-my-sm">
+    <div class="row q-gutter-xs q-my-sm">
         <q-btn dense flat :label="postDataTotal.name" ></q-btn>
         <div class="text-caption">
             订单量<q-badge >{{ postDataTotal.count }}</q-badge>

@@ -125,7 +125,7 @@ namespace LPayments.Plartform.AliPay
                 var res = _HWU.Response(new Uri(GateWay + "?charset=utf-8"),
                     Utils.HttpWebUtility.HttpMethod.Post, datas);
 
-                var json = Utils.Json.Deserialize<dynamic>(res);
+                var json = Utils.DynamicJson.Parse(res);
 
 
                 if (res.Contains("\"sign\":") && res.Contains("\"alipay_trade_precreate_response\":"))
@@ -183,7 +183,7 @@ namespace LPayments.Plartform.AliPay
                         }
                         else
                         {
-                            var data = Utils.Json.Deserialize<dynamic>(match.Value);
+                            var data = Utils.DynamicJson.Parse(match.Value);
                             return new PayTicket()
                             {
                                 Action = EAction.UrlScheme,

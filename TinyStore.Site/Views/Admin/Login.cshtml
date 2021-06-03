@@ -1,113 +1,95 @@
 ﻿@{
-    Layout =null;
+    Layout = null;
 }
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <partial name="Widgets/_Header" />
+    <title>@SiteContext.Config.SiteName</title>
+    <partial name="Widgets/_Header"/>
 </head>
-<body class="bg-inverse">
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col" style="height: 220px;"></div>
-        </div>
-        <div class="row">
-            <div class="col-4  hidden-sm-down">
-            </div>
-            <div class="col">
-                <form id="login" class="text-center bg-faded" style="-ms-border-radius: 4px; border-radius: 4px; border: 1px solid slategray; padding: 15px 25px;">
-                    <div class="form-group">
-                        <div class="h2">
-                            <b>管理员</b>登录
+<body>
+<div id="q-app">
+    <q-layout view="lhh LpR lff" class="bg-grey-1">
+        <q-header reveal class="bg-primary q-py-xs" style="height: 65px;line-height: 65px;">
+            <q-toolbar class="fit">
+                <img src="~/images/logo.png" alt="SiteContext.Config.SiteName" class="full-height"/>
+                <q-toolbar-title class="desktop-only">
+                    @SiteContext.Config.SiteName
+                </q-toolbar-title>
+            </q-toolbar>
+        </q-header>
+        <q-page-container>
+            <q-page :class="$q.platform.is.desktop?'q-pa-xl':'q-pa-md'">
+                <div class="q-mx-auto row justify-center" style="margin-top: 4rem;">
+                    <div class="col-xs-12 col-md-5">
+                        <div class="bg-grey-4 q-pa-md flex-center q-gutter-y-lg">
+                            <div class="text-primary text-center  text-h4 text-weight-bolder q-mb-xl">管理员登录</div>
+                            <q-input outlined v-model.trim="loginForm.account" label="帐号" label-color="primary" bg-color="white">
+                                <template v-slot:prepend>
+                                    <q-icon name="person" size="lg" ></q-icon>
+                                </template>
+                            </q-input>
+                            <q-input outlined v-model="loginForm.password" label="密码" label-color="primary" bg-color="white"
+                                     :type="loginForm.passwordShow?'text':'password'">
+                                <template v-slot:prepend>
+                                    <q-icon name="lock" size="lg" ></q-icon>
+                                </template>
+                                <template v-if="loginForm.password" v-slot:append>
+                                    <q-icon :name="loginForm.passwordShow?'visibility':'visibility_off'" size="lg"
+                                            @@click="loginForm.passwordShow=!loginForm.passwordShow" ></q-icon>
+                                </template>
+                            </q-input>
+                            <q-btn :loading="btnLoginLoading" color="secondary" size="lg" class="full-width" @@click="login" ><q-icon name="fas fa-paper-plane" size="md" class="on-left"></q-icon>登录</q-btn>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <i class="input-group-text fa fa-user"></i>
-                            </div>
-                            <input name="Account" placeholder="帐号" class="form-control" type="text" maxlength="15" autocomplete="off" />
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <i class="input-group-text fa fa-lock"></i>
-                            </div>
-                            <input name="Password" placeholder="密码" class="form-control" type="password" maxlength="20" autocomplete="off" />
-                        </div>
-                    </div>
-                    @*<div class="form-group">
-                            <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <i class="fa fa-key"></i>
-                                </div>
-                                <input name="Code" placeholder="验证码" class="form-control" type="text" maxlength="5" onkeydown="EnterLogin(event)" autocomplete="off" />
-                                <div class="input-group-btn">
-                                    @(new CY_Common.Web.ReCaptchaLocal().ClientCaptcha())
-                                </div>
-                            </div>
-                        </div>*@
-                    <div class="form-group text-center">
-                        <div class="btn btn-info btn-block sys_button">
-                            <i class="fa fa-paper-plane"></i>
-                            登录
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="col-4  hidden-sm-down">
-            </div>
-        </div>
-    </div>
-        <script>
-           
-            //$("#login").validate_popover({
-            //    
-            //    rules: {
-            //        Account: {
-            //            required: true,
-            //            rangelength: [2, 10],
-            //        },
-            //        Password: {
-            //            required: true,
-            //            rangelength: [2, 10],
-            //        },
-            //        Code: {
-            //            required: true,
-            //            rangelength: [5, 5],
-            //        }
-            //    }
-            //});
-
-            $("#login").find("input").keypress(function (e) {
-                var e = CY.EventFix(e);
-                if (e.keyCode === 13) {
-                    AdminLogin();
-                }
-            });
-            function AdminLogin() {
-                //if ($("#login").valid()) {
-                CY.Ajax("Login",
-                    {
-                        "account": $("#login").find("[name='Account']").val(),
-                        "password": $("#login").find("[name='Password']").val(),
-                        "code": $("#login").find("[name='Code']").val()
-                    },
-                    function (msg, xhr) {
-                        if (msg.Result) {
-                            Store.Token(xhr.getResponseHeader("Token"));
-                            Store.Admin(msg.Data);
-                            location.href = "/admin/index";
-
-                        } else {
-                            $.toast(msg.Message);
-                            //RefreshVerifyCodeImage();
+                </div>
+            </q-page>
+        </q-page-container>
+    </q-layout>
+</div>
+<partial name="Widgets/_BodyEnd"/>
+<script>
+      new Vue({
+        el: '#q-app',
+        data:  {
+          loginForm:{
+              account:'',
+              password:'',
+              passwordShow:false,
+          },
+          btnLoginLoading:false,
+        },
+        methods: {
+            login (){
+                if (this.loginForm.account && this.loginForm.password){
+                    this.btnLoginLoading = true;
+                    AdminApi('login', {
+                        account: this.loginForm.account,
+                        password: this.loginForm.password
+                    },true)
+                    .then((response)=> {
+                        if (response.data.code === 1){
+                            Store.Token(response.headers.token);
+                            Store.Admin(response.data.data);
+                            location.href = '@Url.ActionLink("index", "admin")';
                         }
+                        else{
+                            Notify.Warning('帐号密码不匹配');
+                        }
+                        this.btnLoginLoading = false;
+                    })
+                    .catch( (error)=> {
+                        Notify.Warning('接口通信错误');
+                        console.error(error);
+                        this.btnLoginLoading = false;
                     });
-                //}
+                }else{
+                    Notify.Warning('请输入帐号&密码');
+                }
             }
-            $("#login").find(".sys_button").on("click", AdminLogin);
-        </script>
-    </body>
+        },
+        // ...etc
+      })
+</script>
+</body>
 </html>
