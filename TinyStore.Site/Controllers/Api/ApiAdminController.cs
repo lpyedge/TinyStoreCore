@@ -73,6 +73,7 @@ namespace TinyStore.Site.Controllers.Api
 
             return ApiResult.RData(SiteContext.Config);
         }
+        
         [HttpPost]
         public IActionResult ConfigSave(SiteContext.ConfigModel config)
         {
@@ -115,7 +116,7 @@ namespace TinyStore.Site.Controllers.Api
                 adminModel.Password = Global.Hash(adminModel.Password, salt);
                 BLL.AdminBLL.Insert(adminModel);
                 AdminLog(admin.AdminId, EAdminLogType.管理员管理, Request, "管理员添加" + adminModel.AdminId);
-                return ApiResult.RCode("");
+                return ApiResult.RCode(ApiResult.ECode.Success);
             }
             else
             {
@@ -123,30 +124,34 @@ namespace TinyStore.Site.Controllers.Api
                 if (adminOrgin == null)
                     return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
                 var datacompare = BLL.AdminBLL.QueryModelByAccount(adminModel.Account);
-                if (datacompare != null && admin.AdminId != datacompare.AdminId)
+                if (datacompare != null && datacompare.AdminId != datacompare.AdminId)
                     return ApiResult.RCode(ApiResult.ECode.AuthorizationFailed);
                 
+                adminOrgin.Account = adminModel.Account;
+                adminOrgin.IsRoot = adminModel.IsRoot;
                 if (!string.IsNullOrEmpty(adminModel.Password))
-                    adminModel.Password = Global.Hash(adminModel.Password, admin.Salt);
-                BLL.AdminBLL.Update(adminModel);
+                    adminOrgin.Password = Global.Hash(adminModel.Password, adminOrgin.Salt);
+                
+                BLL.AdminBLL.Update(adminOrgin);
+                
                 AdminLog(admin.AdminId, EAdminLogType.管理员管理, Request, "管理员修改" + adminModel.AdminId);
-                return ApiResult.RCode("");
+                return ApiResult.RCode(ApiResult.ECode.Success);
             }
         }
         
         [HttpPost]
-        public IActionResult AdminDelete([FromForm] List<int> adminIds)
+        public IActionResult AdminDelete([FromForm] int adminId)
         {
             var current = AdminCurrent();
 
-            if (adminIds.Count == 0)
+            if (adminId == 0)
                 return ApiResult.RCode(ApiResult.ECode.DataFormatError);
             
-            BLL.AdminBLL.DeleteByIds(adminIds);
+            BLL.AdminBLL.DeleteById(adminId);
 
-            AdminLog(current.AdminId, EAdminLogType.管理员管理, Request, "管理员删除" + adminIds);
+            AdminLog(current.AdminId, EAdminLogType.管理员管理, Request, "管理员删除" + adminId);
 
-            return ApiResult.RCode("");
+            return ApiResult.RCode(ApiResult.ECode.Success);
         }
         
         public IActionResult AdminLogPageList([FromForm] int pageIndex, [FromForm] int pageSize, [FromForm] int adminId,

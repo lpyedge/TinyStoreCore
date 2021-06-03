@@ -1,24 +1,224 @@
 ﻿<q-page padding>
     
     <div class="text-h5 text-weight-bold text-grey-8">
-        <q-icon :name="adminlinks[1].icon" size="md" class="on-left"></q-icon>{{adminlinks[0].text}}
+        <q-icon :name="adminlinks[1].icon" size="md" class="on-left"></q-icon>{{adminlinks[1].text}}
     </div>
 
     <q-separator class="q-my-sm"></q-separator>
+    
+    <q-table
+        :grid="!$q.platform.is.desktop"
 
+        row-key="adminId"
+        :data="adminData"
+        :columns="adminColumns"
+
+        :pagination.sync="adminFilter.pagination"
+        :rows-per-page-options="[10, 25, 50, 100, 200]"
+        @@request="loadAdminData">
+        <template v-slot:top>
+            <q-space ></q-space>
+            <q-btn color="primary" icon="add" @@click="adminDialogShow(-1)"></q-btn>
+        </template>
+        <template v-slot:body="props">
+            <q-tr :props="props">
+                <q-td key="account">
+                    <strong>
+                        {{ props.row.account }}
+                        <q-icon v-if="props.row.isRoot" class="on-right" color="red" :name="adminlinks[1].icon">
+                            <q-tooltip>
+                                主管理员
+                            </q-tooltip>
+                        </q-icon>
+                    </strong>
+                </q-td>
+                <q-td key="createDate">
+                    <strong>{{ Quasar.date.formatDate(props.row.createDate,'YYYY-MM-DD') }}</strong>
+                </q-td>
+                <q-td auto-width>
+                    <q-icon class="cursor-pointer q-ma-xs" color="primary" size="1.4rem" name="zoom_out_map" @@click="adminDialogShow(props.rowIndex)"></q-icon>
+                </q-td>
+            </q-tr>
+        </template>
+        <template v-slot:item="props">
+            <div class="q-pa-xs col-xs-12 col-sm-6 col-md-4">
+                <q-card>
+                    <q-item dense class="q-px-sm">
+                        <q-item-section>
+                            <strong>
+                                {{ props.row.account }}
+                                <q-icon v-if="props.row.isRoot" class="on-right" color="red" :name="adminlinks[1].icon">
+                                    <q-tooltip>
+                                        主管理员
+                                    </q-tooltip>
+                                </q-icon>
+                            </strong>
+                        </q-item-section>
+                        <q-item-section>
+                            <strong>{{ Quasar.date.formatDate(props.row.createDate,'YYYY-MM-DD') }}</strong>
+                        </q-item-section>
+                        <q-item-section style="display: inline-block;text-align: right">
+                            <q-icon class="cursor-pointer q-ma-xs" color="primary" size="1.4rem" name="zoom_out_map" @@click="adminDialogShow(props.rowIndex)"></q-icon>
+                        </q-item-section>
+                    </q-item>
+                </q-card>
+            </div>
+        </template>
+    </q-table>
 </q-page>
+
+<q-dialog v-model="adminDialog">
+    <q-card style="max-width: 500px; width: 500px;">
+        <q-card-section class="row items-center q-pb-none">
+            <div class="text-h6">管理员详情</div>
+            <q-space ></q-space>
+            <q-btn icon="close" flat round dense v-close-popup></q-btn>
+        </q-card-section>
+        <q-card-section class="q-gutter-sm">
+            <q-input outlined dense stack-label bg-color="white"
+                     label="帐号"
+                     v-model.trim="adminCurrent.account"
+                     ref="adminCurrent_account"
+                     :rules="[val => !!val || '必须输入帐号',val => val.length >= 4 || '帐号长度必须大于等于4']">
+            </q-input>
+            <q-input outlined dense stack-label bg-color="white"
+                     label="密码"
+                     type="password"
+                     :hint="adminCurrent.adminId ? '不修改密码请留空':''"
+                     v-model.trim="adminCurrent.password">
+            </q-input>
+            <q-toggle v-model="adminCurrent.isRoot" label="主管理员" color="warning"></q-toggle>
+        </q-card-section>
+        <q-card-section class="row justify-between">
+            <q-btn color="negative" icon="delete_forever" label="移除" @@click="adminDialogRemove" v-if="adminIndex >= 0"></q-btn>
+            <q-space></q-space>
+            <q-btn color="warning" icon="edit" :label="adminIndex >= 0 ? '修改' : '新增'" @@click="adminDialogEdit"></q-btn>
+        </q-card-section>
+    </q-card>
+</q-dialog>
 
 @section Scripts{
     <script>
    var _page = {
        data:{
-           btnSaveLoading:false
+           
+           adminFilter:{
+               loading:false,
+               pagination:{                   
+                   page: 1,
+                   rowsPerPage: 25,
+                   rowsNumber:0,
+               },
+           },
+           adminData:[],
+           adminColumns:[
+               {
+                   align: 'left',
+                   name:'account',
+                   label:'帐号',
+               },
+               {
+                   align: 'left',
+                   //format: (val, row) => `${val}`,
+                   name:'createDate',
+                   label:'创建日期'
+               },
+               {
+                   align: 'left',
+                   name:'',
+                   label:''
+               },
+           ],
+           
+           adminCurrent:{},
+           adminDialog:false,
+           adminIndex:2,//默认 -2 新增 -1 其他 索引值
        },
        beforeMount(){
-           
+           this.loadAdminData();
        },
        methods: {
-           
+           loadAdminData(){
+               if(arguments.length>0 && arguments[0].pagination){
+                   this.adminFilter.pagination = arguments[0].pagination;
+               }
+               this.adminFilter.loading =true;
+               AdminApi('AdminPageList',{ pageSize:this.adminFilter.pagination.rowsPerPage,pageIndex:this.adminFilter.pagination.page},true)
+                  .then((response)=> {
+                      if (response.data.code === 1){ 
+                          this.adminData = response.data.data.rows;
+                          this.adminFilter.pagination.rowsNumber = response.data.data.total;   
+                          this.adminSelected = [];
+                      } else{
+                          Notify.Warning('卡密数据加载失败');
+                      }
+                      this.adminFilter.loading =false;
+                  })
+                  .catch( (error)=> {
+                      this.adminFilter.loading =false;
+                      Notify.Warning('接口通信错误');
+                      console.error(error);
+                  });
+           },
+           adminDialogShow(i){
+               this.adminDialog=true;
+               this.adminIndex =i;
+               if (i>=0){
+                  this.adminCurrent= JSON.parse(JSON.stringify(this.adminData[i]));
+               }else{
+                  this.adminCurrent = {account:'',password:'',isRoot:false};
+               }
+           },
+           adminDialogEdit(){
+              this.$refs.adminCurrent_account.validate();
+              if (!this.$refs.adminCurrent_account.hasError){
+                  AdminApi("AdminSave",this.adminCurrent)
+                  .then((response)=> {
+                        if (response.data.code === 1){ 
+                            this.loadAdminData();
+                        } else if (response.data.code === 12){
+                            Notify.Warning('帐号已存在');
+                        } else{
+                            Notify.Warning('数据验证失败');
+                        }
+                        this.adminFilter.loading =false;
+                    })
+                    .catch( (error)=> {
+                        this.adminFilter.loading =false;
+                        Notify.Warning('接口通信错误');
+                        console.error(error);
+                    });
+                  this.adminIndex = -2;
+                  this.adminDialog=false;
+                  this.adminCurrent = {};
+              }
+          },
+          adminDialogRemove(){
+              this.$q.dialog({
+                  title: '再次确认',
+                  message: '确定要移除帐号为['+this.adminCurrent.account+']的管理员?',
+                  cancel: true,
+                  persistent: true
+                }).onOk(() => {
+                    AdminApi("AdminDelete",{adminId:this.adminCurrent.adminId},true)
+                      .then((response)=> {
+                            if (response.data.code === 1){ 
+                                this.loadAdminData();
+                            } else{
+                                Notify.Warning('数据验证失败');
+                            }
+                            this.adminFilter.loading =false;
+                        })
+                        .catch( (error)=> {
+                            this.adminFilter.loading =false;
+                            Notify.Warning('接口通信错误');
+                            console.error(error);
+                        });
+                    this.adminIndex = -2;
+                    this.adminDialog=false;
+                    this.adminCurrent = {};
+                })
+          },
        }
    };
    DeepMerge(_layout,_page);
