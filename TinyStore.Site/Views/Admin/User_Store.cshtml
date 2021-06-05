@@ -272,7 +272,7 @@
                     </q-select>
                 </div>
                 <div class="col on-right">
-                    <q-img basic style="border:1px solid grey;border-radius: 0.8rem; height: 10rem; width: 10rem"
+                    <q-img v-show="storeCurrent.storeId" basic style="border:1px solid grey;border-radius: 0.8rem; height: 10rem; width: 10rem"
                            class="cursor-pointer"
                            :src="storeCurrent.logo"
                            spinner-color="white"
