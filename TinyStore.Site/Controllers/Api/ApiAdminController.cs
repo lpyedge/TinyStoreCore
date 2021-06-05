@@ -349,6 +349,67 @@ namespace TinyStore.Site.Controllers.Api
             return ApiResult.RCode(ApiResult.ECode.Success);
         }
         
+        [HttpPost]
+        public IActionResult SupplyList()
+        {
+            var admin = AdminCurrent();
+
+            return ApiResult.RData(BLL.SupplyBLL.QueryList(p=>p.UserId == SiteContext.Config.SupplyUserIdSys));
+        }
+        
+        [HttpPost]
+        public IActionResult SupplyListSave(List<SupplyModel> supplyList)
+        {
+            var admin = AdminCurrent();
+
+            var supplySystem = BLL.SupplyBLL.QueryList(p=>p.UserId == SiteContext.Config.SupplyUserIdSys);
+            
+            foreach (SupplyModel supplyModel in supplyList)
+            {
+                SupplyModel data = supplySystem.FirstOrDefault(p => p.SupplyId == supplyModel.SupplyId);
+                if (data == null)
+                {
+                    supplyModel.SupplyId = Global.Generator.DateId(1);
+                    supplyModel.UserId = SiteContext.Config.SupplyUserIdSys;
+                    
+                    supplyModel.Category = string.IsNullOrWhiteSpace(supplyModel.Category) ? "" : supplyModel.Category;
+                    supplyModel.Memo = string.IsNullOrWhiteSpace(supplyModel.Memo) || supplyModel.Memo.Length > 4000
+                        ? ""
+                        : supplyModel.Memo;
+
+                    BLL.SupplyBLL.Insert(supplyModel);
+
+                    supplySystem.Add(supplyModel);
+                }
+                else
+                {
+                    data.UserId = SiteContext.Config.SupplyUserIdSys;
+                    data.IsShow = supplyModel.IsShow;
+                    
+                    data.Name = supplyModel.Name;
+                    data.DeliveryType = supplyModel.DeliveryType;
+                    data.Category = supplyModel.Category;
+                    data.FaceValue = supplyModel.FaceValue;
+                    data.Cost = supplyModel.Cost;
+                    data.Memo = string.IsNullOrWhiteSpace(supplyModel.Memo) || supplyModel.Memo.Length > 4000
+                        ? ""
+                        : supplyModel.Memo;
+
+                    BLL.SupplyBLL.Update(data);
+                }
+            }
+
+            var supplyIds2Remove = supplySystem.Where(p => supplyList.All(x => x.SupplyId != p.SupplyId))
+                .Select(p => p.SupplyId).ToList();
+            if (supplyIds2Remove.Count > 0)
+            {
+                BLL.SupplyBLL.DeleteByIdsAndUserId(supplyIds2Remove, SiteContext.Config.SupplyUserIdSys);
+                foreach (var supplyId in supplyIds2Remove)
+                    supplySystem.Remove(supplySystem.FirstOrDefault(p => p.SupplyId == supplyId));
+            }
+            return ApiResult.RData(supplySystem);
+        }
+        
         public IActionResult AdminLogPageList([FromForm] int pageIndex, [FromForm] int pageSize, [FromForm] int adminId,
             [FromForm] int logType, [FromForm] DateTime begin, [FromForm] DateTime end)
         {

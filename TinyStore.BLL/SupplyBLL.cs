@@ -20,7 +20,7 @@ namespace TinyStore.BLL
             return QueryList(-1, p => ids.Contains(p.SupplyId), SortSupplyIdDesc);
         }
         
-        public static List<Model.SupplyModel> QueryListByUserId(int userId)
+        public static List<Model.SupplyModel> QueryListByUserIdIsShow(int userId)
         {
             return QueryList(-1, p => p.IsShow == true && p.UserId == userId , SortSupplyIdDesc);
         }

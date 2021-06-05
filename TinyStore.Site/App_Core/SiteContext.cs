@@ -19,6 +19,11 @@ namespace TinyStore.Site
 {
     public class SiteContext
     {
+        static SiteContext()
+        {
+            
+        }
+
         public static ConfigModel Config { get; set; }
 
         public static void ConfigSave()
@@ -557,7 +562,17 @@ namespace TinyStore.Site
 
         }
 
+        
 
+        public static string IP2Region(string ip)
+        {
+            //ip = "49.82.194.75";
+            using (IP2Region.DbSearcher searcher = new IP2Region.DbSearcher(AppDomain.CurrentDomain.BaseDirectory+ "App_Data/ip2region.db"))
+            {
+                return searcher.BtreeSearch(ip).Region;
+            }
+        }
+        
         public static class Resource
         {
             public const string ResourcePrefix = "Resource";

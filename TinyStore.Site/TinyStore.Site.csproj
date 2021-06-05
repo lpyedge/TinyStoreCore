@@ -36,6 +36,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="IP2Region" Version="1.2.0" />
     <PackageReference Include="Marvin.Cache.Headers" Version="5.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="5.0.5" />
   </ItemGroup>
@@ -87,6 +88,12 @@
     <_ContentIncludedByDefault Remove="Views\Admin\Widgets\_Script_Order.cshtml" />
     <_ContentIncludedByDefault Remove="Views\Admin\Widgets\_Script_Store.cshtml" />
     <_ContentIncludedByDefault Remove="Views\Admin\_ViewStart.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="App_Data\ip2region.db">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

@@ -35,6 +35,11 @@ namespace TinyStore.Site.Controllers
             return View();
         }
         
+        public IActionResult Supply_List()
+        {
+            return View();
+        }
+
         //
         // public IActionResult AdminLog()
         // {

@@ -329,16 +329,16 @@ namespace TinyStore.Site.Controllers
             var supplySystem = new List<SupplyModel>();
             if (string.IsNullOrWhiteSpace(type))
             {
-                supplyCustom = SupplyBLL.QueryListByUserId(user.UserId);
-                supplySystem = SupplyBLL.QueryListByUserId(SiteContext.Config.SupplyUserIdSys);
+                supplyCustom = SupplyBLL.QueryListByUserIdIsShow(user.UserId);
+                supplySystem = SupplyBLL.QueryListByUserIdIsShow(SiteContext.Config.SupplyUserIdSys);
             }
             else if (string.Equals(type, "custom", StringComparison.OrdinalIgnoreCase))
             {
-                supplyCustom = SupplyBLL.QueryListByUserId(user.UserId);
+                supplyCustom = SupplyBLL.QueryListByUserIdIsShow(user.UserId);
             }
             else if (string.Equals(type, "system", StringComparison.OrdinalIgnoreCase))
             {
-                supplySystem = SupplyBLL.QueryListByUserId(SiteContext.Config.SupplyUserIdSys);
+                supplySystem = SupplyBLL.QueryListByUserIdIsShow(SiteContext.Config.SupplyUserIdSys);
             }
 
             return ApiResult.RData(new {supplySystem, supplyCustom});
@@ -349,7 +349,7 @@ namespace TinyStore.Site.Controllers
         {
             UserModel user = UserCurrent();
 
-            var supplyCustom = SupplyBLL.QueryListByUserId(user.UserId);
+            var supplyCustom = SupplyBLL.QueryListByUserIdIsShow(user.UserId);
             foreach (SupplyModel supplyModel in supplyList)
             {
                 SupplyModel data = supplyCustom.FirstOrDefault(p => p.SupplyId == supplyModel.SupplyId);
@@ -393,7 +393,7 @@ namespace TinyStore.Site.Controllers
                     supplyCustom.Remove(supplyCustom.FirstOrDefault(p => p.SupplyId == supplyId));
             }
 
-            var supplySystem = SupplyBLL.QueryListByUserId(SiteContext.Config.SupplyUserIdSys);
+            var supplySystem = SupplyBLL.QueryListByUserIdIsShow(SiteContext.Config.SupplyUserIdSys);
 
             return ApiResult.RData(new {supplySystem, supplyCustom});
         }
