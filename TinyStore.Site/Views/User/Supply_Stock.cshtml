@@ -108,32 +108,30 @@
             </q-tr>
         </template>
         <template v-slot:item="props">
-            <div class="q-pa-xs col-xs-12 col-sm-6 col-md-4">
-                <q-card>
-                    <q-item dense class="q-px-sm">
-                        <q-item-section side>
-                            <q-checkbox dense v-model="props.selected"></q-checkbox>
-                        </q-item-section>
-                        <q-item-section style="display: inline-block;text-align: right">
-                            {{ void (isDeliveryIndex = props.row.isDelivery ? 1 : 0, isShowIndex = props.row.isShow ? 1 : 0) }}
-                            <q-icon size="sm" :name="stockIsShowOptions[isShowIndex].icon" :color="stockIsShowOptions[isShowIndex].color">
-                                <q-tooltip>
-                                    {{ stockIsShowOptions[isShowIndex].name }}
-                                </q-tooltip>
-                            </q-icon>
-                            <q-icon size="sm" :name="stockIsDeliveryOptions[isDeliveryIndex].icon" :color="stockIsDeliveryOptions[isDeliveryIndex].color">
-                                <q-tooltip>
-                                    {{ stockIsDeliveryOptions[isDeliveryIndex].name }}
-                                </q-tooltip>
-                            </q-icon>
-                        </q-item-section>
-                    </q-item>
-                    <q-separator></q-separator>
-                    <q-card-section class="q-pa-sm">
-                        <strong>{{ props.row.name }}</strong>
-                    </q-card-section>
-                </q-card>
-            </div>
+            <q-card class="q-pa-xs col-12">
+                <q-item dense class="q-px-sm">
+                    <q-item-section side>
+                        <q-checkbox dense v-model="props.selected"></q-checkbox>
+                    </q-item-section>
+                    <q-item-section style="display: inline-block;text-align: right">
+                        {{ void (isDeliveryIndex = props.row.isDelivery ? 1 : 0, isShowIndex = props.row.isShow ? 1 : 0) }}
+                        <q-icon size="sm" :name="stockIsShowOptions[isShowIndex].icon" :color="stockIsShowOptions[isShowIndex].color">
+                            <q-tooltip>
+                                {{ stockIsShowOptions[isShowIndex].name }}
+                            </q-tooltip>
+                        </q-icon>
+                        <q-icon size="sm" :name="stockIsDeliveryOptions[isDeliveryIndex].icon" :color="stockIsDeliveryOptions[isDeliveryIndex].color">
+                            <q-tooltip>
+                                {{ stockIsDeliveryOptions[isDeliveryIndex].name }}
+                            </q-tooltip>
+                        </q-icon>
+                    </q-item-section>
+                </q-item>
+                <q-separator></q-separator>
+                <q-card-section class="q-pa-sm">
+                    <strong>{{ props.row.name }}</strong>
+                </q-card-section>
+            </q-card>
         </template>
     </q-table>
 </q-page>

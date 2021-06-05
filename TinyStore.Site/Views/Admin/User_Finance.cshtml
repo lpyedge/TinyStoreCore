@@ -117,29 +117,27 @@
                 </q-td>
             </q-tr>
         </template>
-        <template v-slot:item="props">
-            <div class="q-pa-xs col-xs-12 col-sm-6 col-md-4">
-                <q-card>
-                    <q-card-section class="q-pa-sm row">
-                        <div class="col-auto text-weight-bolder">
-                            {{billTypeName(props.row.billType)}}
-                        </div>
-                        <div class="col text-center">
-                            <q-badge v-if="props.row.amount !== 0" class="on-right cursor-pointer text-subtitle2" color="primary">
-                                <q-icon name="fas fa-yen-sign" size="0.7rem"></q-icon>{{ props.row.amount }}
-                                <q-tooltip>资金额度变动</q-tooltip>
-                            </q-badge>
-                            <q-badge v-if="props.row.amountCharge !== 0" class="on-right cursor-pointer text-subtitle2" color="orange">
-                                <q-icon name="fas fa-yen-sign" size="0.7rem"></q-icon>{{ props.row.amountCharge }}
-                                <q-tooltip>签帐额度变动</q-tooltip>
-                            </q-badge>
-                        </div>
-                        <div class="col-auto text-center">
-                            {{ Quasar.date.formatDate(props.row.createDate,'YYYY-MM-DD HH:mm') }}
-                        </div>
-                    </q-card-section>
-                </q-card>
-            </div>
+        <template v-slot:item="props">            
+            <q-card class="q-pa-xs col-12">
+                <q-card-section class="q-pa-sm row">
+                    <div class="col-auto text-weight-bolder">
+                        {{billTypeName(props.row.billType)}}
+                    </div>
+                    <div class="col text-center">
+                        <q-badge v-if="props.row.amount !== 0" class="on-right cursor-pointer text-subtitle2" color="primary">
+                            <q-icon name="fas fa-yen-sign" size="0.7rem"></q-icon>{{ props.row.amount }}
+                            <q-tooltip>资金额度变动</q-tooltip>
+                        </q-badge>
+                        <q-badge v-if="props.row.amountCharge !== 0" class="on-right cursor-pointer text-subtitle2" color="orange">
+                            <q-icon name="fas fa-yen-sign" size="0.7rem"></q-icon>{{ props.row.amountCharge }}
+                            <q-tooltip>签帐额度变动</q-tooltip>
+                        </q-badge>
+                    </div>
+                    <div class="col-auto text-center">
+                        {{ Quasar.date.formatDate(props.row.createDate,'YYYY-MM-DD HH:mm') }}
+                    </div>
+                </q-card-section>
+            </q-card>
         </template>
     </q-table>
 </q-page>

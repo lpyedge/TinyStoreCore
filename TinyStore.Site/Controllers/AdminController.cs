@@ -30,7 +30,7 @@ namespace TinyStore.Site.Controllers
             return View();
         }
 
-        public IActionResult User_List()
+        public IActionResult User_Store()
         {
             return View();
         }

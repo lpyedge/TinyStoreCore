@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using TinyStore.Model;
+using TinyStore.Model.Extend;
 
 namespace TinyStore.Site.Controllers.Api
 {
@@ -120,19 +122,19 @@ namespace TinyStore.Site.Controllers.Api
             }
             else
             {
-                var adminOrgin = BLL.AdminBLL.QueryModelById(adminModel.AdminId);
-                if (adminOrgin == null)
+                var adminOrigin = BLL.AdminBLL.QueryModelById(adminModel.AdminId);
+                if (adminOrigin == null)
                     return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
                 var datacompare = BLL.AdminBLL.QueryModelByAccount(adminModel.Account);
-                if (datacompare != null && datacompare.AdminId != datacompare.AdminId)
+                if (datacompare != null && datacompare.AdminId != adminModel.AdminId)
                     return ApiResult.RCode(ApiResult.ECode.AuthorizationFailed);
                 
-                adminOrgin.Account = adminModel.Account;
-                adminOrgin.IsRoot = adminModel.IsRoot;
+                adminOrigin.Account = adminModel.Account;
+                adminOrigin.IsRoot = adminModel.IsRoot;
                 if (!string.IsNullOrEmpty(adminModel.Password))
-                    adminOrgin.Password = Global.Hash(adminModel.Password, adminOrgin.Salt);
+                    adminOrigin.Password = Global.Hash(adminModel.Password, adminOrigin.Salt);
                 
-                BLL.AdminBLL.Update(adminOrgin);
+                BLL.AdminBLL.Update(adminOrigin);
                 
                 AdminLog(admin.AdminId, EAdminLogType.管理员管理, Request, "管理员修改" + adminModel.AdminId);
                 return ApiResult.RCode(ApiResult.ECode.Success);
@@ -142,14 +144,207 @@ namespace TinyStore.Site.Controllers.Api
         [HttpPost]
         public IActionResult AdminDelete([FromForm] int adminId)
         {
-            var current = AdminCurrent();
+            var admin = AdminCurrent();
 
             if (adminId == 0)
                 return ApiResult.RCode(ApiResult.ECode.DataFormatError);
             
             BLL.AdminBLL.DeleteById(adminId);
 
-            AdminLog(current.AdminId, EAdminLogType.管理员管理, Request, "管理员删除" + adminId);
+            AdminLog(admin.AdminId, EAdminLogType.管理员管理, Request, "管理员删除" + adminId);
+
+            return ApiResult.RCode(ApiResult.ECode.Success);
+        }
+        
+        [HttpPost]
+        public IActionResult UserStorePageList([FromForm] int pageIndex, [FromForm] int pageSize, [FromForm] string keyname)
+        {
+            var res = BLL.UserBLL.QueryPageListBySearch(keyname, pageIndex, pageSize);
+
+            return ApiResult.RData(res);
+        }
+        
+        [HttpPost]
+        public IActionResult UserSave(UserStore userStore)
+        {
+            var admin = AdminCurrent();
+            
+            
+            if (userStore.UserId == 0)
+            {
+                if (BLL.UserBLL.QueryModelByAccount(userStore.Account) != null)
+                    return ApiResult.RCode(ApiResult.ECode.TargetExist);
+                var salt = Global.Generator.Guid().Substring(0, 6);
+                var userModel = new UserModel()
+                {
+                    Account = userStore.Account,
+                    Salt = salt,
+                    Password = Global.Hash(userStore.Password, salt),
+                    ClientKey = "",
+                };
+                BLL.UserBLL.Insert(userModel);
+                var userExtendModel = new UserExtendModel()
+                {
+                    UserId =  userModel.UserId,
+                    Amount = 0,
+                    AmountCharge = 0,
+                    Level = userStore.UserExtend.Level,
+                    Name = userStore.UserExtend.Name,
+                    IdCard = userStore.UserExtend.IdCard,
+                    TelPhone = userStore.UserExtend.TelPhone,
+                    Email = userStore.UserExtend.Email,
+                    QQ = userStore.UserExtend.QQ,
+                    RegisterDate = DateTime.Now,
+                    RegisterIP = Utils.RequestInfo._ClientIP(HttpContext).ToString(),
+                    UserAgent =  Request.Headers["User-Agent"].ToString(),
+                    AcceptLanguage = Request.Headers["Accept-Language"].ToString(),
+                };
+                BLL.UserExtendBLL.Insert(userExtendModel);
+                AdminLog(admin.AdminId, EAdminLogType.商户管理, Request, "商户添加" + userModel.UserId);
+                return ApiResult.RCode(ApiResult.ECode.Success);
+            }
+            else
+            {
+                var userOrigin = BLL.UserBLL.QueryModelById(userStore.UserId);
+                var userExtendOrigin = BLL.UserExtendBLL.QueryModelById(userStore.UserId);
+                if (userOrigin == null || userExtendOrigin == null)
+                    return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
+                var datacompare = BLL.UserBLL.QueryModelByAccount(userStore.Account);
+                if (datacompare != null && datacompare.UserId != userStore.UserId)
+                    return ApiResult.RCode(ApiResult.ECode.AuthorizationFailed);
+                
+                userOrigin.Account = userStore.Account;
+                if (!string.IsNullOrEmpty(userStore.Password))
+                    userOrigin.Password = Global.Hash(userStore.Password, userOrigin.Salt);
+                
+                BLL.UserBLL.Update(userOrigin);
+
+                userExtendOrigin.Level = userStore.UserExtend.Level;
+                userExtendOrigin.Name = userStore.UserExtend.Name;
+                userExtendOrigin.IdCard = userStore.UserExtend.IdCard;
+                userExtendOrigin.TelPhone = userStore.UserExtend.TelPhone;
+                userExtendOrigin.Email = userStore.UserExtend.Email;
+                userExtendOrigin.QQ = userStore.UserExtend.QQ;
+                
+                BLL.UserExtendBLL.Update(userExtendOrigin);
+                
+                AdminLog(admin.AdminId, EAdminLogType.商户管理, Request, "商户修改" + userOrigin.UserId);
+                return ApiResult.RCode(ApiResult.ECode.Success);
+            }
+        }
+        
+        
+        [HttpPost]
+        public IActionResult UserAmountChange([FromForm] int userId,[FromForm] double amountChange,[FromForm] int type)
+        {
+            var admin = AdminCurrent();
+            
+            if(!admin.IsRoot)
+                return ApiResult.RCode(ApiResult.ECode.AuthorizationFailed);
+
+            if (userId == 0)
+                return ApiResult.RCode(ApiResult.ECode.DataFormatError);
+
+            if (type == 0)
+            {
+                BLL.UserExtendBLL.Update(p=> p.UserId == userId,p=> new UserExtendModel() { Amount =  p.Amount + amountChange });
+                
+                AdminLog(admin.AdminId, EAdminLogType.商户管理, Request, "资金修改" + userId + " 【"+amountChange.ToString()+"】");
+            }
+            else if (type == 1)
+            {
+                BLL.UserExtendBLL.Update(p=> p.UserId == userId,p=> new UserExtendModel() { AmountCharge = p.AmountCharge + amountChange });
+                
+                AdminLog(admin.AdminId, EAdminLogType.商户管理, Request, "签帐额修改" + userId + " 【"+amountChange.ToString()+"】");
+            }
+
+
+            return ApiResult.RCode(ApiResult.ECode.Success);
+        }
+        
+        [HttpPost]
+        public IActionResult UserDelete([FromForm] int userId)
+        {
+            var admin = AdminCurrent();
+
+            if (userId == 0)
+                return ApiResult.RCode(ApiResult.ECode.DataFormatError);
+            
+            BLL.UserBLL.DeleteById(userId);
+
+            AdminLog(admin.AdminId, EAdminLogType.商户管理, Request, "商户删除" + userId);
+
+            return ApiResult.RCode(ApiResult.ECode.Success);
+        }
+        
+        [HttpPost]
+        public IActionResult StoreSave(StoreModel storeModel)
+        {
+            var admin = AdminCurrent();
+            
+            if(storeModel.UserId == 0)
+                return ApiResult.RCode(ApiResult.ECode.DataFormatError);
+            var userModel = BLL.UserBLL.QueryModelById(storeModel.UserId);
+            if(userModel == null)
+                return ApiResult.RCode(ApiResult.ECode.DataFormatError);
+            
+            if (string.IsNullOrWhiteSpace(storeModel.StoreId))
+            {
+                storeModel.StoreId = Global.Generator.DateId(1);
+                storeModel.Initial = Global.Initial(storeModel.Name);
+                storeModel.PaymentList = SiteContext.Payment.SystemPaymentList();
+                BLL.StoreBLL.Insert(storeModel);
+                AdminLog(admin.AdminId, EAdminLogType.商户管理, Request, "商户添加" + userModel.UserId);
+                return ApiResult.RCode(ApiResult.ECode.Success);
+            }
+            else
+            {
+                var storeOrigin = BLL.StoreBLL.QueryModelById( storeModel.StoreId);
+
+                if (storeModel.Name.Length >= 10)
+                    return ApiResult.RCode(ApiResult.ECode.DataFormatError);
+
+                if (storeModel.UniqueId.Length <= 5)
+                    return ApiResult.RCode(ApiResult.ECode.DataFormatError);
+
+                if (!string.IsNullOrWhiteSpace(storeModel.UniqueId))
+                {
+                    StoreModel compare = BLL.StoreBLL.QueryModelByUniqueId(storeModel.UniqueId);
+                    if (compare != null && !string.Equals(compare.StoreId, storeModel.StoreId,
+                        StringComparison.OrdinalIgnoreCase))
+                        return ApiResult.RCode(ApiResult.ECode.TargetExist);
+                }
+
+                storeOrigin.Logo = SiteContext.Resource.MoveTempFile(storeModel.Logo);
+
+                storeOrigin.Name = storeModel.Name;
+                storeOrigin.Initial = Global.Initial(storeModel.Name);
+                storeOrigin.UniqueId = storeModel.UniqueId;
+                storeOrigin.Template = storeModel.Template;
+                storeOrigin.Memo = string.IsNullOrWhiteSpace(storeModel.Memo) || storeModel.Memo.Length > 4000 ? "" : storeModel.Memo;
+                storeOrigin.Email = storeModel.Email;
+                storeOrigin.TelPhone = storeModel.TelPhone;
+                storeOrigin.QQ = storeModel.QQ;
+
+                BLL.StoreBLL.Update(storeOrigin);
+                
+                AdminLog(admin.AdminId, EAdminLogType.店铺管理, Request, "店铺修改" + storeOrigin.StoreId);
+                return ApiResult.RCode(ApiResult.ECode.Success);
+            }
+
+        }
+        
+        [HttpPost]
+        public IActionResult StoreDelete([FromForm] string storeId)
+        {
+            var admin = AdminCurrent();
+
+            if (string.IsNullOrWhiteSpace(storeId))
+                return ApiResult.RCode(ApiResult.ECode.DataFormatError);
+            
+            BLL.StoreBLL.DeleteById(storeId);
+
+            AdminLog(admin.AdminId, EAdminLogType.店铺管理, Request, "店铺删除" + storeId);
 
             return ApiResult.RCode(ApiResult.ECode.Success);
         }
@@ -356,18 +551,6 @@ namespace TinyStore.Site.Controllers.Api
             return ApiResult.RCode("");
         }
 
-        public IActionResult UserPageList([FromForm] int pageIndex, [FromForm] int pageSize, [FromForm] string key)
-        {
-            var res = BLL.UserBLL.QueryPageListByKey(key, pageIndex, pageSize);
-
-            return ApiResult.RData(new GridData<Model.UserModel>(res.Rows, res.Total));
-        }
-
-        public IActionResult UserStorePageList([FromForm] int pageIndex, [FromForm] int pageSize, [FromForm] string key)
-        {
-            var res = BLL.StoreBLL.QueryPageListByKey(key, pageIndex, pageSize);
-            return ApiResult.RData(new GridData<Model.StoreModel>(res.Rows, res.Total));
-        }
 
         public IActionResult UserExtend([FromForm] int id)
         {
@@ -495,6 +678,38 @@ namespace TinyStore.Site.Controllers.Api
             BLL.WithDrawBLL.DeleteByWithDrawId(id);
             AdminLog(current.AdminId, EAdminLogType.提现管理, Request, "提现申请删除" + id);
             return ApiResult.RCode("");
+        }
+        
+        [HttpPost]
+        public async Task<IActionResult> UploadFormFile([FromForm] string model, [FromForm] string id,
+            [FromForm] string name)
+        {
+            if (string.IsNullOrEmpty(model) || string.IsNullOrEmpty(id) || string.IsNullOrEmpty(name))
+                return ApiResult.RCode(ApiResult.ECode.DataFormatError);
+            if (Request.Form.Files.Count == 0)
+                return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
+
+            try
+            {
+                var files = new Dictionary<string, byte[]>();
+                for (var i = 0; i < Request.Form.Files.Count; i++)
+                    using (Stream stream = Request.Form.Files[i].OpenReadStream())
+                    {
+                        var buffer = new byte[Request.Form.Files[i].Length];
+                        await stream.ReadAsync(buffer, 0, buffer.Length);
+                        files.Add(Request.Form.Files[i].ContentType,
+                            buffer); //  {name: {key:contenttype,value:byte[]},}
+                    }
+
+                if (string.IsNullOrWhiteSpace(id)) id = Global.Generator.DateId(2);
+
+                ApiResult res = SiteContext.Resource.UploadFiles(model, id, name, files);
+                return new JsonResult(res);
+            }
+            catch
+            {
+                return ApiResult.RCode(ApiResult.ECode.UnKonwError);
+            }
         }
     }
 }

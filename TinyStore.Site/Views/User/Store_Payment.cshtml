@@ -128,7 +128,7 @@
         <q-card-section class="row justify-between">
             <q-btn color="negative" icon="delete_forever" label="移除" @@click="paymentDialogRemove" v-if="paymentIndex >= 0"></q-btn>
             <q-space></q-space>
-            <q-btn color="warning" icon="edit" :label="paymentIndex >= 0 ? '修改' : '新增'" @@click="paymentDialogEdit"></q-btn>
+            <q-btn color="warning" :icon="paymentIndex >= 0 ? 'edit' : 'add'" :label="paymentIndex >= 0 ? '修改' : '新增'" @@click="paymentDialogEdit"></q-btn>
         </q-card-section>
     </q-card>
 </q-dialog>

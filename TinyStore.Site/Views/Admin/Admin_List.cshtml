@@ -40,29 +40,27 @@
                 </q-td>
             </q-tr>
         </template>
-        <template v-slot:item="props">
-            <div class="q-pa-xs col-xs-12 col-sm-6 col-md-4">
-                <q-card>
-                    <q-item dense class="q-px-sm">
-                        <q-item-section>
-                            <strong>
-                                {{ props.row.account }}
-                                <q-icon v-if="props.row.isRoot" class="on-right" color="red" :name="adminlinks[1].icon">
-                                    <q-tooltip>
-                                        主管理员
-                                    </q-tooltip>
-                                </q-icon>
-                            </strong>
-                        </q-item-section>
-                        <q-item-section>
-                            <strong>{{ Quasar.date.formatDate(props.row.createDate,'YYYY-MM-DD') }}</strong>
-                        </q-item-section>
-                        <q-item-section style="display: inline-block;text-align: right">
-                            <q-icon class="cursor-pointer q-ma-xs" color="primary" size="1.4rem" name="zoom_out_map" @@click="adminDialogShow(props.rowIndex)"></q-icon>
-                        </q-item-section>
-                    </q-item>
-                </q-card>
-            </div>
+        <template v-slot:item="props">            
+            <q-card class="q-pa-xs col-12">
+                <q-item dense class="q-px-sm">
+                    <q-item-section>
+                        <strong>
+                            {{ props.row.account }}
+                            <q-icon v-if="props.row.isRoot" class="on-right" color="red" :name="adminlinks[1].icon">
+                                <q-tooltip>
+                                    主管理员
+                                </q-tooltip>
+                            </q-icon>
+                        </strong>
+                    </q-item-section>
+                    <q-item-section>
+                        <strong>{{ Quasar.date.formatDate(props.row.createDate,'YYYY-MM-DD') }}</strong>
+                    </q-item-section>
+                    <q-item-section class="col-shrink" style="display: inline-block;text-align: right">
+                        <q-icon class="cursor-pointer q-ma-xs" color="primary" size="1.4rem" name="zoom_out_map" @@click="adminDialogShow(props.rowIndex)"></q-icon>
+                    </q-item-section>
+                </q-item>
+            </q-card>
         </template>
     </q-table>
 </q-page>
@@ -85,14 +83,14 @@
                      label="密码"
                      type="password"
                      :hint="adminCurrent.adminId ? '不修改密码请留空':''"
-                     v-model.trim="adminCurrent.password">
+                     v-model="adminCurrent.password">
             </q-input>
             <q-toggle v-model="adminCurrent.isRoot" label="主管理员" color="warning"></q-toggle>
         </q-card-section>
         <q-card-section class="row justify-between">
             <q-btn color="negative" icon="delete_forever" label="移除" @@click="adminDialogRemove" v-if="adminIndex >= 0"></q-btn>
             <q-space></q-space>
-            <q-btn color="warning" icon="edit" :label="adminIndex >= 0 ? '修改' : '新增'" @@click="adminDialogEdit"></q-btn>
+            <q-btn color="warning" :icon="adminIndex >= 0 ? 'edit' : 'add'" :label="adminIndex >= 0 ? '修改' : '新增'" @@click="adminDialogEdit"></q-btn>
         </q-card-section>
     </q-card>
 </q-dialog>
@@ -176,6 +174,7 @@
                   .then((response)=> {
                         if (response.data.code === 1){ 
                             this.loadAdminData();
+                            Notify.Info('保存成功');
                         } else if (response.data.code === 12){
                             Notify.Warning('帐号已存在');
                         } else{
@@ -204,6 +203,7 @@
                       .then((response)=> {
                             if (response.data.code === 1){ 
                                 this.loadAdminData();
+                                Notify.Info('删除成功');
                             } else{
                                 Notify.Warning('数据验证失败');
                             }

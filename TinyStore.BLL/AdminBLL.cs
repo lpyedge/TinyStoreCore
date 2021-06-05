@@ -45,11 +45,12 @@ namespace TinyStore.BLL
         {
             using (var db = DbClient)
             {
+                int total = 0;
                 var data = db.Queryable<Model.AdminModel>()
                     .Select(p => new Model.AdminModel { Account = p.Account, AdminId = p.AdminId, IsRoot = p.IsRoot, CreateDate = p.CreateDate })
                     .OrderBy(SortCreateDateDesc.First().Key, SortCreateDateDesc.First().Value)
-                    .ToPageList(pageindex, pagesize);
-                return new PageList<Model.AdminModel>(data);
+                    .ToPageList(pageindex, pagesize,ref total);
+                return new PageList<Model.AdminModel>(data,total);
             }
         }
 

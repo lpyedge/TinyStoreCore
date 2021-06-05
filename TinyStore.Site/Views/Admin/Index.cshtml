@@ -67,43 +67,41 @@
                 </q-td>
             </q-tr>
         </template>
-        <template v-slot:item="props">
-            <div class="q-pa-xs col-xs-12 col-sm-6 col-md-4">
-                <q-card>
-                    <q-item dense class="q-px-sm">
-                        <q-item-section side>
-                            <q-checkbox dense v-model="props.selected"></q-checkbox>
-                        </q-item-section>
-                        <q-item-section class="text-center">
-                            {{ Quasar.date.formatDate(props.row.createDate,'YYYY-MM-DD HH:mm') }}
-                        </q-item-section>
-                        <q-item-section>
-                            <q-item-label>
-                                <q-icon size="1.1rem" name="warning" color="negative">
-                                    <q-tooltip>
-                                        提醒日期
-                                    </q-tooltip>
-                                </q-icon>
-                                {{ Quasar.date.formatDate(props.row.notifyDate,'YYYY-MM-DD') }}
-                            </q-item-label>
-                        </q-item-section>
-                    </q-item>
-                    <q-separator></q-separator>
-                    <q-card-section class="q-pa-sm row">
-                        <div class="col text-weight-bolder">
-                            {{ props.row.name }}
-                            <q-badge align="top" color="accent" class="text-italic">* {{ props.row.quantity }}</q-badge>
-                        </div>
-                        <div class="col-auto">
-                            <q-btn dense flat><q-icon size="0.8rem" name="fas fa-yen-sign" class="q-mr-auto"></q-icon> {{ props.row.quantity * props.row.amount }}</q-btn>
-                            <q-btn dense v-if="props.row.refundAmount>0" size="sm" color="green"><q-icon size="0.6rem" name="fas fa-yen-sign"></q-icon>-{{ props.row.refundAmount }}</q-btn>
-                        </div>
-                    </q-card-section>
-                    <q-card-section class="q-pa-sm">
-                        {{ props.row.contact }} / {{ props.row.message }}
-                    </q-card-section>
-                </q-card>
-            </div>
+        <template v-slot:item="props">            
+            <q-card class="q-pa-xs col-12">
+                <q-item dense class="q-px-sm">
+                    <q-item-section side>
+                        <q-checkbox dense v-model="props.selected"></q-checkbox>
+                    </q-item-section>
+                    <q-item-section class="text-center">
+                        {{ Quasar.date.formatDate(props.row.createDate,'YYYY-MM-DD HH:mm') }}
+                    </q-item-section>
+                    <q-item-section>
+                        <q-item-label>
+                            <q-icon size="1.1rem" name="warning" color="negative">
+                                <q-tooltip>
+                                    提醒日期
+                                </q-tooltip>
+                            </q-icon>
+                            {{ Quasar.date.formatDate(props.row.notifyDate,'YYYY-MM-DD') }}
+                        </q-item-label>
+                    </q-item-section>
+                </q-item>
+                <q-separator></q-separator>
+                <q-card-section class="q-pa-sm row">
+                    <div class="col text-weight-bolder">
+                        {{ props.row.name }}
+                        <q-badge align="top" color="accent" class="text-italic">* {{ props.row.quantity }}</q-badge>
+                    </div>
+                    <div class="col-auto">
+                        <q-btn dense flat><q-icon size="0.8rem" name="fas fa-yen-sign" class="q-mr-auto"></q-icon> {{ props.row.quantity * props.row.amount }}</q-btn>
+                        <q-btn dense v-if="props.row.refundAmount>0" size="sm" color="green"><q-icon size="0.6rem" name="fas fa-yen-sign"></q-icon>-{{ props.row.refundAmount }}</q-btn>
+                    </div>
+                </q-card-section>
+                <q-card-section class="q-pa-sm">
+                    {{ props.row.contact }} / {{ props.row.message }}
+                </q-card-section>
+            </q-card>
         </template>
     </q-table>
 </q-page>

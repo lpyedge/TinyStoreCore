@@ -140,11 +140,11 @@
        admin : Store.Admin(),
        adminlinks: [
            { icon: 'settings', text: '全局设置',url:'@Url.ActionLink("Admin_Config", "Admin")'  },
-           { icon: 'fas fa-users-cog', text: '管理列表',url:'@Url.ActionLink("Admin_List", "Admin")' },
+           { icon: 'fas fa-user-cog', text: '管理列表',url:'@Url.ActionLink("Admin_List", "Admin")' },
            // { icon: 'history', text: '管理日志',url:'@Url.ActionLink("Admin_Log", "Admin")'  },
          ],
        userlinks: [
-           { icon: 'person', text: '商户列表',url:'@Url.ActionLink("User_List", "Admin")' },
+           { icon: 'person', text: '商户店铺',url:'@Url.ActionLink("User_Store", "Admin")' },
            { icon: 'local_atm', text: '资金提现',url:'@Url.ActionLink("User_Finance","Admin")' },
          ],
        supplylinks: [
@@ -155,6 +155,13 @@
            { icon: 'local_grocery_store', text: '订单结算',url:'@Url.ActionLink("Store_Order","Admin")'  },
            { icon: 'insert_chart', text: '销售统计',url:'@Url.ActionLink("Store_Stat","Admin")' },
          ],
+         userLevelOptions:[
+                      {icon:'star',name:'无',color:'primary',value:0},
+                      {icon:'star',name:'一星',color:'primary',value:1},
+                      {icon:'star',name:'二星',color:'primary',value:2},
+                      {icon:'star',name:'三星',color:'primary',value:3},
+                      {icon:'star',name:'合作商',color:'primary',value:9},
+                  ],
          deliveryTypeOptions:[
              {icon:'vpn_key',name:'卡密',color:'primary',value:1},
              {icon:'pan_tool',name:'人工',color:'primary',value:2},

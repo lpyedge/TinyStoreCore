@@ -172,7 +172,7 @@
         <q-card-section v-if="supplyCurrent.userId === userExtend.userId" class="row justify-between">
             <q-btn color="negative" icon="delete_forever" label="移除" @@click="supplyDialogRemove" v-if="supplyCurrent.userId === userExtend.userId && supplyIndex >= 0"></q-btn>
             <q-space></q-space>
-            <q-btn color="warning" icon="edit" v-if="supplyCurrent.userId === userExtend.userId" :label="supplyIndex >= 0 ? '修改' : '新增'" @@click="supplyDialogEdit"></q-btn>
+            <q-btn color="warning" :icon="supplyIndex >= 0 ? 'edit' : 'add'" v-if="supplyCurrent.userId === userExtend.userId" :label="supplyIndex >= 0 ? '修改' : '新增'" @@click="supplyDialogEdit"></q-btn>
         </q-card-section>
     </q-card>
 </q-dialog>

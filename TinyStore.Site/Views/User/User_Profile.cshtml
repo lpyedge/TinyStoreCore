@@ -8,8 +8,8 @@
     <q-form class="q-gutter-md q-mt-none">
         <div class="text-h6">
             <label class="on-left">帐号:</label>{{user.account}}
-            <q-badge color="secondary" align="top" v-if="user.level">
-                {{user.level}}<q-icon name="star" class="q-ml-xs"/>
+            <q-badge color="secondary" align="top" v-if="userExtend.level">
+                {{userExtend.level}}<q-icon name="star" class="q-ml-xs"></q-icon>
                 <q-tooltip content-class="bg-indigo"
                            transition-show="flip-right"
                            transition-hide="flip-left"

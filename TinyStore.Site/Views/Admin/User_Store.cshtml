@@ -1,0 +1,599 @@
+﻿<q-page padding>
+    
+    <div class="text-h5 text-weight-bold text-grey-8">
+        <q-icon :name="userlinks[0].icon" size="md" class="on-left"></q-icon>{{userlinks[0].text}}
+    </div>
+
+    <q-separator class="q-my-sm"></q-separator>
+    <div class="row justify-end q-col-gutter-xs q-mx-none q-my-sm">
+        <q-input outlined dense stack-label bg-color="white"
+                 clearable
+                 class="col-xs-grow col-md-shrink col-auto"
+                 label="关键词"
+                 v-model.trim="userFilter.keyname">
+            <template v-slot:prepend>
+                <q-icon name="fas fa-filter" color="primary" size="xs"/>
+            </template>
+        </q-input>
+        <q-space></q-space>
+        <q-btn :loading="userFilter.loading" class="col-shrink" color="primary" icon="search" label="搜索" @@click="loadUserStoreData"></q-btn>
+    </div>
+    
+    <q-table
+        :grid="!$q.platform.is.desktop"
+
+        row-key="userId"
+        :data="userData"
+        :columns="userColumns"
+        
+        :pagination.sync="userFilter.pagination"
+        :rows-per-page-options="[10, 25, 50, 100, 200]"
+        @@request="loadUserStoreData">
+        <template v-slot:top>
+            <q-space ></q-space>
+            <q-btn color="primary" icon="add" @@click="userDialogShow(-1)"></q-btn>
+        </template>
+        <template v-slot:body="props">
+            <q-tr :props="props">
+                {{void (props.expand = true) }}
+                <q-td key="account">
+                    <strong>
+                        {{ props.row.account }}
+                        <q-badge color="secondary" align="top" class="on-right" v-if="props.row.userExtend.level">
+                            {{props.row.userExtend.level}}<q-icon name="star" class="q-ml-xs"></q-icon>
+                            <q-tooltip content-class="bg-indigo"
+                                       transition-show="flip-right"
+                                       transition-hide="flip-left"
+                                       :offset="[10, 10]">
+                                不同等级商户的货源成本价格不同
+                            </q-tooltip>
+                        </q-badge>
+                    </strong>
+                </q-td>
+                <q-td key="amount">
+                    <q-badge>
+                        <q-icon name="fas fa-yen-sign" class="q-mr-xs"></q-icon>
+                        {{props.row.userExtend.amount}}
+                        <q-tooltip>资金</q-tooltip>
+                    </q-badge>
+                    <q-badge color="orange">
+                        <q-icon name="fas fa-yen-sign" class="q-mr-xs"></q-icon>
+                        {{props.row.userExtend.amountCharge}}
+                        <q-tooltip>签帐</q-tooltip>
+                    </q-badge>
+                </q-td>
+                <q-td key="registerDate">
+                    <strong>{{ Quasar.date.formatDate(props.row.userExtend.registerDate,'YYYY-MM-DD') }}</strong>
+                </q-td>
+                <q-td auto-width>
+                    <q-icon class="cursor-pointer q-ma-xs" color="primary" size="1.4rem" name="zoom_out_map" @@click="userDialogShow(props.rowIndex)"></q-icon>
+                </q-td>
+            </q-tr>
+            <q-tr v-show="props.expand" :props="props" >
+                <q-td colspan="100%" >
+                    <div class="row">
+                        <q-chip square class="col-shrink" v-for="(store,i) in props.row.stores">
+                            <q-avatar icon="store_mall_directory" color="primary" text-color="white"></q-avatar>
+                            {{ store.name }}
+                            <q-icon class="cursor-pointer q-ma-sm" color="primary" size="1.1rem" name="zoom_out_map" @@click="storeDialogShow(props.rowIndex,i)"></q-icon>
+                        </q-chip>
+                        <q-chip square class="col-auto">
+                            <q-avatar icon="store_mall_directory" color="primary" text-color="white"></q-avatar>
+                            <q-icon class="cursor-pointer q-ma-sm" color="primary" size="1.1rem" name="add" @@click="storeDialogShow(props.rowIndex,-1)"></q-icon>
+                        </q-chip>
+                    </div>
+                </q-td>
+            </q-tr>
+        </template>
+        <template v-slot:item="props">
+            {{void (props.expand = true) }}
+            <q-card class="q-pa-xs col-12">
+                <q-item dense class="q-px-sm">
+                    <q-item-section class="col">
+                        <strong>
+                            {{ props.row.account }}
+                            <q-badge color="secondary" align="top" v-if="props.row.userExtend.level">
+                                {{props.row.userExtend.level}}<q-icon name="star" class="q-ml-xs"></q-icon>
+                                <q-tooltip content-class="bg-indigo"
+                                           transition-show="flip-right"
+                                           transition-hide="flip-left"
+                                           :offset="[10, 10]">
+                                    不同等级商户的货源成本价格不同
+                                </q-tooltip>
+                            </q-badge>
+                        </strong>
+                    </q-item-section>
+                    <q-item-section class="col">
+                        <div>
+                            <q-badge>
+                                <q-icon name="fas fa-yen-sign" class="q-mr-xs"></q-icon>
+                                {{props.row.userExtend.amount}}
+                                <q-tooltip>资金</q-tooltip>
+                            </q-badge>
+                            <q-badge color="orange">
+                                <q-icon name="fas fa-yen-sign" class="q-mr-xs"></q-icon>
+                                {{props.row.userExtend.amountCharge}}
+                                <q-tooltip>签帐</q-tooltip>
+                            </q-badge>
+                        </div>
+                    </q-item-section>
+                    <q-item-section class="col-auto">
+                        <strong>{{ Quasar.date.formatDate(props.row.userExtend.registerDate,'YYYY-MM-DD') }}</strong>
+                    </q-item-section>
+                    <q-item-section class="col-shrink" style="display: inline-block;text-align: right">
+                        <q-icon class="cursor-pointer q-ma-xs" color="primary" size="1.4rem" name="zoom_out_map" @@click="userDialogShow(props.rowIndex)"></q-icon>
+                    </q-item-section>
+                </q-item>
+                <q-item v-show="props.expand" :props="props">
+                    <div class="row">
+                        <q-chip square class="col-shrink" v-for="(store,i) in props.row.stores">
+                            <q-avatar icon="store_mall_directory" color="primary" text-color="white"></q-avatar>
+                            {{ store.name }}
+                            <q-icon class="cursor-pointer q-ma-sm" color="primary" size="1.1rem" name="zoom_out_map" @@click="storeDialogShow(props.rowIndex,i)"></q-icon>
+                        </q-chip>
+                        <q-chip square class="col-auto">
+                            <q-avatar icon="store_mall_directory" color="primary" text-color="white"></q-avatar>
+                            <q-icon class="cursor-pointer q-ma-sm" color="primary" size="1.1rem" name="add" @@click="storeDialogShow(props.rowIndex,-1)"></q-icon>
+                        </q-chip>
+                    </div>
+                </q-item>
+            </q-card>
+        </template>
+    </q-table>
+</q-page>
+
+<q-dialog v-model="userDialog">
+    <q-card style="max-width: 500px; width: 500px;">
+        <q-card-section class="row items-center q-pb-none">
+            <div class="text-h6">商户详情</div>
+            <q-space ></q-space>
+            <q-btn icon="close" flat round dense v-close-popup></q-btn>
+        </q-card-section>
+        <q-card-section class="q-gutter-sm">
+            <div class="row">
+                <q-input outlined dense stack-label bg-color="white"
+                         class="col"
+                         label="帐号"
+                         v-model.trim="userCurrent.account"
+                         ref="userCurrent_account"
+                         :rules="[val => !!val || '必须输入帐号',val => val.length >= 4 || '帐号长度必须大于等于4']">
+                </q-input>
+                <q-select outlined dense options-dense stack-label bg-color="white"
+                          style="min-width: 6.5rem"
+                          label="商户等级"
+                          v-model="userCurrent.userExtend.level"
+                          emit-value
+                          map-options
+                          option-value="value"
+                          option-label="name"
+                          :options="userLevelOptions"
+                          class="col-auto">
+                </q-select>
+            </div>
+
+            <q-input outlined dense stack-label bg-color="white"
+                     label="密码"
+                     type="password"
+                     :hint="userCurrent.userId ? '不修改密码请留空':''"
+                     v-model="userCurrent.password">
+            </q-input>
+
+            <div v-if="userCurrent.userId">
+                <q-chip color="primary" text-color="white">
+                    <q-icon name="fas fa-yen-sign" class="q-mr-xs"></q-icon>
+                    {{userCurrent.userExtend.amount}}
+
+                    <q-separator spaced color="white" vertical></q-separator>
+                    <q-icon name="edit" class="cursor-pointer" size="1.3rem" @@click="userAmountDialogChange(0)"></q-icon>
+                    <q-tooltip>资金</q-tooltip>
+                </q-chip>
+                <q-chip color="orange" text-color="white">
+                    <q-icon name="fas fa-yen-sign" class="q-mr-xs"></q-icon>
+                    {{userCurrent.userExtend.amountCharge}}
+                    <q-separator spaced color="white" vertical></q-separator>
+                    <q-icon name="edit" class="cursor-pointer" size="1.3rem" @@click="userAmountDialogChange(1)"></q-icon>
+                    <q-tooltip>签帐</q-tooltip>
+                </q-chip>
+            </div>
+
+            <q-input outlined dense stack-label bg-color="white"
+                     label="姓名"
+                     v-model.trim="userCurrent.userExtend.name"
+                     ref="userCurrent_userExtend_name"
+                     :rules="[val => !!val || '必须输入姓名']">
+            </q-input>
+            
+            <q-input outlined dense stack-label bg-color="white"
+                     label="身份证"
+                     maxlength="18"
+                     v-model.trim="userCurrent.userExtend.idCard"
+                     ref="userCurrent_userExtend_idCard"
+                     :rules="[val => !!val || '必须输入身份证号',val => val.length == 18 || '身份证号长度必须等于18']">
+            </q-input>
+            
+            <q-input outlined dense stack-label bg-color="white"
+                     label="联系电话"
+                     v-model.trim="userCurrent.userExtend.telPhone">
+            </q-input>
+            
+            <q-input outlined dense stack-label bg-color="white"
+                     label="联系邮箱"
+                     v-model.trim="userCurrent.userExtend.email">
+            </q-input>
+            
+            <q-input outlined dense stack-label bg-color="white"
+                     label="联系QQ"
+                     v-model.trim="userCurrent.userExtend.qq">
+            </q-input>
+            
+        </q-card-section>
+        <q-card-section class="row justify-between">
+            <q-btn color="negative" icon="delete_forever" label="移除" @@click="userDialogRemove" v-if="userIndex >= 0"></q-btn>
+            <q-space></q-space>
+            <q-btn color="warning" :icon="userIndex >= 0 ? 'edit' : 'add'" :label="userIndex >= 0 ? '修改' : '新增'" @@click="userDialogEdit"></q-btn>
+        </q-card-section>
+    </q-card>
+</q-dialog>
+
+
+<q-dialog v-model="storeDialog">
+    <q-card style="max-width: 500px; width: 500px;">
+        <q-card-section class="row items-center q-pb-none">
+            <div class="text-h6">店铺详情</div>
+            <q-space ></q-space>
+            <q-btn icon="close" flat round dense v-close-popup></q-btn>
+        </q-card-section>
+        <q-card-section class="q-gutter-sm">
+            <div class="row">
+                
+                <div class="col column on-left">
+                    <q-input outlined dense stack-label bg-color="white"
+                             class="col"
+                             label="店铺名称"
+                             v-model.trim="storeCurrent.name"
+                             ref="storeCurrent_name"
+                             :rules="[val => !!val || '必须输入店铺名称',val => val.length < 10 || '店铺名称长度必须小于10']">
+                    </q-input>
+                    <q-input outlined dense stack-label bg-color="white"
+                             class="col"
+                             label="店铺标识"
+                             v-model.trim="storeCurrent.uniqueId"
+                             hint="设置后不要轻易修改，会影响客户打开时的网址"
+                             ref="storeCurrent_uniqueId"
+                             :rules="[val => !!val || '必须输入店铺标识',val => val.length > 5 || '店铺标识长度必须大于5']">
+                    </q-input>
+                    <q-select outlined dense options-dense stack-label bg-color="white"
+                              class="col"
+                              label="店铺模版"
+                              v-model="storeCurrent.template"
+                              emit-value
+                              map-options
+                              :options="storeTemplates">
+                    </q-select>
+                </div>
+                <div class="col on-right">
+                    <q-img basic style="border:1px solid grey;border-radius: 0.8rem; height: 10rem; width: 10rem"
+                           class="cursor-pointer"
+                           :src="storeCurrent.logo"
+                           spinner-color="white"
+                           @@click="$refs.storeCurrent_logo_pick.click()">
+
+                        <q-icon class="absolute-top-right" color="orange-9" name="backup" size="sm"></q-icon>
+                        @* <template v-slot:loading> *@
+                        @*     <div class="text-subtitle1 text-white"> *@
+                        @*         Loading... *@
+                        @*     </div> *@
+                        @* </template> *@
+                        <template v-slot:error>
+                            <div class="absolute-full flex flex-center bg-grey-2 text-primary">
+                                暂无图片
+                                <q-icon class="absolute-top-right" color="orange-9" name="backup" size="sm"></q-icon>
+                            </div>
+                        </template>
+                    </q-img>
+                    <input class="hidden" type="file" accept="image/*" ref="storeCurrent_logo_pick" @@change="storeLogoUpload">
+                </div>
+            </div>
+            <q-input outlined dense stack-label bg-color="white"
+                     label="联系邮箱"
+                     v-model.trim="storeCurrent.email"
+                     placeholder="@@">
+            </q-input>
+            <q-input outlined dense stack-label bg-color="white"
+                     label="联系电话"
+                     v-model.trim="storeCurrent.telPhone">
+            </q-input>
+            <q-input outlined dense stack-label bg-color="white"
+                     label="联系QQ"
+                     v-model.trim="storeCurrent.qq"
+                     maxlength="16">
+            </q-input> 
+            <q-editor v-model="storeCurrent.memo" min-height="5rem" dense
+                      placeholder="店铺介绍"
+                      :toolbar="editorToolbar"
+                      :fonts="editorFonts">
+            </q-editor>
+        </q-card-section>
+        <q-card-section class="row justify-between">
+            <q-btn color="negative" icon="delete_forever" label="移除" @@click="storeDialogRemove" v-if="storeIndex >= 0"></q-btn>
+            <q-space></q-space>
+            <q-btn color="warning" :icon="storeIndex >= 0 ? 'edit' : 'add'" :label="storeIndex >= 0 ? '修改' : '新增'" @@click="storeDialogEdit"></q-btn>
+        </q-card-section>
+    </q-card>
+</q-dialog>
+
+@section Scripts{
+    <script>
+   var _page = {
+       data:{
+           userFilter:{
+               loading:false,
+               keyname:'',
+               pagination:{                   
+                   page: 1,
+                   rowsPerPage: 25,
+                   rowsNumber:0,
+               },
+               userLevelOptions:[]
+           },
+           userData:[],
+           userColumns:[
+               {
+                   align: 'left',
+                   name:'account',
+                   label:'帐号',
+               },
+               {
+                   align: 'left',
+                   name:'',
+                   label:'资金'
+               },
+               {
+                   align: 'left',
+                   //format: (val, row) => `${val}`,
+                   name:'registerDate',
+                   label:'注册日期'
+               },
+               {
+                   align: 'left',
+                   name:'',
+                   label:''
+               },
+           ],           
+           
+           userCurrent:{ userExtend:{ level:0},stores:[] },
+           userDialog:false,
+           userIndex:2,//默认 -2 新增 -1 其他 索引值    
+           
+           userAmountChange:10,       
+           
+           storeTemplates: @Json.Serialize(Global.EnumsOptions<EStoreTemplate>()),           
+           storeCurrent:{},
+           storeDialog:false,
+           storeIndex:2,//默认 -2 新增 -1 其他 索引值
+       },
+       beforeMount(){
+           this.loadUserStoreData();
+       },
+       methods: {
+           loadUserStoreData(){
+               if(arguments.length>0 && arguments[0].pagination){
+                   this.userFilter.pagination = arguments[0].pagination;
+               }
+               this.userFilter.loading =true;
+               AdminApi('UserStorePageList',{ keyname:this.userFilter.keyname, pageSize:this.userFilter.pagination.rowsPerPage,pageIndex:this.userFilter.pagination.page},true)
+                  .then((response)=> {
+                      if (response.data.code === 1){ 
+                          this.userData = response.data.data.rows;
+                          this.userFilter.pagination.rowsNumber = response.data.data.total;   
+                          this.userSelected = [];
+                      } else{
+                          Notify.Warning('商户数据加载失败');
+                      }
+                      this.userFilter.loading =false;
+                  })
+                  .catch( (error)=> {
+                      this.userFilter.loading =false;
+                      Notify.Warning('接口通信错误');
+                      console.error(error);
+                  });
+           },
+           userDialogShow(i){
+               this.userDialog=true;
+               this.userIndex =i;
+               if (i>=0){
+                  this.userCurrent= JSON.parse(JSON.stringify(this.userData[i]));
+               }else{
+                  this.userCurrent = {account:'',password:'',userExtend:{amount:0,amountCharge:0,level:0},stores:[]};
+               }
+           },
+           userDialogEdit(){
+              this.$refs.userCurrent_account.validate();
+              this.$refs.userCurrent_userExtend_name.validate();
+              this.$refs.userCurrent_userExtend_idCard.validate();
+              if (!this.$refs.userCurrent_account.hasError && !this.$refs.userCurrent_userExtend_name.hasError && !this.$refs.userCurrent_userExtend_idCard.hasError){
+                  this.userCurrent.stores = null;
+                  AdminApi("UserSave",this.userCurrent)
+                  .then((response)=> {
+                        if (response.data.code === 1){ 
+                            this.loadUserStoreData();
+                            Notify.Info('保存成功');
+                        } else if (response.data.code === 12){
+                            Notify.Warning('帐号已存在');
+                        } else{
+                            Notify.Warning('数据验证失败');
+                        }
+                        this.userFilter.loading =false;
+                    })
+                    .catch( (error)=> {
+                        this.userFilter.loading =false;
+                        Notify.Warning('接口通信错误');
+                        console.error(error);
+                    });
+                  this.userIndex = -2;
+                  this.userDialog=false;
+                  this.userCurrent = { userExtend:{}};
+              }
+          },
+          userDialogRemove(){
+              this.$q.dialog({
+                  title: '再次确认',
+                  message: '确定要移除帐号为['+this.userCurrent.account+']的商户?',
+                  cancel: true,
+                  persistent: true
+                }).onOk(() => {
+                    AdminApi("UserDelete",{userId:this.userCurrent.userId},true)
+                      .then((response)=> {
+                            if (response.data.code === 1){ 
+                                this.loadUserStoreData();
+                                Notify.Info('删除成功');
+                            } else{
+                                Notify.Warning('数据验证失败');
+                            }
+                            this.userFilter.loading =false;
+                        })
+                        .catch( (error)=> {
+                            this.userFilter.loading =false;
+                            Notify.Warning('接口通信错误');
+                            console.error(error);
+                        });
+                    this.userIndex = -2;
+                    this.userDialog=false;
+                    this.userCurrent = {userExtend:{}};
+                })
+          },
+          userAmountDialogChange(type){               
+               this.$q.dialog({
+                     title: '修改商户['+this.userCurrent.account+']的' + (type===0?'资金':'签帐额'),
+                     message: '增加金额直接输入，减少金额请输入负数',
+                     prompt:{
+                         //model:this.userAmountChange,
+                         type:'number',
+                         prefix:'¥',
+                     },
+                     cancel: true,
+                     persistent: true
+                   }).onOk((data) => {
+                       AdminApi("UserAmountChange",{userId:this.userCurrent.userId,amountChange:data,type},true)
+                         .then((response)=> {
+                               if (response.data.code === 1){ 
+                                   this.loadUserStoreData();
+                                   Notify.Info('操作成功');
+                               } else if (response.data.code === 11){
+                                   Notify.Warning('权限不足，只有主管理员可以操作资金');
+                               } else{
+                                   Notify.Warning('数据验证失败');
+                               }
+                               this.userFilter.loading =false;
+                           })
+                           .catch( (error)=> {
+                               this.userFilter.loading =false;
+                               Notify.Warning('接口通信错误');
+                               console.error(error);
+                           });
+                       this.userIndex = -2;
+                       this.userDialog=false;
+                       this.userCurrent = {userExtend:{}};
+                   })
+          },
+          storeDialogShow(i,j){
+               if (i>=0 ){
+                   this.storeDialog=true;
+                   this.userIndex = i;
+                   this.storeIndex = j;
+                   if (j>=0){
+                      this.storeCurrent= JSON.parse(JSON.stringify(this.userData[i].stores[j]));                       
+                   }
+                   else{
+                      this.storeCurrent = { template:1,memo:'' };
+                   }
+               }
+          },
+           storeDialogEdit(){
+              if (this.storeCurrent.memo.length > 4000){
+                 Notify.Warning('店铺介绍内容过长');
+                 return;
+             }
+             this.$refs.storeCurrent_name.validate();
+             this.$refs.storeCurrent_uniqueId.validate();
+              if (!this.$refs.storeCurrent_name.hasError && !this.$refs.storeCurrent_uniqueId.hasError){
+                  this.storeCurrent.userId = this.userData[this.userIndex].userId;
+                  console.log(this.storeCurrent);
+                  AdminApi("StoreSave", this.storeCurrent)
+                        .then((response)=> {
+                            if (response.data.code === 1){ 
+                                this.loadUserStoreData();
+                                Notify.Info('保存成功');
+                            }
+                            else if (response.data.code === 12){
+                               Notify.Warning('保存失败，店铺标识已被占用');
+                            } else{
+                                Notify.Warning('保存失败，数据格式错误');
+                            }
+                        })
+                        .catch( (error)=> {
+                            Notify.Warning('接口通信错误');
+                            console.error(error);
+                        });
+                  this.userIndex = -2;
+                  this.storeIndex = -2;
+                  this.storeDialog=false;
+              }
+          },
+          storeDialogRemove(){
+              this.$q.dialog({
+                  title: '再次确认',
+                  message: '确定要移除名称为['+this.storeCurrent.name+']的店铺?',
+                  cancel: true,
+                  persistent: true
+                }).onOk(() => {
+                    AdminApi("StoreDelete",{storeId:this.storeCurrent.storeId},true)
+                      .then((response)=> {
+                            if (response.data.code === 1){ 
+                                this.loadUserStoreData();
+                                Notify.Info('删除成功');
+                            } else{
+                                Notify.Warning('数据验证失败');
+                            }
+                            this.userFilter.loading =false;
+                        })
+                        .catch( (error)=> {
+                            this.userFilter.loading =false;
+                            Notify.Warning('接口通信错误');
+                            console.error(error);
+                        });
+                  this.userIndex = -2;
+                  this.storeIndex = -2;
+                  this.storeDialog=false;
+                })
+          },
+          storeLogoUpload(){
+             if (arguments.length === 1 && arguments[0].target && arguments[0].target.files && arguments[0].target.files.length === 1){                   
+                  var file = arguments[0].target.files[0];                  
+                  AdminApi("UploadFormFile",{model:'Store',id:this.storeCurrent.storeId,name:'Logo', file},true)
+                      .then((response)=> {
+                            if (response.data.code === 1){                
+                                this.storeCurrent.logo = response.data.data;
+                            }
+                            else if(response.data.code === 0){
+                             Notify.Warning('未上传任何文件');
+                          }else if(response.data.code === 15){
+                             Notify.Warning('上传参数错误');
+                          }else {
+                             Notify.Warning('未知错误');
+                          }
+                          this.$refs.storeCurrent_logo_pick.value = '';
+                        })
+                        .catch( (error)=> {
+                            Notify.Warning('接口通信错误');
+                            console.error(error);
+                          this.$refs.storeCurrent_logo_pick.value = '';
+                        });
+             }
+         }
+       }
+   };
+   DeepMerge(_layout,_page);
+   new Vue(_layout);
+    </script>
+}

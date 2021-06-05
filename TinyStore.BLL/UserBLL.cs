@@ -1,4 +1,10 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using SqlSugar;
+using TinyStore.Model;
+using TinyStore.Model.Extend;
 
 namespace TinyStore.BLL
 {
@@ -19,30 +25,59 @@ namespace TinyStore.BLL
             return QueryModel(p => p.UserId == userid);
         }
 
-        public static PageList<Model.UserModel> QueryPageListByKey(string key, int pageindex, int pagesize)
+        public static PageList<Model.Extend.UserStore> QueryPageListBySearch(string keyname, int pageindex, int pagesize)
         {
             using (var db = DbClient)
             {
-                if (string.IsNullOrWhiteSpace(key))
+                List<UserStore> data = new List<UserStore>();
+                int total = 0;
+                if (string.IsNullOrWhiteSpace(keyname))
                 {
-                    var data = db.Queryable<Model.UserModel>()
-                        .Select(p => new Model.UserModel {Account = p.Account, UserId = p.UserId})
-                        .OrderBy(SortCreateDateDesc.First().Key, SortCreateDateDesc.First().Value)
-                        .ToPageList(pageindex, pagesize);
-                    return new PageList<Model.UserModel>(data);
+                    // return UserExtendBLL.QueryPageList(pageindex,pagesize,null,
+                    //     new Dictionary<Expression<Func<UserExtendModel, object>>, OrderByType>(){[p=>p.UserId]=OrderByType.Desc});
+                    data = db.Queryable<Model.UserModel, Model.UserExtendModel>(
+                            (u,ue) => new JoinQueryInfos(JoinType.Inner,u.UserId == ue.UserId))
+                        .OrderBy((u,ue)  => u.UserId,OrderByType.Desc)
+                        .Select((u,ue)=> new Model.Extend.UserStore()
+                        {
+                            UserId = u.UserId,
+                            Account = u.Account,
+                            UserExtend = ue,
+                        })
+                        .ToPageList(pageindex, pagesize,ref total);
                 }
                 else
                 {
-                    var userids = UserExtendBLL.QueryUseridsByKey(key);
-                    userids.AddRange(StoreBLL.QueryUseridsByKey(key));
-
-                    var data = db.Queryable<Model.UserModel>()
-                        .Select(p => new Model.UserModel {Account = p.Account, UserId = p.UserId})
-                        .Where(p => p.Account.Contains(key) || userids.Contains(p.UserId))
-                        .OrderBy(SortCreateDateDesc.First().Key, SortCreateDateDesc.First().Value)
-                        .ToPageList(pageindex, pagesize);
-                    return new PageList<Model.UserModel>(data);
+                    data = db.Queryable<Model.UserModel, Model.UserExtendModel>(
+                            (u,ue) => new JoinQueryInfos(JoinType.Inner,u.UserId == ue.UserId))
+                        .Where((u,ue)=>SqlFunc.Subqueryable<Model.UserModel>()
+                            .LeftJoin<Model.StoreModel>((x,y) => 
+                                x.UserId == y.UserId && (x.Account.Contains(keyname) ||  y.Name.Contains(keyname) && x.UserId == u.UserId)).Any())
+                        .OrderBy((u,ue)  => u.UserId,OrderByType.Desc)
+                        .Select((u,ue)=> new Model.Extend.UserStore()
+                        {
+                            UserId = u.UserId,
+                            Account = u.Account,
+                            UserExtend = ue,
+                        })
+                        .ToPageList(pageindex, pagesize,ref total);
+                    
+                    // return UserExtendBLL.QueryPageList(pageindex,pagesize,p=> 
+                    //         SqlFunc.Subqueryable<Model.UserModel>()
+                    //             .LeftJoin<Model.StoreModel>((u,s) => 
+                    //                 u.UserId == s.UserId && (s.Name.Contains(keyname) ||  u.Account.Contains(keyname) && u.UserId == p.UserId)).Any(),
+                    //     new Dictionary<Expression<Func<UserExtendModel, object>>, OrderByType>(){[p=>p.UserId]=OrderByType.Desc});
                 }
+                
+                var userids = data.Select(p => p.UserId).ToList();
+                var stores = StoreBLL.QueryList(p => userids.Contains(p.UserId));
+
+                foreach (var item in data)
+                {
+                    item.Stores = stores.Where(p => p.UserId == item.UserId).ToList();
+                }
+                    
+                return new PageList<Model.Extend.UserStore>(data,total);
             }
         }
 
