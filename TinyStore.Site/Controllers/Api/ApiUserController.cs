@@ -124,7 +124,7 @@ namespace TinyStore.Site.Controllers
             userExtendOrigin.IdCard = userExtend.IdCard;
 
             UserExtendBLL.Update(userExtendOrigin);
-            UserLog(userExtendOrigin.UserId, EUserLogType.修改商户信息, Request, "", "个人信息修改");
+            UserLog(userExtendOrigin.UserId, EUserLogType.商户信息, Request, "", "个人信息修改");
 
             return ApiResult.RData(userExtendOrigin);
         }
@@ -145,7 +145,7 @@ namespace TinyStore.Site.Controllers
 
             UserExtendBLL.Update(userExtendOrigin);
 
-            UserLog(userExtendOrigin.UserId, EUserLogType.修改商户信息, Request, "", "个人信息修改");
+            UserLog(userExtendOrigin.UserId, EUserLogType.商户信息, Request, "", "个人信息修改");
 
             return ApiResult.RData(userExtendOrigin);
         }
@@ -208,7 +208,7 @@ namespace TinyStore.Site.Controllers
 
             user.Password = Global.Hash(passwordNew, user.Salt);
             UserBLL.Update(user);
-            UserLog(user.UserId, EUserLogType.修改商户信息, Request, "", "密码修改");
+            UserLog(user.UserId, EUserLogType.商户信息, Request, "", "密码修改");
             return ApiResult.RCode();
         }
 
@@ -290,7 +290,7 @@ namespace TinyStore.Site.Controllers
 
             StoreBLL.Update(storeOrigin);
 
-            UserLog(user.UserId, EUserLogType.修改店铺信息, Request, store.StoreId, "店铺信息修改");
+            UserLog(user.UserId, EUserLogType.店铺信息, Request, store.StoreId, "店铺信息修改");
 
             return ApiResult.RData(StoreBLL.QueryListByUserId(user.UserId));
         }
@@ -316,7 +316,7 @@ namespace TinyStore.Site.Controllers
 
             StoreBLL.Update(storeOrigin);
 
-            UserLog(user.UserId, EUserLogType.修改店铺信息, Request, store.StoreId, "店铺收款方式修改");
+            UserLog(user.UserId, EUserLogType.店铺信息, Request, store.StoreId, "店铺收款方式修改");
 
             return ApiResult.RData(StoreBLL.QueryListByUserId(user.UserId));
         }
@@ -470,7 +470,7 @@ namespace TinyStore.Site.Controllers
 
             if (res.Count > 0)
             {
-                var sb = new StringBuilder("卡密数据" + Environment.NewLine);
+                var sb = new StringBuilder("--卡密数据--" + Environment.NewLine);
                 foreach (StockModel item in res)
                 {
                     sb.Append(item.Name);

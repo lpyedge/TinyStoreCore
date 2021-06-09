@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -407,8 +408,169 @@ namespace TinyStore.Site.Controllers.Api
                 foreach (var supplyId in supplyIds2Remove)
                     supplySystem.Remove(supplySystem.FirstOrDefault(p => p.SupplyId == supplyId));
             }
+            
+            AdminLog(admin.AdminId, EAdminLogType.货源管理, Request);
+            
             return ApiResult.RData(supplySystem);
         }
+        
+         [HttpPost]
+        public IActionResult StockPageList([FromForm] string supplyId, [FromForm] string keyname,
+            [FromForm] string isShow,
+            [FromForm] int pageIndex, [FromForm] int pageSize)
+        {
+            var admin = AdminCurrent();
+
+            SupplyModel supplyModel = BLL.SupplyBLL.QueryModelById(supplyId);
+            if (supplyModel == null)
+                return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
+
+            bool? outIsShow = null;
+            if (bool.TryParse(isShow, out var tempIsShow)) outIsShow = tempIsShow;
+
+            var res = BLL.StockBLL.QueryPageListByUserSearch(supplyId, SiteContext.Config.SupplyUserIdSys, keyname, outIsShow, pageIndex,
+                pageSize);
+
+            return ApiResult.RData(new GridData<StockModel>(res.Rows, res.Total));
+        }
+
+        [HttpPost]
+        public IActionResult StockMultipleAction([FromForm] string stockIds, [FromForm] int action)
+        {
+            var admin = AdminCurrent();
+
+            var stockIdList = Global.Json.Deserialize<List<string>>(stockIds);
+
+            if (stockIdList != null && stockIdList.Count > 0)
+                switch (action)
+                {
+                    case 0:
+                    {
+                        //删除
+                        BLL.StockBLL.Delete(p => p.UserId == SiteContext.Config.SupplyUserIdSys && stockIdList.Contains(p.StockId));
+                    }
+                        break;
+                    case 1:
+                    {
+                        //下架 isShow = false
+                        BLL.StockBLL.Update(p => p.UserId == SiteContext.Config.SupplyUserIdSys && stockIdList.Contains(p.StockId),
+                            p => p.IsShow == false);
+                    }
+                        break;
+                    case 2:
+                    {
+                        //上架 isShow = true
+                        BLL.StockBLL.Update(p => p.UserId == SiteContext.Config.SupplyUserIdSys && stockIdList.Contains(p.StockId),
+                            p => p.IsShow);
+                    }
+                        break;
+                }
+
+            return ApiResult.RCode();
+        }
+
+        [HttpPost]
+        public IActionResult StockExport([FromForm] string supplyId, [FromForm] string keyname,
+            [FromForm] string isShow)
+        {
+            var admin = AdminCurrent();
+
+            SupplyModel supplyModel = BLL.SupplyBLL.QueryModelById(supplyId);
+            if (supplyModel == null)
+                return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
+
+            bool? outIsShow = null;
+            if (bool.TryParse(isShow, out var tempIsShow)) outIsShow = tempIsShow;
+
+            var res = BLL.StockBLL.QueryListByUserSearch(supplyId, SiteContext.Config.SupplyUserIdSys, keyname, outIsShow);
+
+            if (res.Count > 0)
+            {
+                var sb = new StringBuilder("--卡密数据--" + Environment.NewLine);
+                foreach (StockModel item in res)
+                {
+                    sb.Append(item.Name);
+                    sb.Append(Environment.NewLine);
+                }
+
+                return ApiResult.RData(sb.ToString());
+            }
+
+            return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
+        }
+
+
+        [HttpPost]
+        public IActionResult StockImport([FromForm] string supplyId, [FromForm] string content,
+            [FromForm] bool isShow, [FromForm] bool isAllowRepeat)
+        {
+            var admin = AdminCurrent();
+
+            SupplyModel supplyModel = BLL.SupplyBLL.QueryModelById(supplyId);
+            if (supplyModel == null)
+                return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
+
+            var datas = new List<StockModel>();
+            var repeatNameList = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(content))
+            {
+                var stockPairList = content.Split(Environment.NewLine);
+                if (stockPairList.Length > 0)
+                    foreach (var item in stockPairList)
+                    {
+                        var stockName = Regex.Replace(item.Trim(), @"[\s\u00A0\u0020\u3000]+", " ");
+                        if (!string.IsNullOrWhiteSpace(stockName) && stockName != "卡号")
+                        {
+                            if (!isAllowRepeat && datas.Any(p =>
+                                string.Equals(p.Name, stockName, StringComparison.OrdinalIgnoreCase)))
+                            {
+                                repeatNameList.Add(stockName);
+                                continue;
+                            }
+
+                            datas.Add(new StockModel
+                            {
+                                Name = stockName,
+                                Memo = "",
+
+                                UserId = SiteContext.Config.SupplyUserIdSys,
+                                SupplyId = supplyId,
+                                CreateDate = DateTime.Now,
+                                IsShow = isShow,
+                                DeliveryDate = DateTime.Now,
+                                IsDelivery = false,
+                                StockId = Global.Generator.DateId(2)
+                            });
+                        }
+                    }
+            }
+
+            if (datas.Count > 0)
+            {
+                if (!isAllowRepeat)
+                {
+                    var namelist = datas.Select(p => p.Name).ToList();
+                    var stockRepeatList = BLL.StockBLL.QueryList(p =>
+                        p.UserId == SiteContext.Config.SupplyUserIdSys && p.SupplyId == supplyId && namelist.Contains(p.Name));
+                    if (stockRepeatList.Count > 0)
+                    {
+                        repeatNameList.AddRange(stockRepeatList.Select(p => p.Name));
+                        datas = datas.Where(p => !stockRepeatList.Select(x => x.Name).ToList().Contains(p.Name))
+                            .ToList();
+                    }
+                }
+
+                BLL.StockBLL.InsertRange(datas);
+                return ApiResult.RData(repeatNameList);
+            }
+
+            return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
+        }
+        
+        
+        
+        
         
         public IActionResult AdminLogPageList([FromForm] int pageIndex, [FromForm] int pageSize, [FromForm] int adminId,
             [FromForm] int logType, [FromForm] DateTime begin, [FromForm] DateTime end)

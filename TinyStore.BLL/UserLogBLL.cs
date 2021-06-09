@@ -26,8 +26,8 @@ namespace TinyStore.BLL
                 }
                 else
                 {
-                    where = where.And(p => p.UserId == userId && p.CreateDate >= begin && p.CreateDate <= end && p.UserLogType < EUserLogType.分类管理)
-                        .Or(p => p.StoreId == storeId && p.UserLogType >= EUserLogType.分类管理 && p.CreateDate >= begin && p.CreateDate <= end);
+                    where = where.And(p => p.UserId == userId && p.CreateDate >= begin && p.CreateDate <= end)
+                        .Or(p => p.StoreId == storeId && p.CreateDate >= begin && p.CreateDate <= end);
                 }
             }
             else if (type < 5)

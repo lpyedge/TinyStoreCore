@@ -39,7 +39,12 @@ namespace TinyStore.Site.Controllers
         {
             return View();
         }
-
+        
+        public IActionResult Supply_Stock()
+        {
+            return View();
+        }
+        
         //
         // public IActionResult AdminLog()
         // {

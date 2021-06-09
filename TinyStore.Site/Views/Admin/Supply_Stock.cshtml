@@ -1,0 +1,327 @@
+﻿<q-page padding>
+    <div class="text-h5 text-weight-bold text-grey-8">
+        <q-icon :name="supplylinks[1].icon" size="md" class="on-left"></q-icon>{{supplylinks[1].text}}
+    </div>
+    <q-separator class="q-my-sm"></q-separator>
+    <div class="row q-gutter-xs q-my-sm">
+        <q-select outlined dense options-dense stack-label bg-color="white"
+                  style="min-width: 240px"
+                  class="col-xs-12 col-md-auto"
+                  label="货源"
+                  v-model="stockFilter.supplyCurrent"
+                  :options="stockFilter.supplyData">
+            <template v-slot:selected-item="scope">
+                <q-icon :name="supplyTypeOptions[1].icon" :color="supplyTypeOptions[1].color"></q-icon>
+                {{ scope.opt.name }}
+                <q-badge outline class="on-right" color="primary" v-if="scope.opt.category">
+                    {{ scope.opt.category }}
+                </q-badge>
+            </template>
+            <template v-slot:option="scope">
+                <q-item
+                    v-bind="scope.itemProps"
+                    v-on="scope.itemEvents">
+                    <div>
+                        <q-icon :name="supplyTypeOptions[1].icon" :color="supplyTypeOptions[1].color"></q-icon>
+                        {{ scope.opt.name }}
+                        <q-badge outline class="on-right" color="primary" v-if="scope.opt.category">
+                            {{ scope.opt.category }}
+                        </q-badge>
+                    </div>
+                </q-item>
+            </template>
+        </q-select>
+        <q-input outlined dense stack-label bg-color="white"
+                 clearable
+                 class="col-shrink"
+                 label="关键词"
+                 v-model="stockFilter.keyname">
+            <template v-slot:prepend>
+                <q-icon name="fas fa-filter" color="primary" size="xs"/>
+            </template>
+        </q-input>
+        <q-toggle class="col-shrink" toggle-indeterminate v-model="stockFilter.isShow" color="orange" :label="stockIsShowOptions[1].name" left-label></q-toggle>
+        <q-space></q-space>
+        <q-btn :loading="stockFilter.loading" class="col-shrink" color="primary" icon="search" label="搜索" @@click="loadStockData"></q-btn>
+    </div>
+
+    <div class="row q-gutter-xs q-my-sm">
+        <q-btn class="q-mx-xs" color="primary" @@click="stockImportDialog = true"><q-icon class="on-left" size="xs" name="fas fa-file-import"></q-icon>导入</q-btn>
+        <q-btn class="q-mx-xs" color="primary" @@click="stockExport"><q-icon class="on-left" size="xs" name="fas fa-file-export"></q-icon>导出</q-btn>
+        <q-space ></q-space>
+        <q-btn-dropdown :disable-main-btn="stockSelected.length === 0" color="warning" label="批量操作">
+            <q-list>
+                <q-item clickable v-close-popup @@click="stockMultipleAction(0)">
+                    <q-item-section>
+                        <q-item-label><q-icon class="on-left" size="xs" name="delete_forever"></q-icon>删除</q-item-label>
+                    </q-item-section>
+                </q-item>
+
+                <q-item clickable v-close-popup @@click="stockMultipleAction(1)">
+                    <q-item-section>
+                        <q-item-label><q-icon class="on-left" size="xs" :name="stockIsShowOptions[0].icon"></q-icon>{{stockIsShowOptions[0].name}}</q-item-label>
+                    </q-item-section>
+                </q-item>
+
+                <q-item clickable v-close-popup @@click="stockMultipleAction(2)">
+                    <q-item-section>
+                        <q-item-label><q-icon class="on-left" size="xs" :name="stockIsShowOptions[1].icon"></q-icon>{{stockIsShowOptions[1].name}}</q-item-label>
+                    </q-item-section>
+                </q-item>
+            </q-list>
+        </q-btn-dropdown>
+    </div>
+    <q-table
+        :grid="!$q.platform.is.desktop"
+
+        row-key="stockId"
+        :data="stockData"
+        :columns="stockColumns"
+
+        selection="multiple"
+        :selected.sync="stockSelected"
+
+        :pagination.sync="stockFilter.pagination"
+        :rows-per-page-options="[10, 25, 50, 100, 200]"
+        @@request="loadStockData">
+        <template v-slot:body="props">
+            <q-tr :props="props">
+                <q-td>
+                    <q-checkbox v-model="props.selected"></q-checkbox>
+                </q-td>
+                <q-td key="name">
+                    <strong>{{ props.row.name }}</strong>
+                </q-td>
+                <q-td auto-width key="state">
+                    {{ void (isDeliveryIndex = props.row.isDelivery ? 1 : 0, isShowIndex = props.row.isShow ? 1 : 0) }}
+                    <q-icon size="sm" :name="stockIsShowOptions[isShowIndex].icon" :color="stockIsShowOptions[isShowIndex].color">
+                        <q-tooltip>
+                            {{ stockIsShowOptions[isShowIndex].name }}
+                        </q-tooltip>
+                    </q-icon>
+                    <q-icon size="sm" :name="stockIsDeliveryOptions[isDeliveryIndex].icon" :color="stockIsDeliveryOptions[isDeliveryIndex].color">
+                        <q-tooltip>
+                            {{ stockIsDeliveryOptions[isDeliveryIndex].name }}
+                        </q-tooltip>
+                    </q-icon>
+                </q-td>
+            </q-tr>
+        </template>
+        <template v-slot:item="props">
+            <q-card class="q-pa-xs col-12">
+                <q-item dense class="q-px-sm">
+                    <q-item-section side>
+                        <q-checkbox dense v-model="props.selected"></q-checkbox>
+                    </q-item-section>
+                    <q-item-section style="display: inline-block;text-align: right">
+                        {{ void (isDeliveryIndex = props.row.isDelivery ? 1 : 0, isShowIndex = props.row.isShow ? 1 : 0) }}
+                        <q-icon size="sm" :name="stockIsShowOptions[isShowIndex].icon" :color="stockIsShowOptions[isShowIndex].color">
+                            <q-tooltip>
+                                {{ stockIsShowOptions[isShowIndex].name }}
+                            </q-tooltip>
+                        </q-icon>
+                        <q-icon size="sm" :name="stockIsDeliveryOptions[isDeliveryIndex].icon" :color="stockIsDeliveryOptions[isDeliveryIndex].color">
+                            <q-tooltip>
+                                {{ stockIsDeliveryOptions[isDeliveryIndex].name }}
+                            </q-tooltip>
+                        </q-icon>
+                    </q-item-section>
+                </q-item>
+                <q-separator></q-separator>
+                <q-card-section class="q-pa-sm">
+                    <strong>{{ props.row.name }}</strong>
+                </q-card-section>
+            </q-card>
+        </template>
+    </q-table>
+</q-page>
+
+<q-dialog v-model="stockImportDialog">
+    <q-card style="max-width: 500px; width: 500px;">
+        <q-card-section class="row items-center q-pb-none">
+            <div class="text-h6 text-primary on-left">
+                {{ stockFilter.supplyCurrent.name }}
+                <q-badge outline align="top" color="primary" v-if="stockFilter.supplyCurrent.category">
+                    {{ stockFilter.supplyCurrent.category }}
+                </q-badge>
+            </div>
+            卡密导入
+            <q-space ></q-space>
+            <q-btn icon="close" flat round dense v-close-popup></q-btn>
+        </q-card-section>
+        <q-card-section class="q-gutter-sm">
+            <q-input outlined dense stack-label bg-color="white"
+                     type="textarea"
+                     label="卡密数据" hint="格式： 每行一条卡密信息"
+                     v-model.trim="stockImportContent">
+            </q-input>
+        </q-card-section>
+        <q-card-section class="row justify-end">
+            <q-toggle v-model="stockImportIsAllowRepeat" color="primary" label="允许重复" left-label></q-toggle> 
+            <q-toggle v-model="stockImportIsShow" color="orange" :label="stockIsShowOptions[1].name" left-label></q-toggle>
+            <q-btn color="warning" icon="edit" label="保存" :disable="stockImportContent.length === 0" @@click="stockImport"></q-btn>
+        </q-card-section>
+    </q-card>
+</q-dialog>
+
+@section Scripts{
+
+    <script src="https://cdn.staticfile.org/FileSaver.js/2.0.5/FileSaver.min.js"
+            asp-fallback-test="saveAs"
+            asp-fallback-src="~/lib/file-saver/dist/FileSaver.min.js"></script>
+
+    <script>
+   var _page = {
+       data:{
+           stockFilter:{
+               loading:false,
+               keyname:'',
+               isShow:null,
+               supplyData:[],
+               supplyCurrent:{},
+               pagination:{                   
+                   page: 1,
+                   rowsPerPage: 25,
+                   rowsNumber:0,
+               },
+           },
+           stockData:[],
+           stockColumns:[
+               {
+                   align: 'left',
+                   name:'name',
+                   label:'卡密数据',
+               },
+               {
+                   align: 'left',
+                   // format: (val, row) => `${row.isShow}`,
+                   name:'state',
+                   label:'状态'
+               },
+           ],
+           stockSelected:[],
+           stockImportDialog:false,
+           stockImportContent:'',
+           stockImportIsShow:true,
+           stockImportIsAllowRepeat:false,
+       },
+       beforeMount(){
+           AdminApi('SupplyList',true)
+              .then((response)=> {
+                  if (response.data.code === 1){ 
+                      this.stockFilter.supplyData = response.data.data;
+                      this.stockFilterReset();
+                      this.loadStockData();
+                  } else{
+                      Notify.Warning('货源数据加载失败');
+                  }
+              })
+              .catch( (error)=> {
+                  Notify.Warning('接口通信错误');
+                  console.error(error);
+              });
+       },
+       computed:{
+           
+       },
+       methods: {
+           loadStockData(){
+               if(arguments.length>0 && arguments[0].pagination){
+                   this.stockFilter.pagination = arguments[0].pagination;
+               }
+               this.stockFilter.loading =true;
+               AdminApi('StockPageList',{ supplyId:this.stockFilter.supplyCurrent.supplyId,keyname:this.stockFilter.keyname, pageSize:this.stockFilter.pagination.rowsPerPage,pageIndex:this.stockFilter.pagination.page,isShow:this.stockFilter.isShow},true)
+                  .then((response)=> {
+                      if (response.data.code === 1){ 
+                          this.stockData = response.data.data.rows;
+                          this.stockFilter.pagination.rowsNumber = response.data.data.total;   
+                          this.stockSelected = [];
+                      } else{
+                          Notify.Warning('卡密数据加载失败');
+                      }
+                      this.stockFilter.loading =false;
+                  })
+                  .catch( (error)=> {
+                      this.stockFilter.loading =false;
+                      Notify.Warning('接口通信错误');
+                      console.error(error);
+                  });
+           },
+           stockImport(){
+               AdminApi('StockImport',{ supplyId:this.stockFilter.supplyCurrent.supplyId,content:this.stockImportContent, isShow:this.stockImportIsShow,isAllowRepeat:this.stockImportIsAllowRepeat},true)
+                  .then((response)=> {
+                      if (response.data.code === 1){ 
+                          this.stockImportDialog = false;
+                          this.stockImportContent = '';
+                          this.stockImportIsShow = true;
+                          if (response.data.data.length > 0){
+                              var repeatStr = '';
+                              for (var i in response.data.data){
+                                  repeatStr += response.data.data[i]+"<br/>";
+                              }
+                              this.$q.dialog({
+                                title:'重复卡密信息',
+                                message:repeatStr,
+                                html: true
+                              });
+                          }
+                          this.loadStockData();
+                      } else{
+                          Notify.Warning('卡密数据导入失败');
+                      }
+                      this.stockFilter.loading =false;
+                  })
+                  .catch( (error)=> {
+                      this.stockFilter.loading =false;
+                      Notify.Warning('接口通信错误');
+                      console.error(error);
+                  });
+           },
+           stockExport(){
+               AdminApi('StockExport',{ supplyId:this.stockFilter.supplyCurrent.supplyId,keyname:this.stockFilter.keyname, isShow:this.stockFilter.isShow},true)
+                  .then((response)=> {
+                      if (response.data.code === 1){ 
+                          var blob = new Blob([response.data.data], {type: "text/plain;charset=utf-8"});
+                          saveAs(blob, Date.now().toString() + ".txt");
+                      } else{
+                          Notify.Warning('卡密数据导出失败');
+                      }
+                      this.stockFilter.loading =false;
+                  })
+                  .catch( (error)=> {
+                      this.stockFilter.loading =false;
+                      Notify.Warning('接口通信错误');
+                      console.error(error);
+                  });
+           },
+           stockFilterReset(){
+               this.stockFilter.keyname='';
+               this.stockFilter.isShow=null;
+               this.stockFilter.supplyCurrent=this.stockFilter.supplyData[0];
+               this.stockFilter.pagination.page =1;
+               this.stockFilter.pagination.rowsPerPage =25;
+           },
+           stockMultipleAction(action){
+               var stockIds = _.map(this.stockSelected, 'stockId');
+               this.stockFilter.loading =true;
+               AdminApi('StockMultipleAction',{ stockIds:JSON.stringify(stockIds), action},true)
+               .then((response)=> {
+                     if (response.data.code === 1){ 
+                         this.loadStockData();
+                     } else{
+                         Notify.Warning('操作执行失败');
+                     }
+                     this.stockFilter.loading =false;
+                 })
+                 .catch( (error)=> {
+                     this.stockFilter.loading =false;
+                     Notify.Warning('接口通信错误');
+                     console.error(error);
+                 });
+           },
+       }
+   };
+   DeepMerge(_layout,_page);
+   new Vue(_layout);
+    </script>
+}
