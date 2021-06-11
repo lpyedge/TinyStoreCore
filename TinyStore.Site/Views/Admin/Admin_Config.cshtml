@@ -186,7 +186,6 @@
                this.config = JSON.parse(JSON.stringify(config)) ;
                this.emailServer = JSON.parse(JSON.stringify(config.emailServer));
                this.$set(this.emailServer,"address",this.emailServer.host +':'+this.emailServer.port);
-               console.log(this.emailServer);
            },
            emailServerSave(){
                this.$refs.emailServer_posterAddress.validate();

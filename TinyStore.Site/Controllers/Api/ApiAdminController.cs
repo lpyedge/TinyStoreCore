@@ -249,12 +249,32 @@ namespace TinyStore.Site.Controllers.Api
             if (type == 0)
             {
                 BLL.UserExtendBLL.Update(p=> p.UserId == userId,p=> new UserExtendModel() { Amount =  p.Amount + amountChange });
+
+                BLL.BillBLL.Insert(new BillModel()
+                {
+                    BillId = Global.Generator.DateId(1),
+                    UserId = userId,
+                    Amount = amountChange,
+                    AmountCharge = 0,
+                    BillType = EBillType.系统,
+                    CreateDate = DateTime.Now,
+                });
                 
                 AdminLog(admin.AdminId, EAdminLogType.商户管理, Request, "资金修改" + userId + " 【"+amountChange.ToString()+"】");
             }
             else if (type == 1)
             {
                 BLL.UserExtendBLL.Update(p=> p.UserId == userId,p=> new UserExtendModel() { AmountCharge = p.AmountCharge + amountChange });
+                
+                BLL.BillBLL.Insert(new BillModel()
+                {
+                    BillId = Global.Generator.DateId(1),
+                    UserId = userId,
+                    Amount = 0,
+                    AmountCharge = amountChange,
+                    BillType = EBillType.系统,
+                    CreateDate = DateTime.Now,
+                });
                 
                 AdminLog(admin.AdminId, EAdminLogType.商户管理, Request, "签帐额修改" + userId + " 【"+amountChange.ToString()+"】");
             }
@@ -568,8 +588,102 @@ namespace TinyStore.Site.Controllers.Api
             return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
         }
         
+        [HttpPost]
+        public IActionResult UserFinace()
+        {
+            var admin = AdminCurrent();
+
+            var userFinace = BLL.UserExtendBLL.QueryFinace();
+            var withDrawAll =  BLL.WithDrawBLL.QueryFinace();
+            
+            return ApiResult.RData(new {Amount=userFinace.Amount,AmountCharge=userFinace.AmountCharge,WithDraw = withDrawAll});
+        }
         
+        [HttpPost]
+        public IActionResult BillPageList([FromForm] string from, [FromForm] string to,
+            [FromForm] int billType,
+            [FromForm] int pageIndex, [FromForm] int pageSize)
+        {
+            var admin = AdminCurrent();
+
+            DateTime? dateFrom = null;
+            if (DateTime.TryParse(from, out DateTime tempdateFrom)) dateFrom = tempdateFrom;
+
+            DateTime? dateTo = null;
+            if (DateTime.TryParse(to, out DateTime tempdateTo)) dateTo = tempdateTo.AddDays(1);
+
+            if (dateFrom == null || dateTo == null)
+                return ApiResult.RCode(ApiResult.ECode.DataFormatError);
+
+            var data = BLL.BillBLL.QueryPageListBySearch(pageIndex, pageSize, billType,
+                (DateTime) dateFrom, (DateTime) dateTo);
+
+            return ApiResult.RData(data);
+        }
         
+        [HttpPost]
+        public IActionResult WithDrawPageList([FromForm] string from, [FromForm] string to,
+            [FromForm] string isFinish,
+            [FromForm] int pageIndex, [FromForm] int pageSize)
+        {
+            var admin = AdminCurrent();
+
+            DateTime? dateFrom = null;
+            if (DateTime.TryParse(from, out DateTime tempdateFrom)) dateFrom = tempdateFrom;
+
+            DateTime? dateTo = null;
+            if (DateTime.TryParse(to, out DateTime tempdateTo)) dateTo = tempdateTo.AddDays(1);
+
+            if (dateFrom == null || dateTo == null)
+                return ApiResult.RCode(ApiResult.ECode.DataFormatError);
+            
+            bool? outIsFinish = null;
+            if (bool.TryParse(isFinish, out var tempIsFinish)) outIsFinish = tempIsFinish;
+            
+            var data = BLL.WithDrawBLL.QueryPageListBySearch(pageIndex, pageSize,outIsFinish,
+                (DateTime) dateFrom, (DateTime) dateTo);
+
+            return ApiResult.RData(data);
+        }
+        
+        [HttpPost]
+        public IActionResult WithDrawSave(Model.WithDrawModel withDraw)
+        {
+            var admin = AdminCurrent();
+
+            if (withDraw != null && withDraw.IsFinish)
+            {
+                if (withDraw.AmountFinish > withDraw.Amount)
+                {
+                    withDraw.AmountFinish = withDraw.Amount;
+                }
+
+                if (withDraw.AmountFinish == 0)
+                {
+                    BLL.BillBLL.Insert(new BillModel()
+                    {
+                        BillId = Global.Generator.DateId(1),
+                        UserId = withDraw.UserId,
+                        Amount = withDraw.Amount,
+                        AmountCharge = 0,
+                        BillType = EBillType.提现,
+                        CreateDate = DateTime.Now,
+                        Extra = withDraw.WithDrawId
+                    });
+                    
+                    BLL.UserExtendBLL.Update(p => p.UserId == withDraw.UserId,
+                        p => new UserExtendModel()
+                        {
+                            Amount = p.Amount + withDraw.Amount
+                        });
+                }
+                
+                BLL.WithDrawBLL.Update(withDraw);
+            }
+
+            return ApiResult.RCode(ApiResult.ECode.Success);
+        }
+
         
         
         public IActionResult AdminLogPageList([FromForm] int pageIndex, [FromForm] int pageSize, [FromForm] int adminId,

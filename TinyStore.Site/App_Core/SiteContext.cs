@@ -5,6 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Net.Mail;
 using System.Text;
+using System.Text.Json.Serialization;
+using IP2Region;
 using LPayments;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -19,17 +21,12 @@ namespace TinyStore.Site
 {
     public class SiteContext
     {
-        static SiteContext()
-        {
-            
-        }
-
         public static ConfigModel Config { get; set; }
 
         public static void ConfigSave()
         {
-            var configJson =  Global.Json.SerializePretty(new {Config = Config});
-            File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory+ "App_Data/config.json",configJson);
+            var configJson = Global.Json.SerializePretty(new {Config});
+            File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + "App_Data/config.json", configJson);
         }
 
         /// <summary>
@@ -41,9 +38,9 @@ namespace TinyStore.Site
             // var ConnStr2 = configuration.GetSection("Config:ConnStr").Get<string>();
             // configuration.GetSection("Config").Get<ConfigModel>();
             //Global.AppSettings.Configuration.GetSection("Config").Bind(Config);
-            
+
             Config = configuration.GetSection("Config").Get<ConfigModel>();
-                
+
             InitData();
         }
 
@@ -80,7 +77,7 @@ namespace TinyStore.Site
                     ClientKey = Guid.NewGuid().ToString(),
                     CreateDate = DateTime.Now,
                     IsRoot = true,
-                    Password = 
+                    Password =
 #if DEBUG
                         Global.Hash("admin", "012345"),
 #else
@@ -416,17 +413,9 @@ namespace TinyStore.Site
 
             OrderBLL.InsertRangeAsync(orderList);
 
-
             var billList = new List<BillModel>();
-            var billTypes = new List<EBillType>
-            {
-                EBillType.收款,
-                EBillType.退款,
-                EBillType.成本结算,
-                EBillType.充值,
-                EBillType.提现,
-                EBillType.交易手续费
-            };
+            var billTypes = Enum.GetValues<EBillType>().ToList();
+
             for (var i = 0; i < 50; i++)
             for (var j = 0; j < Global.Generator.Random.Next(3, 40); j++)
             {
@@ -479,44 +468,52 @@ namespace TinyStore.Site
         }
 
 
+        public static string IP2Region(string ip)
+        {
+            //ip = "49.82.194.75";
+            using (var searcher = new DbSearcher(AppDomain.CurrentDomain.BaseDirectory + "App_Data/ip2region.db"))
+            {
+                return searcher.BtreeSearch(ip).Region;
+            }
+        }
+
+
         public class ConfigModel
         {
-            [System.Text.Json.Serialization.JsonIgnore]
-            public int SupplyUserIdSys => 0;
-            [System.Text.Json.Serialization.JsonIgnore]
-            public double SysPaymentRate => 0.006;
-            [System.Text.Json.Serialization.JsonIgnore]
-            public string FormatDate => "yyyy-MM-dd";
-            [System.Text.Json.Serialization.JsonIgnore]
-            public string FormatDateTime => "yyyy-MM-dd HH:mm";
-            [System.Text.Json.Serialization.JsonIgnore]
-            public string AppData => AppDomain.CurrentDomain.BaseDirectory + "App_Data/";
-            [System.Text.Json.Serialization.JsonIgnore]
-            public string UserData => AppDomain.CurrentDomain.BaseDirectory + "User_Data/";
+            [JsonIgnore] public int SupplyUserIdSys => 0;
+
+            [JsonIgnore] public double SysPaymentRate => 0.006;
+
+            [JsonIgnore] public string FormatDate => "yyyy-MM-dd";
+
+            [JsonIgnore] public string FormatDateTime => "yyyy-MM-dd HH:mm";
+
+            [JsonIgnore] public string AppData => AppDomain.CurrentDomain.BaseDirectory + "App_Data/";
+
+            [JsonIgnore] public string UserData => AppDomain.CurrentDomain.BaseDirectory + "User_Data/";
 
 
             /// <summary>
-            /// 网站域名
+            ///     网站域名
             /// </summary>
             public string SiteDomain { get; set; } = "";
 
             /// <summary>
-            /// 网站名称
+            ///     网站名称
             /// </summary>
             public string SiteName { get; set; } = "";
 
             /// <summary>
-            /// 客户QQ
+            ///     客户QQ
             /// </summary>
             public string ServiceQQ { get; set; } = "";
 
             /// <summary>
-            /// 客户邮箱
+            ///     客户邮箱
             /// </summary>
             public string ServiceEmail { get; set; } = "";
 
-            
-            
+
             /// <summary>
             ///     订单提醒默认天数,0 即不提醒
             /// </summary>
@@ -539,15 +536,15 @@ namespace TinyStore.Site
 
 
             /// <summary>
-            /// 发件邮箱配置
+            ///     发件邮箱配置
             /// </summary>
-            public EmailContext.EmailServer EmailServer { get; set; } = new() { };
+            public EmailContext.EmailServer EmailServer { get; set; } = new();
 
-            
+
             /// <summary>
-            /// 代理等级&amp;折扣
+            ///     代理等级&amp;折扣
             /// </summary>
-            public Dictionary<EUserLevel, double> UserRates { get; set; } = new ()
+            public Dictionary<EUserLevel, double> UserRates { get; set; } = new()
             {
                 [EUserLevel.无] = 1,
                 [EUserLevel.一星] = 0.999,
@@ -559,20 +556,8 @@ namespace TinyStore.Site
             public Dictionary<string, string> WechatPaySettings { get; set; }
 
             public Dictionary<string, string> AliPaySettings { get; set; }
-
         }
 
-        
-
-        public static string IP2Region(string ip)
-        {
-            //ip = "49.82.194.75";
-            using (IP2Region.DbSearcher searcher = new IP2Region.DbSearcher(AppDomain.CurrentDomain.BaseDirectory+ "App_Data/ip2region.db"))
-            {
-                return searcher.BtreeSearch(ip).Region;
-            }
-        }
-        
         public static class Resource
         {
             public const string ResourcePrefix = "Resource";
@@ -764,6 +749,7 @@ namespace TinyStore.Site
             private static readonly object _Locker = new();
 
             private static List<Model.Extend.Payment> _SystemPaymentList;
+
             public static List<Model.Extend.Payment> SystemPaymentList()
             {
                 if (_SystemPaymentList == null)
@@ -779,7 +765,7 @@ namespace TinyStore.Site
                                 Name = EPlatform.Alipay + "|" + EChannel.AliPay + "|" + EPayType.H5,
                                 Account = "",
                                 Memo = "手机端调用",
-                                Rate = SiteContext.Config.SysPaymentRate,
+                                Rate = Config.SysPaymentRate,
                                 IsSystem = true,
                                 IsEnable = false
                             });
@@ -790,7 +776,7 @@ namespace TinyStore.Site
                                 Name = EPlatform.Alipay + "|" + EChannel.AliPay + "|" + EPayType.QRcode,
                                 Account = "",
                                 Memo = "电脑端调用",
-                                Rate = SiteContext.Config.SysPaymentRate,
+                                Rate = Config.SysPaymentRate,
                                 IsSystem = true,
                                 IsEnable = false
                             });
@@ -801,7 +787,7 @@ namespace TinyStore.Site
                                 Name = EPlatform.Alipay + "|" + EChannel.AliPay + "|" + EPayType.PC,
                                 Account = "",
                                 Memo = "电脑端调用",
-                                Rate = SiteContext.Config.SysPaymentRate,
+                                Rate = Config.SysPaymentRate,
                                 IsSystem = true,
                                 IsEnable = false
                             });
@@ -812,7 +798,7 @@ namespace TinyStore.Site
                                 Name = EPlatform.WeChat + "|" + EChannel.WeChat + "|" + EPayType.H5,
                                 Account = "",
                                 Memo = "手机端调用",
-                                Rate = SiteContext.Config.SysPaymentRate,
+                                Rate = Config.SysPaymentRate,
                                 IsSystem = true,
                                 IsEnable = false
                             });
@@ -823,7 +809,7 @@ namespace TinyStore.Site
                                 Name = EPlatform.WeChat + "|" + EChannel.WeChat + "|" + EPayType.QRcode,
                                 Account = "",
                                 Memo = "电脑端调用",
-                                Rate = SiteContext.Config.SysPaymentRate,
+                                Rate = Config.SysPaymentRate,
                                 IsSystem = true,
                                 IsEnable = false
                             });
@@ -832,7 +818,7 @@ namespace TinyStore.Site
 
                 return _SystemPaymentList;
             }
-            
+
             public static string TransferToBank(Model.Extend.Payment payment, double amount = 0)
             {
                 if ((int) payment.BankType >= 10)
@@ -844,23 +830,23 @@ namespace TinyStore.Site
 
                 return null;
             }
-            
-            private static string PayEnum2Name(EPlatform platform,EChannel channel,EPayType payType)
+
+            private static string PayEnum2Name(EPlatform platform, EChannel channel, EPayType payType)
             {
-                return platform.ToString() + "|" + channel.ToString() + "|" + payType.ToString();
+                return platform + "|" + channel + "|" + payType;
             }
 
-            private static void PayName2Enum(string name,out EPlatform platform,out EChannel channel,out EPayType payType)
+            private static void PayName2Enum(string name, out EPlatform platform, out EChannel channel,
+                out EPayType payType)
             {
-                platform = (EPlatform) 0;
+                platform = 0;
                 channel = EChannel.AliPay;
                 payType = EPayType.PC;
-                
+
                 if (name.Contains('|'))
                 {
                     var strs = name.Split('|');
                     if (strs.Length == 3)
-                    {
                         try
                         {
                             platform = Enum.GetValues<EPlatform>().First(p => p.ToString() == strs[0]);
@@ -868,18 +854,17 @@ namespace TinyStore.Site
                             payType = Enum.GetValues<EPayType>().First(p => p.ToString() == strs[2]);
                         }
                         catch
-                        { 
+                        {
                         }
-                    } 
                 }
             }
-            
-            
+
+
             public static IPay GetPayment(string name)
             {
-                PayName2Enum(name,out EPlatform platform,out EChannel channel,out EPayType payType);
+                PayName2Enum(name, out EPlatform platform, out EChannel channel, out EPayType payType);
                 IPayChannel pay = Context.Get(platform, channel, payType);
-                
+
                 if (pay.Platform.ToString().StartsWith("alipay", StringComparison.OrdinalIgnoreCase))
                 {
                     if (Config.AliPaySettings != null)
@@ -898,20 +883,21 @@ namespace TinyStore.Site
                         return pay as IPay;
                     }
                 }
+
                 return null;
             }
-            
-            public static string Notify(string payname,IDictionary<string,string> form,IDictionary<string,string> query,IDictionary<string,string> header, string body,string notifyIp)
+
+            public static string Notify(string payname, IDictionary<string, string> form,
+                IDictionary<string, string> query, IDictionary<string, string> header, string body, string notifyIp)
             {
                 var msg = "";
                 try
                 {
-                    
-                    IPay payment = SiteContext.Payment.GetPayment(payname);
+                    IPay payment = GetPayment(payname);
 
                     if (payment != null)
                     {
-                        PayResult res = (payment as IPay).Notify(form, query, header,
+                        PayResult res = payment.Notify(form, query, header,
                             body, notifyIp);
 
                         if (res.Status == PayResult.EStatus.Completed)
@@ -928,7 +914,6 @@ namespace TinyStore.Site
 
                         msg = res.Message;
                     }
-                
                 }
                 catch
                 {
@@ -939,11 +924,9 @@ namespace TinyStore.Site
                 return msg;
             }
         }
-        
+
         public static class OrderHelper
         {
-            
-
             // public static PayTicket GetPayTicket(string PaymentType, string OrderId, double Amount, IPAddress clientIP)
             // {
             //     EPaymentType ePaymentType =
@@ -1019,8 +1002,6 @@ namespace TinyStore.Site
             //     return null;
             // }
 
-          
-            
 
             internal static void Pay(string orderid, double incomme, string txnId)
             {
@@ -1038,15 +1019,22 @@ namespace TinyStore.Site
                             order.TranId = txnId;
                             order.IsPay = true;
                             order.PaymentDate = DateTime.Now;
-                            order.PaymentFee = order.Amount * order.Quantity * SiteContext.Config.SysPaymentRate;
+                            order.PaymentFee = order.Amount * order.Quantity * Config.SysPaymentRate;
                             order.LastUpdateDate = DateTime.Now;
                             OrderBLL.Update(order);
+
+                            BillBLL.Insert(new BillModel
+                            {
+                                BillId = Global.Generator.DateId(1),
+                                UserId = order.UserId,
+                                Amount = order.Amount,
+                                AmountCharge = 0,
+                                BillType = EBillType.收款,
+                                CreateDate = DateTime.Now
+                            });
                         }
 
-                        if (!order.IsDelivery)
-                        {
-                            Delivery(order);
-                        }
+                        if (!order.IsDelivery) Delivery(order);
                     }
                 }
             }
@@ -1056,63 +1044,115 @@ namespace TinyStore.Site
                 StoreModel store = StoreBLL.QueryModelByStoreId(order.StoreId);
                 if (store != null)
                 {
-                    ProductModel product = ProductBLL.QueryModelByProductIdAndStoreId(order.ProductId, order.StoreId);
-                    var liststock = new List<StockOrder>();
-                    if (product != null)
+                    SupplyModel supply = string.IsNullOrWhiteSpace(order.SupplyId)
+                        ? null
+                        : SupplyBLL.QueryModelById(order.SupplyId);
+
+                    
+                    //货源是否为系统货源
+                    var supplyUserIdSys = (supply != null && supply.UserId == Config.SupplyUserIdSys);
+                    //货源成本是否可以支付
+                    var supplyCostVilidate = true;
+                    UserExtendModel user = UserExtendBLL.QueryModelById(order.UserId);
+                    
+                    if (supplyUserIdSys)
                     {
-                        #region 卡密
-
-                        if (product.DeliveryType == EDeliveryType.卡密)
-                        {
-                            var stocklist =
-                                StockBLL.QueryListBySupplyIdCanUse(product.SupplyId,
-                                    product.UserId);
-                            if (stocklist.Count >= order.Quantity)
-                            {
-                                for (var i = 0; i < order.Quantity; i++)
-                                {
-                                    stocklist[i].IsDelivery = true;
-                                    stocklist[i].DeliveryDate = DateTime.Now;
-                                }
-
-                                StockBLL.UpdateRange(stocklist.Where(p => p.IsDelivery).ToList());
-                                foreach (StockModel item in stocklist.Where(p => p.IsDelivery))
-                                    liststock.Add(new StockOrder
-                                    {
-                                        StockId = item.StockId,
-                                        Name = item.Name
-                                    });
-
-                                order.StockList = liststock;
-                                //order.DeliveryMessage = string.Empty;
-                                order.IsDelivery = true;
-                                order.DeliveryDate = DateTime.Now;
-                                order.LastUpdateDate = DateTime.Now;
-                            }
-
-                            //else
-                            //{
-                            //    order.DeliveryMessage = "十分抱歉，你购买的卡密暂时无货，请联系商家解决！";
-                            //}
-                        }
-
-                        #endregion
-
-                        #region 接口
-
-                        else if (product.DeliveryType == EDeliveryType.接口)
-                        {
-                        }
-                        else if (product.DeliveryType == EDeliveryType.人工)
-                        {
-                        }
-
-                        #endregion
+                        if (user.Amount + user.AmountCharge < order.Cost * order.Quantity) 
+                            supplyCostVilidate = false;
                     }
 
-                    OrderBLL.Update(order);
+                    if (supplyCostVilidate)
+                    {
+                        ProductModel product =
+                            ProductBLL.QueryModelByProductIdAndStoreId(order.ProductId, order.StoreId);
+                        var liststock = new List<StockOrder>();
+                        if (product != null)
+                        {
+                            #region 卡密
 
-                    DeliveryEmail(order);
+                            if (product.DeliveryType == EDeliveryType.卡密)
+                            {
+                                var stocklist =
+                                    StockBLL.QueryListBySupplyIdCanUse(product.SupplyId,
+                                        product.UserId);
+                                if (stocklist.Count >= order.Quantity)
+                                {
+                                    for (var i = 0; i < order.Quantity; i++)
+                                    {
+                                        stocklist[i].IsDelivery = true;
+                                        stocklist[i].DeliveryDate = DateTime.Now;
+                                    }
+
+                                    StockBLL.UpdateRange(stocklist.Where(p => p.IsDelivery).ToList());
+                                    foreach (StockModel item in stocklist.Where(p => p.IsDelivery))
+                                        liststock.Add(new StockOrder
+                                        {
+                                            StockId = item.StockId,
+                                            Name = item.Name
+                                        });
+
+                                    order.StockList = liststock;
+                                    //order.DeliveryMessage = string.Empty;
+                                    order.IsDelivery = true;
+                                    order.DeliveryDate = DateTime.Now;
+                                    order.LastUpdateDate = DateTime.Now;
+
+                                    OrderBLL.Update(order);
+
+                                    if (supplyUserIdSys)
+                                    {
+                                        double amountChange = 0,amountChargeChange = 0;
+                                        if (user.AmountCharge >= order.Cost * order.Quantity)
+                                        {
+                                            amountChargeChange = order.Cost * order.Quantity;
+                                        }
+                                        else
+                                        {
+                                            amountChargeChange = user.AmountCharge;
+                                            amountChange = order.Cost * order.Quantity - user.AmountCharge;
+                                        }
+
+                                        UserExtendBLL.Update(p => p.UserId == order.UserId,
+                                            p => new UserExtendModel
+                                            {
+                                                Amount = p.Amount - amountChange,
+                                                AmountCharge = p.AmountCharge - amountChargeChange
+                                            });
+
+                                        BillBLL.Insert(new BillModel
+                                        {
+                                            BillId = Global.Generator.DateId(1),
+                                            UserId = order.UserId,
+                                            Amount = -amountChange,
+                                            AmountCharge = -amountChargeChange,
+                                            BillType = EBillType.成本结算,
+                                            CreateDate = DateTime.Now
+                                        });
+                                    }
+                                }
+
+                                //else
+                                //{
+                                //    order.DeliveryMessage = "十分抱歉，你购买的卡密暂时无货，请联系商家解决！";
+                                //}
+                            }
+
+                            #endregion
+
+                            #region 接口
+
+                            else if (product.DeliveryType == EDeliveryType.接口)
+                            {
+                            }
+                            else if (product.DeliveryType == EDeliveryType.人工)
+                            {
+                            }
+
+                            #endregion
+                            
+                            DeliveryEmail(order);
+                        }
+                    }
                 }
             }
 

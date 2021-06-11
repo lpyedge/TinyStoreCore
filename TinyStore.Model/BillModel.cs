@@ -10,12 +10,12 @@ namespace TinyStore.Model
         /// </summary>
         [SqlSugar.SugarColumn(IsPrimaryKey = true, Length = 28)]
         public string BillId { get; set; }
-        
+
         /// <summary>
         ///店铺编号
         /// </summary>
-        [SqlSugar.SugarColumn(Length = 28,IndexGroupNameList = new []{"StoreId"})]
-        public string StoreId { get; set; }
+        [SqlSugar.SugarColumn(Length = 28, IndexGroupNameList = new[] {"StoreId"})]
+        public string StoreId { get; set; } = "";
 
         /// <summary>
         /// 商户编号
@@ -44,11 +44,11 @@ namespace TinyStore.Model
         /// </summary>
         [SqlSugar.SugarColumn(IndexGroupNameList = new[] {"CreateDate"})]
         public DateTime CreateDate { get; set; } = DateTime.Now;
-        
+
         /// <summary>
         /// 附加数据 订单编号？名称？提现编号？
         /// </summary>
         [SqlSugar.SugarColumn(IsJson = true, ColumnDataType = "text")]
-        public string Extra { get; set; }
+        public string Extra { get; set; } = "";
     }
 }

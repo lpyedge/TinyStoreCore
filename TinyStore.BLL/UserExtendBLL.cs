@@ -1,6 +1,7 @@
 ﻿
 using System.Collections.Generic;
 using System.Linq;
+using TinyStore.Model;
 
 
 namespace TinyStore.BLL
@@ -44,6 +45,20 @@ namespace TinyStore.BLL
         public static void ModifyLevel(int userId, EUserLevel p_level)
         {
             Update(p => p.UserId == userId, p => p.Level == p_level);
+        }
+
+        public static Model.UserExtendModel QueryFinace()
+        {
+            using (var db = DbClient)
+            {
+                return db.Queryable<Model.UserExtendModel>()
+                    .Select(p => new UserExtendModel()
+                    {
+                        Amount =  SqlSugar.SqlFunc.AggregateSum(p.Amount) ,
+                        AmountCharge = SqlSugar.SqlFunc.AggregateSum(p.AmountCharge)
+                    } )
+                    .Single();
+            }
         }
     }
 }

@@ -35,6 +35,11 @@ namespace TinyStore.Site.Controllers
             return View();
         }
         
+        public IActionResult User_Finance()
+        {
+            return View();
+        }
+        
         public IActionResult Supply_List()
         {
             return View();
@@ -44,6 +49,9 @@ namespace TinyStore.Site.Controllers
         {
             return View();
         }
+        
+        
+     
         
         //
         // public IActionResult AdminLog()
@@ -55,10 +63,6 @@ namespace TinyStore.Site.Controllers
         //     return View();
         // }
         // public IActionResult Orderdelete()
-        // {
-        //     return View();
-        // }
-        // public IActionResult Productsupply()
         // {
         //     return View();
         // }

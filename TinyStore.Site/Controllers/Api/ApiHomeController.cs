@@ -136,7 +136,9 @@ namespace TinyStore.Site.Controllers.Api
             using (Stream stream = Request.Body)
             {
                 var buffer = new byte[Request.ContentLength.Value];
+                
                 await stream.ReadAsync(buffer, 0, buffer.Length);
+                
                 var body = Encoding.UTF8.GetString(buffer);
                 
                 var msg = SiteContext.Payment.Notify(payname,
@@ -146,7 +148,7 @@ namespace TinyStore.Site.Controllers.Api
                         , p => p.Value.ToString()),
                     Request.Headers.ToDictionary(p => p.Key
                         , p => p.Value.ToString()),
-                    body, Utils.RequestInfo._ClientIP(Request).ToString());
+                    body,Utils.RequestInfo._ClientIP(Request).ToString());
                 
                 return Content(msg);
             }

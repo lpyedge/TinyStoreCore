@@ -167,6 +167,7 @@ namespace TinyStore.Site.Controllers
 
             BLL.UserExtendBLL.Update(p => p.UserId == user.UserId,
                 p => new UserExtendModel() {Amount = p.Amount - amount});
+            
             var withDraw = new WithDrawModel()
             {
                 WithDrawId = Global.Generator.DateId(1),
@@ -182,7 +183,9 @@ namespace TinyStore.Site.Controllers
                 TranId = "",
                 FinishDate = null,
             };
+            
             BLL.WithDrawBLL.Insert(withDraw);
+            
             BLL.BillBLL.Insert(new BillModel()
             {
                 BillId = Global.Generator.DateId(1),
@@ -191,7 +194,6 @@ namespace TinyStore.Site.Controllers
                 AmountCharge = 0,
                 BillType = EBillType.提现,
                 CreateDate = DateTime.Now,
-                StoreId = "",
                 Extra = withDraw.WithDrawId
             });
 

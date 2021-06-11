@@ -1,6 +1,6 @@
 ﻿<q-page padding>
     <div class="text-h5 text-weight-bold text-grey-8">
-        <q-icon :name="userlinks[2].icon" size="md" class="on-left"></q-icon>{{userlinks[2].text}}
+        <q-icon :name="userlinks[1].icon" size="md" class="on-left"></q-icon>{{userlinks[1].text}}
     </div>
     <q-separator class="q-my-sm"></q-separator>
     
@@ -11,7 +11,7 @@
                     <label>资金</label>
                 </div>
                 <div class="col text-h5">
-                    <q-icon name="fas fa-yen-sign" size="1.1rem"></q-icon>{{ userExtend.amount }}
+                    <q-icon name="fas fa-yen-sign" size="1.1rem"></q-icon>{{ userFinace.amount }}
                 </div>
             </div>
         </q-card>
@@ -21,7 +21,7 @@
                     <label>签帐</label>
                 </div>
                 <div class="col text-h5">
-                    <q-icon name="fas fa-yen-sign" size="1.1rem"></q-icon>{{ userExtend.amountCharge }}
+                    <q-icon name="fas fa-yen-sign" size="1.1rem"></q-icon>{{ userFinace.amountCharge }}
                 </div>
             </div>
         </q-card>
@@ -31,16 +31,8 @@
                     <label>提现</label> 
                 </div>
                 <div class="col text-h5">
-                    <q-icon name="fas fa-yen-sign" size="1.1rem"></q-icon>{{ withDrawAmountTotal }}
+                    <q-icon name="fas fa-yen-sign" size="1.1rem"></q-icon>{{ userFinace.withDraw }}
                 </div>
-                <q-btn flat dense icon="history" size="sm" class="absolute-top-right q-ma-xs"
-                       @@click="withdrawListDialogShow">
-                    <q-tooltip>提现记录</q-tooltip>
-                </q-btn>
-                <q-btn flat dense icon="settings" size="sm" class="absolute-bottom-right q-ma-xs"
-                       @@click="userWithdrawDialog = true">
-                    <q-tooltip>设置提现信息</q-tooltip>
-                </q-btn>
             </div>
         </q-card>
     </div>
@@ -48,10 +40,14 @@
     <q-separator class="q-my-sm"></q-separator>
     
     <div class="row q-gutter-xs q-mx-none q-my-sm">
+        <div class="q-gutter-sm on-left">
+              <q-radio keep-color v-model="billFilter.financeType" val="bill" label="账目" color="primary" />
+              <q-radio keep-color v-model="billFilter.financeType" val="withDraw" label="提现" color="positive" />
+        </div>
         <q-input outlined dense stack-label bg-color="white" style="min-width: 230px;"
                  readonly
                  class="col-xs-12 col-md-auto"
-                 label="账目日期"
+                 :label="billFilter.financeType == 'bill' ? '账目日期' : '提现日期' "
                  :value="billFilter.dateRange ? (Object.prototype.toString.call(billFilter.dateRange) === '[object String]' ? billFilter.dateRange + ' 至 ' + billFilter.dateRange : billFilter.dateRange.from + ' 至 ' + billFilter.dateRange.to) : '' "
                  @@clear="v=>billFilter.dateRange = null">
             <template v-slot:append>
@@ -67,7 +63,7 @@
                                 </div>
                                 <div class="col-auto">
                                     <q-btn v-close-popup :label="$q.lang.label.clear" color="warning" flat @@click="billFilter.dateRange = null"></q-btn>
-                                    <q-btn v-close-popup :label="$q.lang.label.close" color="primary" flat ></q-btn>
+                                    <q-btn v-close-popup :label="$q.lang.label.close" color="primary" flat></q-btn>
                                 </div>
                             </div>
                         </q-date>
@@ -76,33 +72,56 @@
             </template>
         </q-input>
         <q-select outlined dense options-dense stack-label bg-color="white" style="min-width: 140px"
-              class="col-xs-5 col-md-auto"
-              label="账目类型"
-              emit-value
-              map-options
-              v-model="billFilter.billType"
-              :options="billTypeOptions">
+                  v-if="billFilter.financeType == 'bill'"
+                  class="col-auto"
+                  label="账目类型"
+                  emit-value
+                  map-options
+                  v-model="billFilter.billType"
+                  :options="billTypeOptions">
         </q-select>
+        <q-toggle v-if="billFilter.financeType == 'withDraw'" class="col-auto" toggle-indeterminate v-model="billFilter.isFinish" color="orange" label="是否结束" left-label></q-toggle>
         <q-space></q-space>
-        <q-btn :loading="billFilter.loading" class="col-shrink" color="primary" icon="search" label="搜索" @@click="loadBillData"></q-btn>
+        <q-btn :loading="billFilter.loading" class="col-shrink" color="primary" icon="search" label="搜索" @@click="loadData"></q-btn>
     </div>
-
-    <q-table
-        :grid="!$q.platform.is.desktop"
-
-        row-key="billId"
-        :data="billData"
-        :columns="billColumns"
-
-        :pagination.sync="billFilter.pagination"
-        :rows-per-page-options="[10, 25, 50, 100, 200]"
-        @@request="loadBillData">
-        <template v-slot:body="props">
-            <q-tr :props="props">
-                <q-td key="billType" class="text-weight-bolder">
+    
+<q-table v-show="billFilter.financeType == 'bill'"
+         :grid="!$q.platform.is.desktop"
+             
+         row-key="billId"
+         :data="billData"
+         :columns="billColumns"
+             
+         :pagination.sync="billFilter.pagination"
+         :rows-per-page-options="[10, 25, 50, 100, 200]"
+         @@request="loadBillData">
+    <template v-slot:body="props">
+        <q-tr :props="props">
+            <q-td key="billType" class="text-weight-bolder">
+                {{billTypeName(props.row.billType)}}
+            </q-td>
+            <q-td key="amount">
+                <q-badge v-if="props.row.amount !== 0" class="on-right cursor-pointer text-subtitle2" color="primary">
+                    <q-icon name="fas fa-yen-sign" size="0.7rem"></q-icon>{{ props.row.amount }}
+                    <q-tooltip>资金额度变动</q-tooltip>
+                </q-badge>
+                <q-badge v-if="props.row.amountCharge !== 0" class="on-right cursor-pointer text-subtitle2" color="orange">
+                    <q-icon name="fas fa-yen-sign" size="0.7rem"></q-icon>{{ props.row.amountCharge }}
+                    <q-tooltip>签帐额度变动</q-tooltip>
+                </q-badge>
+            </q-td>
+            <q-td key="createDate">
+                {{ Quasar.date.formatDate(props.row.createDate,'YYYY-MM-DD HH:mm') }}
+            </q-td>
+        </q-tr>
+    </template>
+    <template v-slot:item="props">
+        <q-card class="q-pa-xs col-12">
+            <q-card-section class="q-pa-sm row">
+                <div class="col-auto text-weight-bolder">
                     {{billTypeName(props.row.billType)}}
-                </q-td>
-                <q-td key="amount">
+                </div>
+                <div class="col text-center">
                     <q-badge v-if="props.row.amount !== 0" class="on-right cursor-pointer text-subtitle2" color="primary">
                         <q-icon name="fas fa-yen-sign" size="0.7rem"></q-icon>{{ props.row.amount }}
                         <q-tooltip>资金额度变动</q-tooltip>
@@ -111,29 +130,74 @@
                         <q-icon name="fas fa-yen-sign" size="0.7rem"></q-icon>{{ props.row.amountCharge }}
                         <q-tooltip>签帐额度变动</q-tooltip>
                     </q-badge>
+                </div>
+                <div class="col-auto text-center">
+                    {{ Quasar.date.formatDate(props.row.createDate,'YYYY-MM-DD HH:mm') }}
+                </div>
+            </q-card-section>
+        </q-card>
+    </template>
+</q-table>
+
+    <q-table v-show="billFilter.financeType == 'withDraw'"
+             :grid="!$q.platform.is.desktop"
+             
+             row-key="withDrawId"
+             :data="withDrawData"
+             :columns="withDrawColumns"
+             
+             :pagination.sync="billFilter.pagination"
+             :rows-per-page-options="[10, 25, 50, 100, 200]"
+             @@request="loadWithDrawData">
+        <template v-slot:body="props">
+            <q-tr :props="props">
+                <q-td key="bankType" class="text-weight-bolder">
+                    {{ bankTypeName(props.row.bankType) }}
+                </q-td>
+                <q-td key="bankAccount" class="text-weight-bolder">
+                    {{ props.row.bankAccount }} / {{ props.row.bankPersonName }}
+                </q-td>
+                <q-td key="amount">
+                    <q-badge class="on-right cursor-pointer text-subtitle2" color="positive">
+                        <q-icon name="fas fa-yen-sign" size="0.7rem"></q-icon>{{ props.row.amount }}
+                        <q-tooltip>提现金额</q-tooltip>
+                    </q-badge>
+                    <q-badge v-if="props.row.isFinish" class="on-right cursor-pointer text-subtitle2" color="orange">
+                        <q-icon name="fas fa-yen-sign" size="0.7rem"></q-icon>{{ props.row.amountFinish }}
+                        <q-tooltip v-if="props.row.amountFinish != 0">{{ props.row.tranId }}</q-tooltip>
+                        <q-tooltip v-else>{{ props.row.memo }}</q-tooltip>
+                    </q-badge>
+                    <q-btn v-else outline label="提现" color="orange" size="sm" @@click="withDrawDialogShow(props.rowIndex)"></q-btn>
                 </q-td>
                 <q-td key="createDate">
                     {{ Quasar.date.formatDate(props.row.createDate,'YYYY-MM-DD HH:mm') }}
                 </q-td>
             </q-tr>
         </template>
-        <template v-slot:item="props">            
+        <template v-slot:item="props">
             <q-card class="q-pa-xs col-12">
                 <q-card-section class="q-pa-sm row">
                     <div class="col-auto text-weight-bolder">
-                        {{billTypeName(props.row.billType)}}
+                        {{ bankTypeName(props.row.bankType) }}
                     </div>
-                    <div class="col text-center">
-                        <q-badge v-if="props.row.amount !== 0" class="on-right cursor-pointer text-subtitle2" color="primary">
+                    <div class="col text-weight-bolder text-right">
+                        {{ props.row.bankAccount }} / {{ props.row.bankPersonName }}
+                    </div>
+                </q-card-section>
+                <q-card-section class="q-pa-sm row">
+                    <div class="col text-left">
+                        <q-badge class="cursor-pointer text-subtitle2" color="positive">
                             <q-icon name="fas fa-yen-sign" size="0.7rem"></q-icon>{{ props.row.amount }}
-                            <q-tooltip>资金额度变动</q-tooltip>
+                            <q-tooltip>提现金额</q-tooltip>
                         </q-badge>
-                        <q-badge v-if="props.row.amountCharge !== 0" class="on-right cursor-pointer text-subtitle2" color="orange">
-                            <q-icon name="fas fa-yen-sign" size="0.7rem"></q-icon>{{ props.row.amountCharge }}
-                            <q-tooltip>签帐额度变动</q-tooltip>
+                        <q-badge v-if="props.row.isFinish" class="on-right cursor-pointer text-subtitle2" color="orange">
+                            <q-icon name="fas fa-yen-sign" size="0.7rem"></q-icon>{{ props.row.amountFinish }}
+                            <q-tooltip v-if="props.row.amountFinish != 0">{{ props.row.tranId }}</q-tooltip>
+                            <q-tooltip v-else>{{ props.row.memo }}</q-tooltip>
                         </q-badge>
+                        <q-btn v-else outline label="提现" color="orange" size="sm" @@click="withDrawDialogShow(props.rowIndex)"></q-btn>
                     </div>
-                    <div class="col-auto text-center">
+                    <div class="col-auto text-right">
                         {{ Quasar.date.formatDate(props.row.createDate,'YYYY-MM-DD HH:mm') }}
                     </div>
                 </q-card-section>
@@ -142,129 +206,41 @@
     </q-table>
 </q-page>
 
-<q-dialog v-model="withdrawListDialog">
+<q-dialog v-model="withDrawDialog">
     <q-card style="max-width: 500px; width: 500px;">
         <q-card-section class="row items-center q-pb-none">
-            <div class="text-h6">提现历史</div> <q-btn color="secondary" class="on-right" size="sm" round dense icon="add" @@click="withdrawAddDialogShow"><q-tooltip>申请提现</q-tooltip></q-btn>
+            <div class="text-h6">提现操作</div>
             <q-space ></q-space>
             <q-btn icon="close" flat round dense v-close-popup></q-btn>
         </q-card-section>
-        <q-card-section>
-            <q-list>
-                <q-item class="q-pa-none q-my-sm" v-for="(item,i) in withdrawData">
-                    <q-card>
-                        <q-card-section class="row q-pa-xs">
-                            <q-input outlined dense stack-label bg-color="white"
-                                     readonly
-                                     class="col-xs-6 col-md-3"
-                                     label="收款方式"
-                                     :value="bankTypeName(item.bankType)">
-                            </q-input>
-                            <q-input outlined dense stack-label bg-color="white"
-                                     readonly
-                                     class="col-xs-6 col-md-3"
-                                     label="收款名称"
-                                     :value="item.bankAccount">
-                            </q-input>
-                            <q-input outlined dense stack-label bg-color="white"
-                                     readonly
-                                     class="col-xs-12 col-md"
-                                     label="收款账户"
-                                     :value="item.bankPersonName">
-                            </q-input>
-                        </q-card-section>
-                        <q-card-section class="row q-pa-xs justify-between">
-                            <q-badge color="positive">提现日期:{{ Quasar.date.formatDate(item.createDate,'YYYY-MM-DD HH:mm') }}</q-badge>
-                            <q-badge color="positive">提现金额:<q-icon name="fas fa-yen-sign" size="0.7rem"></q-icon> {{ item.amount }}</q-badge>
-                        </q-card-section>
-                        <q-separator v-if="item.isFinish" class="q-my-xs"></q-separator>
-                        <q-card-section class="row q-pa-xs justify-between" v-if="item.isFinish && item.amountFinish > 0">
-                            <q-badge color="primary">到账日期:{{ Quasar.date.formatDate(item.finishDate,'YYYY-MM-DD HH:mm') }}</q-badge>
-                            <q-badge color="primary">到账金额:<q-icon name="fas fa-yen-sign" size="0.7rem"></q-icon> {{ item.amountFinish }}</q-badge>
-                        </q-card-section>
-                        <q-card-section class="row q-pa-xs justify-between" v-if="item.isFinish && item.amountFinish == 0">
-                            <q-badge color="warning">取消日期:{{ Quasar.date.formatDate(item.finishDate,'YYYY-MM-DD HH:mm') }}</q-badge>
-                            <q-badge color="warning">取消原因:{{ item.memo }}</q-badge>
-                        </q-card-section>
-                    </q-card>
-                </q-item>
-            </q-list>
-        </q-card-section>
-    </q-card>
-</q-dialog>
-
-<q-dialog v-model="withdrawAddDialog">
-    <q-card style="max-width: 500px; width: 500px;">
-        <q-card-section class="row items-center q-pb-none">
-            <div class="text-h6">申请提现</div>
-            <q-space ></q-space>
-            <q-btn icon="close" flat round dense v-close-popup></q-btn>
-        </q-card-section>
-        <q-card-section class="row">
+        <q-card-section class="q-gutter-sm">
+            <q-toggle color="green" v-model="withDrawCurrent.isTran">到账</q-toggle>
             <q-input outlined dense stack-label bg-color="white"
-                     readonly
-                     class="col-xs-6 col-md-3"
-                     label="收款方式"
-                     :value="bankTypeName(userExtend.bankType)">
+                     v-if="withDrawCurrent.isTran"
+                     label="到账金额"
+                     hint="除非特殊情况，一般不需修改到账金额"
+                     v-model.number="withDrawCurrent.amountFinish"
+                     ref="withDrawCurrent_amountFinish"
+                     :rules="[val => !!val || '必须输入商品名称',val => val > 0 || '到账金额必须输入大于等于0的数字']">
             </q-input>
             <q-input outlined dense stack-label bg-color="white"
-                     readonly
-                     class="col-xs-6 col-md-3"
-                     label="收款名称"
-                     :value="userExtend.bankAccount">
+                     v-if="withDrawCurrent.isTran"
+                     label="交易单号"
+                     v-model.trim="withDrawCurrent.tranId">
             </q-input>
             <q-input outlined dense stack-label bg-color="white"
-                     readonly
-                     class="col-xs-12 col-md"
-                     label="收款账户"
-                     :value="userExtend.bankPersonName">
+                     v-if="!withDrawCurrent.isTran"
+                     autogrow
+                     label="说明内容"
+                     v-model.trim="withDrawCurrent.memo"
+                     maxlength="200"
+                     ref="withDrawCurrent_memo"
+                     :rules="[val => !!val || '必须输入说明内容',val => val.length > 5 || '说明内容长度不得少于5']">
             </q-input>
         </q-card-section>
-        <q-card-section>
-            <q-input outlined dense stack-label bg-color="white"
-                     label="提现金额 范围限制[@(SiteContext.Config.WithDrawMin+" - " +SiteContext.Config.WithDrawMax)]"
-                     v-model.number="withdrawAmount"
-                     ref="withdrawAmount"
-                     :rules="[val => !!val || '必须输入提现金额',val => (val >= @SiteContext.Config.WithDrawMin && val <= @SiteContext.Config.WithDrawMax) || '提现金额必须在限制范围内']">
-            </q-input>
-        </q-card-section>
-        <q-card-section class="row justify-end">
-            <q-btn color="warning" icon="edit" label="保存" @@click="withdrawAdd"></q-btn>
-        </q-card-section>
-    </q-card>
-</q-dialog>
-
-<q-dialog v-model="userWithdrawDialog">
-    <q-card style="max-width: 500px; width: 500px;">
-        <q-card-section class="row items-center q-pb-none">
-            <div class="text-h6">提现设置</div>
-            <q-space ></q-space>
-            <q-btn icon="close" flat round dense v-close-popup></q-btn>
-        </q-card-section>
-        <q-card-section>
-            <q-select outlined dense options-dense stack-label bg-color="white"
-                      class="q-pb-md"
-                      label="收款方式"
-                      v-model="userExtend.bankType"
-                      emit-value
-                      map-options
-                      :options="bankTypeOptions">
-            </q-select>
-            <q-input outlined dense stack-label bg-color="white"
-                     label="收款名称"
-                     v-model.trim="userExtend.bankPersonName"
-                     ref="userExtend_bankPersonName"
-                     :rules="[val => !!val || '必须输入收款名称']">
-            </q-input>
-            <q-input outlined dense stack-label bg-color="white"
-                     label="收款账户"
-                     v-model.trim="userExtend.bankAccount"
-                     ref="userExtend_bankAccount"
-                     :rules="[val => !!val || '必须输入收款账户']">
-            </q-input>
-        </q-card-section>
-        <q-card-section class="row justify-end">
-            <q-btn color="warning" icon="edit" label="保存" @@click="userWithdrawSave"></q-btn>
+        <q-card-section class="row justify-between">
+            <q-space></q-space>
+            <q-btn color="warning" icon="save" label="保存" @@click="withDrawDialogSave"></q-btn>
         </q-card-section>
     </q-card>
 </q-dialog>
@@ -280,13 +256,18 @@
                     from:Quasar.date.formatDate(Quasar.date.adjustDate(Date.now(),{date:1}),'YYYY-MM-DD'),
                     to:Quasar.date.formatDate(Date.now(),'YYYY-MM-DD')
                },
+               financeType:'withDraw',
                billType:0,
+               isFinish:null,
                pagination:{                   
                    page: 1,
                    rowsPerPage: 25,
                    rowsNumber:0,
                },
-           },           
+           },
+           
+           userFinace:{},
+             
            billData:[],
            billColumns:[
                {
@@ -306,18 +287,56 @@
                }
            ],
            
-         
-           userWithdrawDialog:false,
+           withDrawData:[],
+           withDrawColumns:[               
+               {
+                   align: 'left',
+                   name:'bankType',
+                   label:'提现方式',
+               },            
+               {
+                   align: 'left',
+                   name:'bankAccount',
+                   label:'账户 / 名称',
+               },
+               {
+                   align: 'left',
+                   name:'amount',
+                   label:'提现金额',
+               },
+               {
+                   align: 'left',
+                   name:'createDate',
+                   label:'提现日期',
+               }
+           ],
            
-           withdrawListDialog:false,
-           withdrawData:[],                      
-                      
-           withdrawAddDialog:false,
-           withdrawAmount:0,
+           withDrawIndex:-2,//默认 -2 其他 索引值
+           withDrawCurrent:{},
+           withDrawDialog:false,
        },
        beforeMount(){
-           this.loadBillData();
-           this.loadWithDrawData();
+           AdminApi('UserFinace')
+            .then((response)=> {
+                if (response.data.code === 1){ 
+                    this.userFinace = response.data.data;
+                } else{
+                    Notify.Warning('数据加载失败');
+                }
+            })
+            .catch( (error)=> {
+                Notify.Warning('接口通信错误');
+                console.error(error);
+            });
+           
+           this.loadData();
+       },
+       watch:{
+           'billFilter.financeType':function (){
+               this.billFilter.pagination = { page: 1, rowsPerPage: 25, rowsNumber:0,};
+               this.billFilter.billType = 0;
+               this.billFilter.isFinish=null;
+           }
        },
        computed:{
            billTypeOptions(){
@@ -336,18 +355,61 @@
                    data.push(options[i]);
                }
                return data;
-           },
-           withDrawAmountTotal(){
-               var amountTotal =0;
-               for (i in this.withdrawData) {
-                   if (!this.withdrawData[i].isFinish){
-                       amountTotal+= this.withdrawData[i].amount;
-                   }                 
-               }
-               return amountTotal;
            }
        },
        methods: {
+           loadData(){
+               if (this.billFilter.financeType === 'bill'){
+                   this.loadBillData();
+               }else if (this.billFilter.financeType === 'withDraw'){                   
+                   this.loadWithDrawData();
+               }
+           },
+           loadWithDrawData(){
+               if(arguments.length>0 && arguments[0].pagination){
+                   this.billFilter.pagination = arguments[0].pagination;
+               }
+               
+               var dateFrom='', dateTo='';
+               if(this.billFilter.dateRange){            
+                 var dateRangeType = Object.prototype.toString.call(this.billFilter.dateRange);
+                 if (dateRangeType === '[object String]'){
+                      dateFrom=this.billFilter.dateRange;    
+                      dateTo=this.billFilter.dateRange;                    
+                 }else{
+                      dateFrom=this.billFilter.dateRange.from;    
+                      dateTo=this.billFilter.dateRange.to; 
+                 }
+               }
+              
+              if (dateFrom==='' && dateTo===''){
+                  Notify.Warning('账目日期不能为空');
+                  return;
+              }
+              
+              this.billFilter.loading =true;
+              
+               AdminApi('WithDrawPageList',{
+                   from:dateFrom,
+                   to:dateTo,
+                   isFinish:this.billFilter.isFinish,
+                   pageSize:this.billFilter.pagination.rowsPerPage,
+                   pageIndex:this.billFilter.pagination.page},true)
+                   .then((response)=> {
+                    if (response.data.code === 1){ 
+                        this.withDrawData = response.data.data.rows; 
+                        this.billFilter.pagination.rowsNumber = response.data.data.total;
+                    } else{
+                        Notify.Warning('提现记录加载失败');
+                    }
+                    this.billFilter.loading =false;
+                })
+                .catch( (error)=> {
+                    this.billFilter.loading =false;
+                    Notify.Warning('接口通信错误');
+                    console.error(error);
+                });
+           },
            loadBillData(){
                if(arguments.length>0 && arguments[0].pagination){
                    this.billFilter.pagination = arguments[0].pagination;
@@ -362,7 +424,7 @@
                   }else{
                        dateFrom=this.billFilter.dateRange.from;    
                        dateTo=this.billFilter.dateRange.to; 
-                  }   
+                  }
                }
                
                if (dateFrom==='' && dateTo===''){
@@ -371,7 +433,7 @@
                }
                
                this.billFilter.loading =true;
-               UserApi('BillPageList',{
+               AdminApi('BillPageList',{
                    from:dateFrom,
                    to:dateTo,
                    billType:this.billFilter.billType,
@@ -391,20 +453,6 @@
                       Notify.Warning('接口通信错误');
                       console.error(error);
                   });
-           },
-           loadWithDrawData(){
-               UserApi('WithDrawList')
-                .then((response)=> {
-                    if (response.data.code === 1){ 
-                        this.withdrawData = response.data.data;
-                    } else{
-                        Notify.Warning('提现记录加载失败');
-                    }
-                })
-                .catch( (error)=> {
-                    Notify.Warning('接口通信错误');
-                    console.error(error);
-                });
            },
            dateRangeOptionsFn(date){
                var date_end = Quasar.date.formatDate(Date.now(),'YYYY/MM/DD');
@@ -427,74 +475,61 @@
                }
                return '未知';
            },
-           withdrawListDialogShow(){
-               this.loadWithDrawData();
-               this.withdrawListDialog = true;
+           withDrawDialogShow(i){
+               this.withDrawIndex = i;
+               this.withDrawCurrent = this.withDrawData[this.withDrawIndex];               
+               this.withDrawCurrent.amountFinish = this.withDrawCurrent.amount;
+               this.$set(this.withDrawCurrent,"isTran",true);
+               this.withDrawDialog = true;
            },
-           withdrawAddDialogShow(){
-               if (!!this.userExtend.bankAccount && !!this.userExtend.bankPersonName){
-                   this.withdrawAmount = 0;
-                   this.withdrawAddDialog = true;
-                   this.withdrawListDialog = false;
-               }else{
-                   this.$q.dialog({
-                       title: '提示',
-                       message: '尊敬的商户，您还未设置提现账户，是否立刻设置？',
-                       cancel: true,
-                       persistent: true
-                     }).onOk(data => {
-                        this.withdrawListDialog = false;
-                        this.userWithdrawDialog = true;
-                     })
+           withDrawDialogSave(){
+               if(this.withDrawCurrent.isTran){
+                     this.$refs.withDrawCurrent_amountFinish.validate();
+                     if (!this.$refs.withDrawCurrent_amountFinish.hasError ){
+                         if (this.withDrawCurrent.amountFinish > this.withDrawCurrent.amount){
+                             this.withDrawCurrent.amountFinish = this.withDrawCurrent.amount;
+                         }
+                         this.withDrawCurrent.memo = '';
+                         this.withDrawCurrent.isFinish = true;                         
+                         AdminApi('WithDrawSave',this.withDrawCurrent)
+                         .then((response)=> {
+                             if (response.data.code === 1){ 
+                                 this.withDrawCurrent = {};
+                                 this.withDrawIndex = -2;
+                                 this.withDrawDialog = false;
+                                 this.loadData(); 
+                             } else{
+                                 Notify.Warning('提现数据保存失败');
+                             }
+                         })
+                         .catch( (error)=> {
+                             Notify.Warning('接口通信错误');
+                             console.error(error);
+                         });
+                     }
+               }else{                   
+                     this.$refs.withDrawCurrent_memo.validate();
+                     if (!this.$refs.withDrawCurrent_memo.hasError ){
+                         this.withDrawCurrent.amountFinish = 0;
+                         this.withDrawCurrent.tranId = '';
+                         this.withDrawCurrent.isFinish = true;
+                         AdminApi('WithDrawSave',this.withDrawCurrent)
+                         .then((response)=> {
+                             if (response.data.code === 1){ 
+                                 this.withDrawCurrent = {};
+                                 this.withDrawIndex = -2;
+                                 this.withDrawDialog = false;
+                                 this.loadData(); 
+                             } else{
+                                 Notify.Warning('提现数据保存失败');
+                             }
+                         })
+                         .catch( (error)=> {
+                             Notify.Warning('接口通信错误');
+                             console.error(error);
+                         });
+                     }
                }
-           },
-           withdrawAdd(){
-               this.$refs.withdrawAmount.validate();
-               if (!this.$refs.withdrawAmount.hasError){
-                   UserApi('UserWithDraw',{amount:this.withdrawAmount},true)
-                     .then((response)=> {
-                         if (response.data.code === 1){ 
-                             Store.UserExtend(response.data.data);
-                             this.userExtend = Store.UserExtend();
-                             Notify.Info('申请成功');   
-                             this.withdrawAddDialog = false;
-                             this.withdrawListDialogShow();
-                             this.loadBillData();
-                         } else if (response.data.code === 12){
-                            Notify.Warning('还有未结束的提现申请，无法重复申请提现');
-                        }else if (response.data.code === 11){
-                              Notify.Warning('当前商户资金不足以提现');
-                          }
-                         else{
-                           Notify.Warning('未知错误');
-                       }
-                     })
-                     .catch( (error)=> {
-                         Notify.Warning('接口通信错误');
-                         console.error(error);
-                     });
-               }
-           },
-           userWithdrawSave(){
-                 this.$refs.userExtend_bankPersonName.validate();
-                 this.$refs.userExtend_bankAccount.validate();
-                 if (!this.$refs.userExtend_bankPersonName.hasError && !this.$refs.userExtend_bankAccount.hasError){
-                     UserApi('UserWithDrawSave',this.userExtend)
-                          .then((response)=> {
-                              if (response.data.code === 1){ 
-                                  Store.UserExtend(response.data.data);    
-                                  this.userExtend = Store.UserExtend();
-                                  Notify.Info('保存成功');
-                                  this.userWithdrawDialog = false;
-                              } else{
-                                  Notify.Warning('保存失败');
-                              }
-                          })
-                          .catch( (error)=> {
-                              Notify.Warning('接口通信错误');
-                              console.error(error);
-                          });
-                 }
            }
        }
    };
