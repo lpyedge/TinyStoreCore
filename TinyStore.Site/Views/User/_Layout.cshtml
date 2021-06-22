@@ -181,6 +181,9 @@
            { icon: 'local_grocery_store', text: '订单列表',url:'@Url.ActionLink("Store_Order","User")'  },
            { icon: 'insert_chart', text: '销售统计',url:'@Url.ActionLink("Store_Stat","User")' },
          ],
+         config:{
+           supplyUserIdSys:@SiteContext.Config.SupplyUserIdSys,
+         },
          deliveryTypeOptions:[
              {icon:'vpn_key',name:'卡密',color:'primary',value:1},
              {icon:'pan_tool',name:'人工',color:'primary',value:2},

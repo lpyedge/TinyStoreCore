@@ -22,7 +22,7 @@
                                     <q-btn v-close-popup label="本月" color="accent" @@click="statFilter.dateRange = {from:Quasar.date.formatDate(Quasar.date.adjustDate(Date.now(),{date:1}),'YYYY-MM-DD'),to:Quasar.date.formatDate(Date.now(),'YYYY-MM-DD')}" class="col-shrink self-start"></q-btn>
                                 </div>
                                 <div class="col-auto">
-                                    <q-btn v-close-popup :label="$q.lang.label.close" color="primary" flat></q-btn>
+                                    <q-btn v-close-popup :label="$q.lang.label.ok" color="primary" flat></q-btn>
                                 </div>
                             </div>
                         </q-date>

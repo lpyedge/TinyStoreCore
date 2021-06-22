@@ -25,7 +25,7 @@ namespace TinyStore.Site
                 {
                     config.SetBasePath(Directory.GetCurrentDirectory());
                     //注意相对路径用/分隔
-                    config.AddJsonFile("App_Data/config.json", optional: false, reloadOnChange: true);
+                    config.AddJsonFile("App_Data/Config.json", optional: false, reloadOnChange: true);
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
@@ -35,9 +35,9 @@ namespace TinyStore.Site
                             option.ConfigureHttpsDefaults((httpsConfig) =>
                             {
                                 var certPemFile =
-                                    new FileInfo(AppDomain.CurrentDomain.BaseDirectory + "App_Data/cert.pem");
+                                    new FileInfo(AppDomain.CurrentDomain.BaseDirectory + "App_Data/SSL/cert.pem");
                                 var privateKeyPemFile =
-                                    new FileInfo(AppDomain.CurrentDomain.BaseDirectory + "App_Data/prrvate.key");
+                                    new FileInfo(AppDomain.CurrentDomain.BaseDirectory + "App_Data/SSL/prrvate.key");
                                 if (certPemFile.Exists && privateKeyPemFile.Exists)
                                 {
                                     httpsConfig.ServerCertificate = X509Certificate2.CreateFromPemFile(certPemFile.FullName,

@@ -1,33 +1,9 @@
 ﻿<q-page padding>
     <div class="text-h5 text-weight-bold text-grey-8">
-        <q-icon :name="storelinks[3].icon" size="md" class="on-left"></q-icon>{{storelinks[3].text}}
+        <q-icon :name="userlinks[2].icon" size="md" class="on-left"></q-icon>{{userlinks[2].text}}
     </div>
     <q-separator class="q-my-sm"></q-separator>
     <div class="row q-gutter-xs q-my-sm">
-        @* <q-select outlined dense options-dense stack-label bg-color="white" style="min-width: 240px" *@
-        @*           class="col-xs-12 col-md-auto" *@
-        @*           label="商品" *@
-        @*           v-model="orderFilter.productCurrent" *@
-        @*           :options="productOptions"> *@
-        @*     <template v-slot:selected-item="scope"> *@
-        @*         {{ scope.opt.name }} *@
-        @*         <q-badge outline class="on-right" color="primary" v-if="scope.opt.category"> *@
-        @*             {{ scope.opt.category }} *@
-        @*         </q-badge> *@
-        @*     </template> *@
-        @*     <template v-slot:option="scope"> *@
-        @*         <q-item *@
-        @*             v-bind="scope.itemProps" *@
-        @*             v-on="scope.itemEvents"> *@
-        @*             <div> *@
-        @*                 {{ scope.opt.name }} *@
-        @*                 <q-badge outline class="on-right" color="primary" v-if="scope.opt.category"> *@
-        @*                     {{ scope.opt.category }} *@
-        @*                 </q-badge> *@
-        @*             </div> *@
-        @*         </q-item> *@
-        @*     </template> *@
-        @* </q-select> *@
         <q-input outlined dense stack-label bg-color="white" style="min-width: 230px;"
                  readonly
                  class="col-xs-12 col-md-auto"
@@ -64,31 +40,20 @@
                 <q-icon name="fas fa-filter" color="primary" size="xs"/>
             </template>
         </q-input>
-        <q-toggle class="col-shrink" toggle-indeterminate v-model="orderFilter.isPay" color="orange" :label="orderIsPayOptions[1].name" left-label></q-toggle>
-        <q-toggle class="col-shrink" toggle-indeterminate v-model="orderFilter.isDelivery" color="orange" :label="orderIsDeliveryOptions[1].name" left-label></q-toggle>
         <q-toggle class="col-shrink" toggle-indeterminate v-model="orderFilter.isSettle" color="orange" :label="orderIsSettleOptions[1].name" left-label></q-toggle>
         <q-space></q-space>
         <q-btn :loading="orderFilter.loading" class="col-shrink" color="primary" icon="search" label="搜索" @@click="loadOrderData"></q-btn>
     </div>
 
     <div class="row q-gutter-xs q-my-sm">
-        <q-btn class="q-mx-xs" color="primary" @@click="orderDialogShow(-1)"><q-icon class="on-left" size="xs" name="pan_tool"></q-icon>手动订单</q-btn>
-        @* <q-btn class="q-mx-xs" color="primary" @@click="stockExport"><q-icon class="on-left" size="xs" name="fas fa-file-export"></q-icon>导出</q-btn> *@
         <q-space ></q-space>
         <q-btn-dropdown :disable-main-btn="orderSelected.length === 0" color="warning" label="批量操作">
             <q-list>
-                <q-item clickable v-close-popup @@click="orderMultipleAction(0)">
-                    <q-item-section>
-                        <q-item-label><q-icon class="on-left" size="xs" name="delete_forever"></q-icon>删除</q-item-label>
-                    </q-item-section>
-                </q-item>
-
                 <q-item clickable v-close-popup @@click="orderMultipleAction(1)">
                     <q-item-section>
                         <q-item-label><q-icon class="on-left" size="xs" :name="orderIsSettleOptions[1].icon"></q-icon>{{orderIsSettleOptions[1].name}}</q-item-label>
                     </q-item-section>
                 </q-item>
-               
             </q-list>
         </q-btn-dropdown>
     </div>
@@ -146,7 +111,7 @@
                             {{ orderIsDeliveryOptions[isDeliveryIndex].name }}
                         </q-tooltip>
                     </q-icon>
-                    <q-icon v-if="props.row.supplyUserId != config.supplyUserIdSys" size="1rem" :name="orderIsSettleOptions[isSettleIndex].icon" :color="orderIsSettleOptions[isSettleIndex].color">
+                    <q-icon size="1rem" :name="orderIsSettleOptions[isSettleIndex].icon" :color="orderIsSettleOptions[isSettleIndex].color">
                         <q-tooltip>
                             {{ orderIsSettleOptions[isSettleIndex].name }}
                         </q-tooltip>
@@ -176,7 +141,7 @@
                                 {{ orderIsDeliveryOptions[isDeliveryIndex].name }}
                             </q-tooltip>
                         </q-icon>
-                        <q-icon v-if="props.row.supplyUserId != config.supplyUserIdSys" size="1rem" :name="orderIsSettleOptions[isSettleIndex].icon" :color="orderIsSettleOptions[isSettleIndex].color">
+                        <q-icon size="1rem" :name="orderIsSettleOptions[isSettleIndex].icon" :color="orderIsSettleOptions[isSettleIndex].color">
                             <q-tooltip>
                                 {{ orderIsSettleOptions[isSettleIndex].name }}
                             </q-tooltip>
@@ -232,61 +197,25 @@
             <q-tab icon="send" name="stock" label="发货"></q-tab>
         </q-tabs>
         <q-card-section v-show="orderDialog_tab === 'default'" class="q-gutter-sm">
-            <q-select outlined dense options-dense stack-label bg-color="white"
-                      clearable use-input
-                      v-if="!orderCurrent.orderId"
-                      label="商品"
-                      v-model="orderCurrent.product"
-                      @@input="orderCurrent_product_Change"
-                      @@clear="orderCurrent_product_Change(null)"
-                      @@input-value="v=>{orderCurrent_productkeyname = v;$refs.orderCurrent_product.showPopup();}"
-                      :options="orderCurrent_ProductOptions"
-                      ref="orderCurrent_product"
-                      :rules="[val => !!val || '必须选择商品']">
-                <template v-slot:selected-item="scope">
-                    {{ scope.opt.name }}
-                    <q-badge outline class="on-right" color="primary" v-if="scope.opt.category">
-                        {{ scope.opt.category }}
-                    </q-badge>
-                </template>
-                <template v-slot:option="scope">
-                    <q-item
-                        v-bind="scope.itemProps"
-                        v-on="scope.itemEvents">
-                        <div>
-                            {{ scope.opt.name }}
-                            <q-badge outline class="on-right" color="primary" v-if="scope.opt.category">
-                                {{ scope.opt.category }}
-                            </q-badge>
-                        </div>
-                    </q-item>
-                </template>
-            </q-select>
             <q-input outlined dense stack-label bg-color="white"
                      label="商品名称"
                      readonly
-                     v-model.trim="orderCurrent.name"
-                     ref="orderCurrent_name"
-                     :rules="[val => !!val || '必须输入商品名称',val => val.length <= 10 || '商品名称长度限制10位']">
+                     :value="orderCurrent.name">
             </q-input>
             <div class="row">
                 <q-input outlined dense stack-label bg-color="white"
                          class="col"
                          label="购买数量"
-                         :readonly="!!orderCurrent.orderId"
-                         v-model.number="orderCurrent.quantity"
-                         ref="orderCurrent_quantity"
-                         :rules="[val => !!val || '必须输入购买数量',val => val > 0 || '购买数量必须大于0']">
+                         readonly
+                         :value="orderCurrent.quantity">
                 </q-input>
                 <q-space class="col-auto q-mx-xs"></q-space>
                 <q-input outlined dense stack-label bg-color="white"
                          class="col"
                          label="商品售价"
                          hint="商品销售单价"
-                         :readonly="!!orderCurrent.orderId"
-                         v-model.number="orderCurrent.amount"
-                         ref="orderCurrent_amount"
-                         :rules="[val => !!val || '必须输入销售价格',val => val > 0 || '销售价格必须大于0']">
+                         readonly
+                         :value="orderCurrent.amount">
                 </q-input>
                 <q-space class="col-auto q-mx-xs"></q-space>
                 <q-input outlined dense stack-label bg-color="white"
@@ -294,56 +223,48 @@
                          class="col"
                          label="成本"
                          hint="商品成本"
-                         v-model.number="orderCurrent.cost">
+                         :value="orderCurrent.cost">
                 </q-input>
             </div>
             <div class="row">
                 <q-input outlined dense stack-label bg-color="white"
                          class="col"
                          label="客户邮箱/电话"
-                         :readonly="!!orderCurrent.orderId"
-                         v-model.trim="orderCurrent.contact"
-                         ref="orderCurrent_contact"
-                         :rules="[val => !!val || '必须输入客户邮箱/电话']">
+                         readonly
+                         :value="orderCurrent.contact">
                 </q-input>
                 <q-space class="col-auto q-mx-xs"></q-space>
                 <q-input outlined dense stack-label bg-color="white"
                          class="col"
                          label="客户留言"
-                         :readonly="!!orderCurrent.orderId"
-                         v-model.trim="orderCurrent.message">
+                         readonly
+                         :value="orderCurrent.message">
                 </q-input>
             </div>
             <q-separator class="q-my-xs"></q-separator>
             <q-input outlined dense stack-label bg-color="white"
-                     autogrow
+                     autogrow readonly
                      label="备注"
-                     v-model.trim="orderCurrent.memo">
+                     :value="orderCurrent.memo">
             </q-input>
         </q-card-section>
         <q-card-section v-show="orderDialog_tab === 'payment'" class="q-gutter-sm">
             @* {{ void (isPayIndex = orderCurrent.isPay ? 1 : 0, isSettleIndex = orderCurrent.isSettle ? 1 : 0) }} *@
             @* <q-btn :color="orderIsPayOptions[isPayIndex].color" :icon="orderIsPayOptions[isPayIndex].icon" :label="orderIsPayOptions[isPayIndex].name" @@click="orderCurrent.isPay = !orderCurrent.isPay"></q-btn> *@
-            <q-toggle v-model="orderCurrent.isPay" color="orange" :label="orderIsPayOptions[1].name" left-label :disable="!!orderCurrent.paymentDate"></q-toggle><q-badge v-if="orderCurrent.paymentDate" color="accent">支付日期:{{Quasar.date.formatDate(orderCurrent.paymentDate,'YYYY-MM-DD HH:mm')}}</q-badge>
+            <q-toggle :value="orderCurrent.isPay" color="orange" :label="orderIsPayOptions[1].name" left-label disable></q-toggle>
+            <q-badge v-if="orderCurrent.paymentDate" color="accent">支付日期:{{Quasar.date.formatDate(orderCurrent.paymentDate,'YYYY-MM-DD HH:mm')}}</q-badge>
             <div v-if="orderCurrent.isPay" class="row">
-                <q-select outlined dense stack-label bg-color="white" style="min-width: 6.5rem;"
-                          :readonly="!!orderCurrent.paymentDate"
-                          class="col-auto"
-                          label="支付名称"
-                          emit-value
-                          map-options
-                          option-value="name"
-                          option-label="name"
-                          v-model="orderCurrent.paymentType"
-                          :options="storeCurrent.paymentList"
-                         ref="orderCurrent_paymentType"
-                         :rules="[val => !!val || '必须选择支付名称']">
-                </q-select>
                 <q-input outlined dense stack-label bg-color="white"
-                         :readonly="!!orderCurrent.paymentDate"
+                          class="col-auto"
+                          label="支付方式"
+                          readonly
+                          :value="orderCurrent.paymentType">
+                </q-input>
+                <q-input outlined dense stack-label bg-color="white"
+                         readonly
                          class="col"
                          label-slot
-                         v-model.trim="orderCurrent.tranId">
+                         :value="orderCurrent.tranId">
                     <template v-slot:label>
                         支付编号
                         <q-badge v-if="orderCurrent.paymentFee" align="top" color="accent">手续费:{{orderCurrent.paymentFee}}</q-badge>
@@ -351,30 +272,28 @@
                 </q-input>
             </div>
             <q-separator class="q-my-xs"></q-separator>
-            <q-toggle v-model="orderCurrent.isRefund" color="orange" label="有退款" left-label :disable="!!orderCurrent.refundDate"></q-toggle><q-badge v-if="orderCurrent.refundDate" color="accent">退款日期:{{Quasar.date.formatDate(orderCurrent.refundDate,'YYYY-MM-DD HH:mm')}}</q-badge>
+            <q-toggle :value="orderCurrent.isRefund" color="orange" label="有退款" left-label disable></q-toggle>
+            <q-badge v-if="orderCurrent.refundDate" color="accent">退款日期:{{Quasar.date.formatDate(orderCurrent.refundDate,'YYYY-MM-DD HH:mm')}}</q-badge>
             <q-input outlined dense stack-label bg-color="white"
                      v-if="orderCurrent.isRefund"
-                    :readonly="!!orderCurrent.refundDate"
+                     readonly
                      label="退款金额"
-                     v-model.number="orderCurrent.refundAmount"
-                     ref="orderCurrent_refundAmount"
-                     :rules="[val => val >= 0 || '退款金额必须大于等于0']">
+                     :value="orderCurrent.refundAmount">
             </q-input>
             <q-separator class="q-my-xs"></q-separator>
-            <q-toggle v-model="orderCurrent.isSettle" color="orange" :label="orderIsSettleOptions[1].name" disable left-label></q-toggle><q-badge v-if="orderCurrent.settleDate" color="accent">结算日期:{{Quasar.date.formatDate(orderCurrent.settleDate,'YYYY-MM-DD HH:mm')}}</q-badge>
+            <q-toggle :value="orderCurrent.isSettle" color="orange" :label="orderIsSettleOptions[1].name" disable left-label></q-toggle>
+            <q-badge v-if="orderCurrent.settleDate" color="accent">结算日期:{{Quasar.date.formatDate(orderCurrent.settleDate,'YYYY-MM-DD HH:mm')}}</q-badge>
         </q-card-section>
         <q-card-section v-show="orderDialog_tab === 'stock'" class="q-gutter-sm">
-            <q-toggle v-model="orderCurrent.isDelivery" color="orange" :label="orderIsDeliveryOptions[1].name" left-label :disable="!!orderCurrent.deliveryDate"></q-toggle><q-badge v-if="orderCurrent.deliveryDate" color="accent">发货日期:{{Quasar.date.formatDate(orderCurrent.paymentDate,'YYYY-MM-DD HH:mm')}}</q-badge>
+            <q-toggle :value="orderCurrent.isDelivery" color="orange" :label="orderIsDeliveryOptions[1].name" left-label disable></q-toggle>
+            <q-badge v-if="orderCurrent.deliveryDate" color="accent">发货日期:{{Quasar.date.formatDate(orderCurrent.paymentDate,'YYYY-MM-DD HH:mm')}}</q-badge>
             <q-input outlined dense stack-label bg-color="white" input-style="min-height: 22rem;"
                      v-if="orderCurrent.isDelivery"
-                     :readonly="!!orderCurrent.deliveryDate"
+                     readonly
                      type="textarea"
                      label="发货数据" hint="格式： 每行一条卡密信息"
-                     v-model.trim="orderCurrent.stockData">
+                     :value="orderCurrent.stockData">
             </q-input>
-        </q-card-section>
-        <q-card-section class="row justify-end">
-            <q-btn color="warning" icon="edit" label="保存" @@click="orderDialogEdit"></q-btn>
         </q-card-section>
     </q-card>
 </q-dialog>
@@ -387,15 +306,11 @@
            orderFilter:{
                loading:false,
                keyname:'',
-               isPay:null,
-               isDelivery:null,
                isSettle:null,
                dateRange:{
                     from:Quasar.date.formatDate(Quasar.date.adjustDate(Date.now(),{date:1}),'YYYY-MM-DD'),
                     to:Quasar.date.formatDate(Date.now(),'YYYY-MM-DD')
                },
-               productData:[],
-               productCurrent:{productId:''},
                pagination:{                   
                    page: 1,
                    rowsPerPage: 25,
@@ -439,52 +354,12 @@
            orderSelected:[],
            orderDialog:false,
            orderCurrent:{},
-           orderCurrent_productkeyname:'',
            orderDialog_tab:'default',
        },
        beforeMount(){
-           UserApi('ProductList',{ storeId:this.storeCurrent.storeId },true)
-              .then((response)=> {
-                  if (response.data.code === 1){ 
-                      this.orderFilter.productData = response.data.data;
-                      this.loadOrderData();
-                  } else{
-                      Notify.Warning('商品数据加载失败');
-                  }
-              })
-              .catch( (error)=> {
-                  Notify.Warning('接口通信错误');
-                  console.error(error);
-              });
+           
        },
        computed:{
-           productOptions(){
-               var data = [];
-               data.push({productId:'',name:'全部*'});
-               for (i in this.orderFilter.productData){
-                   data.push(this.orderFilter.productData[i]);
-               }
-               return data;
-           },                
-           orderCurrent_ProductOptions(){
-               var data = [];
-               var keyname = '';
-               if (this.orderCurrent_productkeyname)
-                   keyname = this.orderCurrent_productkeyname.trim().toLowerCase();
-               if (keyname){
-                   for (i in this.supply.data){
-                       if (this.orderFilter.productData.name.toLowerCase().indexOf(keyname)>-1 
-                       || this.orderFilter.productData.memo.toLowerCase().indexOf(keyname)>-1 
-                       || this.orderFilter.productData.category.toLowerCase().indexOf(keyname)>-1)
-                        data.push(this.orderFilter.productData[i]);
-                   }
-               }else{
-                   for (i in this.orderFilter.productData){
-                       data.push(this.orderFilter.productData[i]);
-                   }
-               }
-               return data;
-           }, 
        },
        methods: {
            loadOrderData(){
@@ -509,12 +384,8 @@
                }
                
                this.orderFilter.loading =true;
-               UserApi('OrderPageList',{
-                   storeId:this.storeCurrent.storeId, 
-                   productId:this.orderFilter.productCurrent.productId,
+               AdminApi('OrderPageList',{
                    keyname:this.orderFilter.keyname,
-                   isPay:this.orderFilter.isPay,
-                   isDelivery:this.orderFilter.isDelivery, 
                    isSettle:this.orderFilter.isSettle, 
                    from:dateFrom,
                    to:dateTo,
@@ -536,6 +407,11 @@
                       console.error(error);
                   });
            },
+           orderFilterReset(){
+               this.orderFilter.keyname='';
+               this.orderFilter.pagination.page =1;
+               this.orderFilter.pagination.rowsPerPage =25;
+           },
            orderDialogShow(i){
               this.orderDialog=true;
               this.orderIndex =i;
@@ -554,67 +430,10 @@
                   this.orderCurrent = {userId:this.userExtend.userId,supplyId:'',memo : '',quantity:1, isPay:false,isDelivery:false,isSettle:false,isRefund:false,refundAmount:0,stockData:''};
               }
            },
-           orderDialogEdit(){     
-               //todo  新增和修改验证数据是否已经输入 
-               var default_hasError = false;
-               if (!this.orderCurrent.orderId){
-                   this.$refs.orderCurrent_product.validate();
-                   this.$refs.orderCurrent_name.validate();
-                   default_hasError = this.$refs.orderCurrent_product.hasError 
-                   || this.$refs.orderCurrent_name.hasError;
-               }
-               this.$refs.orderCurrent_quantity.validate();
-               this.$refs.orderCurrent_amount.validate();
-               this.$refs.orderCurrent_contact.validate();
-               
-               var pay_hasError = false;
-               if (this.orderCurrent.isPay){
-                this.$refs.orderCurrent_paymentType.validate();
-                pay_hasError = this.$refs.orderCurrent_paymentType.hasError;
-               }
-               var refund_hasError = false;
-               if (this.orderCurrent.isRefund){
-                this.$refs.orderCurrent_refundAmount.validate();
-                refund_hasError = this.$refs.orderCurrent_refundAmount.hasError;
-               }
-               
-               if (!default_hasError
-               && !this.$refs.orderCurrent_quantity.hasError
-               && !this.$refs.orderCurrent_amount.hasError
-               && !this.$refs.orderCurrent_contact.hasError
-               && !pay_hasError
-               && !refund_hasError){
-                   if (this.orderCurrent.isDelivery && !this.orderCurrent.deliveryDate && this.orderCurrent.stockData.trim().length > 0){
-                       var stockList = [];
-                       var stockArray= this.orderCurrent.stockData.trim().split('\n');
-                       for (i in stockArray){
-                           if (stockArray[i].trim().length > 0){
-                                stockList.push({name:stockArray[i].trim(),stockId:''});
-                           }
-                       }
-                       this.orderCurrent.stockList = stockList;
-                   }
-                   UserApi('OrderSave?storeId='+this.storeCurrent.storeId,this.orderCurrent)
-                      .then((response)=> {
-                            if (response.data.code === 1){ 
-                                this.orderDialog=false;
-                                this.loadOrderData();
-                            } else{
-                                Notify.Warning('操作执行失败');
-                            }
-                            this.orderFilter.loading =false;
-                        })
-                        .catch( (error)=> {
-                            this.orderFilter.loading =false;
-                            Notify.Warning('接口通信错误');
-                            console.error(error);
-                        });
-               }
-           },
            orderMultipleAction(action){
                var orderIds = _.map(this.orderSelected, 'orderId');
                this.orderFilter.loading =true;
-               UserApi('OrderMultipleAction',{ storeId:this.storeCurrent.storeId, orderIds:JSON.stringify(orderIds), action},true)
+               AdminApi('OrderMultipleAction',{ orderIds:JSON.stringify(orderIds), action},true)
                .then((response)=> {
                      if (response.data.code === 1){ 
                          this.loadOrderData();
@@ -633,28 +452,7 @@
                var date_end = Quasar.date.formatDate(Date.now(),'YYYY/MM/DD');
                var date_start = Quasar.date.formatDate(Quasar.date.addToDate(Date.now(),{month:-3}),'YYYY/MM/DD');
                return date >= date_start && date <= date_end;
-           },        
-           orderCurrent_product_Change(v){
-               if(v){ 
-                   this.orderCurrent.userId = this.userExtend.userId;
-                   this.orderCurrent.storeId = this.storeCurrent.storeId;
-                   this.orderCurrent.productId = v.productId;
-                   this.orderCurrent.supplyId = v.supplyId;
-                   this.orderCurrent.amount = v.amount;
-                   this.orderCurrent.cost = v.cost;
-                   this.orderCurrent.name = v.name;
-                   //this.orderCurrent.memo = v.memo;                   
-               } else { 
-                   this.orderCurrent.userId = this.userExtend.userId;
-                   this.orderCurrent.storeId = this.storeCurrent.storeId;
-                   this.orderCurrent.productId = '';
-                   this.orderCurrent.supplyId = '';
-                   this.orderCurrent.amount = 0;
-                   this.orderCurrent.cost = 0;
-                   this.orderCurrent.name = '';
-                   //this.orderCurrent.memo = '';
-               }               
-           }
+           },
        }
    };
    DeepMerge(_layout,_page);

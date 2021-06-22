@@ -12,10 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SqlSugar;
-using TinyStore.BLL;
 using TinyStore.Model;
-using TinyStore.Model.Extend;
-using TinyStore.Utils;
 
 namespace TinyStore.Site
 {
@@ -26,7 +23,7 @@ namespace TinyStore.Site
         public static void ConfigSave()
         {
             var configJson = Global.Json.SerializePretty(new {Config});
-            File.WriteAllText(AppDomain.CurrentDomain.BaseDirectory + "App_Data/config.json", configJson);
+            File.WriteAllText(Config.AppData + "Config.json", configJson);
         }
 
         /// <summary>
@@ -46,32 +43,32 @@ namespace TinyStore.Site
 
         private static void InitData()
         {
-            BaseBLL.Init(DbType.Sqlite, Config.AppData + "Data.db");
+            BLL.BaseBLL.Init(DbType.Sqlite, Config.AppData + "Data.db");
 
             if (!File.Exists(Config.AppData + "Data.db"))
             {
-                BaseBLL.DbClient.DbMaintenance.CreateDatabase();
-                BaseBLL.DbClient.CodeFirst.InitTables<AdminModel>();
-                BaseBLL.DbClient.CodeFirst.InitTables<AdminLogModel>();
-                BaseBLL.DbClient.CodeFirst.InitTables<BillModel>();
-                BaseBLL.DbClient.CodeFirst.InitTables<OrderModel>();
-                BaseBLL.DbClient.CodeFirst.InitTables<OrderTrashModel>();
-                BaseBLL.DbClient.CodeFirst.InitTables<ProductModel>();
-                BaseBLL.DbClient.CodeFirst.InitTables<StockModel>();
-                BaseBLL.DbClient.CodeFirst.InitTables<StoreModel>();
-                BaseBLL.DbClient.CodeFirst.InitTables<SupplyModel>();
-                BaseBLL.DbClient.CodeFirst.InitTables<UserModel>();
-                BaseBLL.DbClient.CodeFirst.InitTables<UserExtendModel>();
-                BaseBLL.DbClient.CodeFirst.InitTables<UserLogModel>();
-                BaseBLL.DbClient.CodeFirst.InitTables<WithDrawModel>();
+                BLL.BaseBLL.DbClient.DbMaintenance.CreateDatabase();
+                BLL.BaseBLL.DbClient.CodeFirst.InitTables<AdminModel>();
+                BLL.BaseBLL.DbClient.CodeFirst.InitTables<AdminLogModel>();
+                BLL.BaseBLL.DbClient.CodeFirst.InitTables<BillModel>();
+                BLL.BaseBLL.DbClient.CodeFirst.InitTables<OrderModel>();
+                BLL.BaseBLL.DbClient.CodeFirst.InitTables<OrderTrashModel>();
+                BLL.BaseBLL.DbClient.CodeFirst.InitTables<ProductModel>();
+                BLL.BaseBLL.DbClient.CodeFirst.InitTables<StockModel>();
+                BLL.BaseBLL.DbClient.CodeFirst.InitTables<StoreModel>();
+                BLL.BaseBLL.DbClient.CodeFirst.InitTables<SupplyModel>();
+                BLL.BaseBLL.DbClient.CodeFirst.InitTables<UserModel>();
+                BLL.BaseBLL.DbClient.CodeFirst.InitTables<UserExtendModel>();
+                BLL.BaseBLL.DbClient.CodeFirst.InitTables<UserLogModel>();
+                BLL.BaseBLL.DbClient.CodeFirst.InitTables<WithDrawModel>();
 
 #if DEBUG
                 InitDevData();
 #endif
             }
 
-            if (AdminBLL.QueryCount(p => p.IsRoot) == 0)
-                AdminBLL.Insert(new AdminModel
+            if (BLL.AdminBLL.QueryCount(p => p.IsRoot) == 0)
+                BLL.AdminBLL.Insert(new AdminModel
                 {
                     Account = "admin",
                     ClientKey = Guid.NewGuid().ToString(),
@@ -89,14 +86,14 @@ namespace TinyStore.Site
 
         private static void InitDevData()
         {
-            UserBLL.InsertAsync(new UserModel
+            BLL.UserBLL.InsertAsync(new UserModel
             {
                 Account = "test",
                 Password = Global.Hash("test", "test"),
                 Salt = "test",
                 ClientKey = "test"
             });
-            UserExtendBLL.InsertAsync(new UserExtendModel
+            BLL.UserExtendBLL.InsertAsync(new UserExtendModel
             {
                 UserId = 1,
 
@@ -120,7 +117,7 @@ namespace TinyStore.Site
             });
             var storeId = Global.Generator.DateId(2);
             storeId = "StoreId";
-            StoreBLL.InsertAsync(new StoreModel
+            BLL.StoreBLL.InsertAsync(new StoreModel
             {
                 UserId = 1,
                 Email = "test@test.com",
@@ -147,7 +144,7 @@ namespace TinyStore.Site
                 UniqueId = "test",
                 StoreId = storeId
             });
-            StoreBLL.InsertAsync(new StoreModel
+            BLL.StoreBLL.InsertAsync(new StoreModel
             {
                 UserId = 1,
                 Email = "test@test.com",
@@ -259,9 +256,9 @@ namespace TinyStore.Site
                 FaceValue = 10,
                 IsShow = true
             });
-            SupplyBLL.InsertRangeAsync(supplyList);
+            BLL.SupplyBLL.InsertRangeAsync(supplyList);
             for (var i = 0; i < 100; i++)
-                StockBLL.InsertAsync(new StockModel
+                BLL.StockBLL.InsertAsync(new StockModel
                 {
                     StockId = $"StockId{i.ToString()}",
                     UserId = 1,
@@ -312,7 +309,7 @@ namespace TinyStore.Site
                     QuantityMin = 1,
                     StoreId = storeId
                 });
-            ProductBLL.InsertRangeAsync(productList);
+            BLL.ProductBLL.InsertRangeAsync(productList);
 
             var orderList = new List<OrderModel>();
             orderList.Add(new OrderModel
@@ -348,7 +345,7 @@ namespace TinyStore.Site
 
                 IsDelivery = false,
                 DeliveryDate = DateTime.Now,
-                StockList = new List<StockOrder>(),
+                StockList = new List<Model.Extend.StockOrder>(),
 
 
                 IsSettle = false,
@@ -400,7 +397,7 @@ namespace TinyStore.Site
 
                         IsDelivery = true,
                         DeliveryDate = DateTime.Now.AddDays(-i),
-                        StockList = new List<StockOrder>(),
+                        StockList = new List<Model.Extend.StockOrder>(),
 
                         RefundAmount = isrefund ? productModel.Cost * 0.3 : 0,
                         RefundDate = isrefund ? DateTime.Now.AddDays(-i) : null,
@@ -411,7 +408,7 @@ namespace TinyStore.Site
                     });
                 }
 
-            OrderBLL.InsertRangeAsync(orderList);
+            BLL.OrderBLL.InsertRangeAsync(orderList);
 
             var billList = new List<BillModel>();
             var billTypes = Enum.GetValues<EBillType>().ToList();
@@ -436,7 +433,7 @@ namespace TinyStore.Site
                 });
             }
 
-            BillBLL.InsertRangeAsync(billList);
+            BLL.BillBLL.InsertRangeAsync(billList);
 
 
             var withDrawList = new List<WithDrawModel>();
@@ -464,14 +461,13 @@ namespace TinyStore.Site
                 });
             }
 
-            WithDrawBLL.InsertRangeAsync(withDrawList);
+            BLL.WithDrawBLL.InsertRangeAsync(withDrawList);
         }
-
 
         public static string IP2Region(string ip)
         {
             //ip = "49.82.194.75";
-            using (var searcher = new DbSearcher(AppDomain.CurrentDomain.BaseDirectory + "App_Data/ip2region.db"))
+            using (var searcher = new DbSearcher(Config.AppData + "ip2region.db"))
             {
                 return searcher.BtreeSearch(ip).Region;
             }
@@ -538,7 +534,7 @@ namespace TinyStore.Site
             /// <summary>
             ///     发件邮箱配置
             /// </summary>
-            public EmailContext.EmailServer EmailServer { get; set; } = new();
+            public Utils.EmailContext.EmailServer EmailServer { get; set; } = new();
 
 
             /// <summary>
@@ -607,7 +603,7 @@ namespace TinyStore.Site
                 {
                     var result = new FileContentResult(buffer, contenttype)
                         {EnableRangeProcessing = true};
-                    MemoryCacher.Set(tempuripath, result, MemoryCacher.CacheItemPriority.Normal,
+                    Utils.MemoryCacher.Set(tempuripath, result, Utils.MemoryCacher.CacheItemPriority.Normal,
                         DateTime.Now.AddMinutes(5));
 
 
@@ -641,8 +637,8 @@ namespace TinyStore.Site
                                 destfile.Directory.Create();
 
                             tempfile.MoveTo(destfile.FullName, overwrite); //转移文件导目标路径
-                            MemoryCacher.Remove(tempuripath);
-                            MemoryCacher.Remove(uripath);
+                            Utils.MemoryCacher.Remove(tempuripath);
+                            Utils.MemoryCacher.Remove(uripath);
                         }
 
                         return uripath;
@@ -669,7 +665,7 @@ namespace TinyStore.Site
                         : $"/{StoreDirectory}/{Model}/{Id}/{Name}{FileSuffix}";
 
                     FileContentResult result = null;
-                    if (!MemoryCacher.TryGet(uripath, out result))
+                    if (!Utils.MemoryCacher.TryGet(uripath, out result))
                     {
                         var file = new FileInfo(AppDomain.CurrentDomain.BaseDirectory + filepath);
                         if (file.Exists)
@@ -683,7 +679,7 @@ namespace TinyStore.Site
                                 var contenttype = Global.Regex.FileContentType.Match(base64str).Groups[1].Value;
                                 result = new FileContentResult(contentbytes, contenttype)
                                     {LastModified = file.LastWriteTime, EnableRangeProcessing = true};
-                                MemoryCacher.Set(uripath, result, MemoryCacher.CacheItemPriority.Normal,
+                                Utils.MemoryCacher.Set(uripath, result, Utils.MemoryCacher.CacheItemPriority.Normal,
                                     DateTime.Now.AddMinutes(5));
                             }
                     }
@@ -699,25 +695,25 @@ namespace TinyStore.Site
         {
             static Email()
             {
-                EmailContext.EmailServer.Instances["default"] = Config.EmailServer;
+                Utils.EmailContext.EmailServer.Instances["default"] = Config.EmailServer;
 
-                EmailContext.EmailTemplate.Instances =
-                    new ConcurrentDictionary<string, EmailContext.EmailTemplate>();
+                Utils.EmailContext.EmailTemplate.Instances =
+                    new ConcurrentDictionary<string, Utils.EmailContext.EmailTemplate>();
                 foreach (var filePath in Directory.GetFiles(Config.AppData + "EmailTemplate/"))
                     try
                     {
                         var file = new FileInfo(filePath);
                         var fileContent = File.ReadAllText(file.FullName);
-                        var data = Global.Json.Deserialize<EmailContext.EmailTemplate>(fileContent);
-                        EmailContext.EmailTemplate.Instances[data.Key] = data;
+                        var data = Global.Json.Deserialize<Utils.EmailContext.EmailTemplate>(fileContent);
+                        Utils.EmailContext.EmailTemplate.Instances[data.Key] = data;
                     }
                     catch (Exception e)
                     {
                     }
             }
 
-            public static Dictionary<string, EmailContext.EmailTemplate> EmailTemplates =>
-                EmailContext.EmailTemplate.Instances
+            public static Dictionary<string, Utils.EmailContext.EmailTemplate> EmailTemplates =>
+                Utils.EmailContext.EmailTemplate.Instances
                     .ToDictionary(p => p.Key, p => p.Value);
 
 
@@ -738,9 +734,9 @@ namespace TinyStore.Site
 
             public static void Send(MailMessage p_MailMessage)
             {
-                EmailContext.EmailServer emailserver = EmailContext.EmailServer.Instances["default"];
+                Utils.EmailContext.EmailServer emailserver = Utils.EmailContext.EmailServer.Instances["default"];
 
-                emailserver.SendMailAsync(p_MailMessage);
+                Utils.EmailContext.SendMailAsync(emailserver,p_MailMessage);
             }
         }
 
@@ -823,7 +819,7 @@ namespace TinyStore.Site
             {
                 if ((int) payment.BankType >= 10)
                 {
-                    Global.AlipaySchema.EBankMark bankMark = Reflection.Attribute
+                    Global.AlipaySchema.EBankMark bankMark = Utils.Reflection.Attribute
                         .GetCustomAttribute<BankMarkAttribute>(payment.BankType).First().BankMark;
                     return Global.AlipaySchema.ToBankCard(bankMark, payment.Account, payment.Name, amount);
                 }
@@ -1005,11 +1001,11 @@ namespace TinyStore.Site
 
             internal static void Pay(string orderid, double incomme, string txnId)
             {
-                if (MemoryCacher.Get(orderid) == null)
+                if (Utils.MemoryCacher.Get(orderid) == null)
                 {
-                    MemoryCacher.Set(orderid, orderid, MemoryCacher.CacheItemPriority.Normal, null,
+                    Utils.MemoryCacher.Set(orderid, orderid, Utils.MemoryCacher.CacheItemPriority.Normal, null,
                         TimeSpan.FromMinutes(1));
-                    OrderModel order = OrderBLL.QueryModelByOrderId(orderid);
+                    OrderModel order = BLL.OrderBLL.QueryModelByOrderId(orderid);
                     if (order != null)
                     {
                         if (!order.IsPay && string.Equals(
@@ -1021,9 +1017,9 @@ namespace TinyStore.Site
                             order.PaymentDate = DateTime.Now;
                             order.PaymentFee = order.Amount * order.Quantity * Config.SysPaymentRate;
                             order.LastUpdateDate = DateTime.Now;
-                            OrderBLL.Update(order);
+                            BLL.OrderBLL.Update(order);
 
-                            BillBLL.Insert(new BillModel
+                            BLL.BillBLL.Insert(new BillModel
                             {
                                 BillId = Global.Generator.DateId(1),
                                 UserId = order.UserId,
@@ -1041,19 +1037,19 @@ namespace TinyStore.Site
 
             public static void Delivery(OrderModel order)
             {
-                StoreModel store = StoreBLL.QueryModelByStoreId(order.StoreId);
+                StoreModel store = BLL.StoreBLL.QueryModelByStoreId(order.StoreId);
                 if (store != null)
                 {
                     SupplyModel supply = string.IsNullOrWhiteSpace(order.SupplyId)
                         ? null
-                        : SupplyBLL.QueryModelById(order.SupplyId);
+                        : BLL.SupplyBLL.QueryModelById(order.SupplyId);
 
                     
                     //货源是否为系统货源
                     var supplyUserIdSys = (supply != null && supply.UserId == Config.SupplyUserIdSys);
                     //货源成本是否可以支付
                     var supplyCostVilidate = true;
-                    UserExtendModel user = UserExtendBLL.QueryModelById(order.UserId);
+                    UserExtendModel user = BLL.UserExtendBLL.QueryModelById(order.UserId);
                     
                     if (supplyUserIdSys)
                     {
@@ -1064,8 +1060,8 @@ namespace TinyStore.Site
                     if (supplyCostVilidate)
                     {
                         ProductModel product =
-                            ProductBLL.QueryModelByProductIdAndStoreId(order.ProductId, order.StoreId);
-                        var liststock = new List<StockOrder>();
+                            BLL.ProductBLL.QueryModelByProductIdAndStoreId(order.ProductId, order.StoreId);
+                        var liststock = new List<Model.Extend.StockOrder>();
                         if (product != null)
                         {
                             #region 卡密
@@ -1073,7 +1069,7 @@ namespace TinyStore.Site
                             if (product.DeliveryType == EDeliveryType.卡密)
                             {
                                 var stocklist =
-                                    StockBLL.QueryListBySupplyIdCanUse(product.SupplyId,
+                                    BLL.StockBLL.QueryListBySupplyIdCanUse(product.SupplyId,
                                         product.UserId);
                                 if (stocklist.Count >= order.Quantity)
                                 {
@@ -1083,9 +1079,9 @@ namespace TinyStore.Site
                                         stocklist[i].DeliveryDate = DateTime.Now;
                                     }
 
-                                    StockBLL.UpdateRange(stocklist.Where(p => p.IsDelivery).ToList());
+                                    BLL.StockBLL.UpdateRange(stocklist.Where(p => p.IsDelivery).ToList());
                                     foreach (StockModel item in stocklist.Where(p => p.IsDelivery))
-                                        liststock.Add(new StockOrder
+                                        liststock.Add(new Model.Extend.StockOrder
                                         {
                                             StockId = item.StockId,
                                             Name = item.Name
@@ -1097,7 +1093,7 @@ namespace TinyStore.Site
                                     order.DeliveryDate = DateTime.Now;
                                     order.LastUpdateDate = DateTime.Now;
 
-                                    OrderBLL.Update(order);
+                                    BLL.OrderBLL.Update(order);
 
                                     if (supplyUserIdSys)
                                     {
@@ -1112,14 +1108,14 @@ namespace TinyStore.Site
                                             amountChange = order.Cost * order.Quantity - user.AmountCharge;
                                         }
 
-                                        UserExtendBLL.Update(p => p.UserId == order.UserId,
+                                        BLL.UserExtendBLL.Update(p => p.UserId == order.UserId,
                                             p => new UserExtendModel
                                             {
                                                 Amount = p.Amount - amountChange,
                                                 AmountCharge = p.AmountCharge - amountChargeChange
                                             });
 
-                                        BillBLL.Insert(new BillModel
+                                        BLL.BillBLL.Insert(new BillModel
                                         {
                                             BillId = Global.Generator.DateId(1),
                                             UserId = order.UserId,
@@ -1158,7 +1154,7 @@ namespace TinyStore.Site
 
             public static void DeliveryEmail(OrderModel order)
             {
-                StoreModel store = StoreBLL.QueryModelByStoreId(order.StoreId);
+                StoreModel store = BLL.StoreBLL.QueryModelByStoreId(order.StoreId);
                 if (store != null)
                 {
                     //var msg_email = SiteContext.Email.TemplateGet("DeliveryEmail");
@@ -1177,7 +1173,7 @@ namespace TinyStore.Site
                     {
                         var emailadd = string.Empty;
                         var index = 1;
-                        foreach (StockOrder item in order.StockList)
+                        foreach (Model.Extend.StockOrder item in order.StockList)
                         {
                             emailadd = Email.EmailTemplates["DeliveryEmail_Stock"].Content;
 
@@ -1194,7 +1190,7 @@ namespace TinyStore.Site
 
                     msg_email = msg_email.Replace("{AddTemplate}", addtemplate);
 
-                    // var product = BLL.ProductBLL.QueryModelByProductIdAndStoreId(order.ProductId, order.StoreId);
+                    // var product = BLL.BLL.ProductBLL.QueryModelByProductIdAndStoreId(order.ProductId, order.StoreId);
                     // if (order.Contact.Contains("@"))
                     // {
                     //     SiteContext.Email.Send(order.Contact,
@@ -1246,8 +1242,8 @@ namespace TinyStore.Site
             // public static ApiResult DeliveryByHand(string storeid, string orderid, string code,
             //     List<Model.Extend.StockOrder> list)
             // {
-            //     var order = BLL.OrderBLL.QueryModelByOrderIdAndStoreId(orderid, storeid);
-            //     var store = order == null ? null : BLL.StoreBLL.QueryModelByStoreId(order.StoreId);
+            //     var order = BLL.BLL.OrderBLL.QueryModelByOrderIdAndStoreId(orderid, storeid);
+            //     var store = order == null ? null : BLL.BLL.StoreBLL.QueryModelByStoreId(order.StoreId);
             //     if (order == null || store == null || !order.IsPay || list.Count != order.Quantity)
             //         return new ApiResult("订单不存在");
             //     if (order.IsDelivery)
@@ -1257,14 +1253,14 @@ namespace TinyStore.Site
             //     order.DeliveryDate = DateTime.Now;
             //     order.StockList = list;
             //     order.LastUpdateDate = DateTime.Now;
-            //     BLL.OrderBLL.Update(order);
+            //     BLL.BLL.OrderBLL.Update(order);
             //     DeliveryEmail(order);
             //     return new ApiResult();
             // }
             //
             // public static ApiResult StateIsChange(string storeid, string orderid)
             // {
-            //     var order = BLL.OrderBLL.QueryModelByOrderIdAndStoreId(orderid, storeid);
+            //     var order = BLL.BLL.OrderBLL.QueryModelByOrderIdAndStoreId(orderid, storeid);
             //     if (order != null && order.IsPay)
             //         return new ApiResult(SiteContext.Url.OrderInfo(order.OrderId), ApiResult.ECode.Success);
             //     return new ApiResult(ApiResult.ECode.Fail);

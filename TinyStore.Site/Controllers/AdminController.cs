@@ -40,6 +40,15 @@ namespace TinyStore.Site.Controllers
             return View();
         }
         
+        public IActionResult User_Order()
+        {
+            return View();
+        }
+        public IActionResult User_Stat()
+        {
+            return View();
+        }
+        
         public IActionResult Supply_List()
         {
             return View();
@@ -49,44 +58,5 @@ namespace TinyStore.Site.Controllers
         {
             return View();
         }
-        
-        
-     
-        
-        //
-        // public IActionResult AdminLog()
-        // {
-        //     return View();
-        // }
-        // public IActionResult Order()
-        // {
-        //     return View();
-        // }
-        // public IActionResult Orderdelete()
-        // {
-        //     return View();
-        // }
-        // public IActionResult UserInfo()
-        // {
-        //     return View();
-        // }
-        //
-        // public IActionResult Userlog(int UserId)
-        // {
-        //     var user = BLL.UserBLL.QueryModelById(UserId);
-        //     ViewBag.User = user;
-        //     return View();
-        // }
-        //
-        // public IActionResult Withdraw()
-        // {
-        //     return View();
-        // }
-        //
-        // public IActionResult Admin()
-        // {
-        //     return View();
-        // }
-
     }
 }

@@ -65,7 +65,7 @@ namespace TinyStore.BLL
                 SortLastUpdateDateDesc);
         }
 
-        public static PageList<OrderModel> QueryPageListBySearch(string storeId, string productId, DateTime? datefrom,
+        public static PageList<OrderModel> QueryPageListBySearch(string storeId, string productId,DateTime? datefrom,
             DateTime? dateto, string keyname, bool? isPay, bool? isDelivery, bool? isSettle, int pageindex,
             int pagesize)
         {
@@ -74,6 +74,20 @@ namespace TinyStore.BLL
                 .AndIF(!string.IsNullOrWhiteSpace(productId), p => p.ProductId == productId)
                 .AndIF(isPay != null, p => p.IsPay == isPay)
                 .AndIF(isDelivery != null, p => p.IsDelivery == isDelivery)
+                .AndIF(isSettle != null, p => p.IsSettle == isSettle)
+                .AndIF(datefrom != null && dateto != null, p => SqlFunc.Between(p.CreateDate, datefrom, dateto))
+                .AndIF(!string.IsNullOrWhiteSpace(keyname),
+                    p => p.Contact.Contains(keyname) || p.Name.Contains(keyname) || p.Message.Contains(keyname));
+
+            return QueryPageList(pageindex, pagesize, expr.ToExpression(), SortCreateDateDesc);
+        }
+        
+        public static PageList<OrderModel> QueryPageListBySearch4SystemSettle(int supplyUserIdSys,DateTime? datefrom,
+            DateTime? dateto, string keyname, bool? isSettle, int pageindex,
+            int pagesize)
+        {
+            var expr = Expressionable.Create<OrderModel>()
+                .And(p => p.IsPay == true && p.IsDelivery == true && p.SupplyUserId == supplyUserIdSys)
                 .AndIF(isSettle != null, p => p.IsSettle == isSettle)
                 .AndIF(datefrom != null && dateto != null, p => SqlFunc.Between(p.CreateDate, datefrom, dateto))
                 .AndIF(!string.IsNullOrWhiteSpace(keyname),

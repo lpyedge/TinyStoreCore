@@ -76,6 +76,21 @@
                             <q-item-label class="text-h6 text-grey-8">{{ link.text }}</q-item-label>
                         </q-item-section>
                     </q-item>
+
+                    <q-separator class="q-my-sm"></q-separator>
+
+                    <q-item-label header class="text-weight-bold text-uppercase">
+                        货源
+                    </q-item-label>
+
+                    <q-item v-ripple clickable v-for="link in supplylinks" :key="link.text" @@click="Goto(link.url)">
+                        <q-item-section avatar>
+                            <q-icon color="grey-8" :name="link.icon"/>
+                        </q-item-section>
+                        <q-item-section>
+                            <q-item-label class="text-h6 text-grey-8">{{ link.text }}</q-item-label>
+                        </q-item-section>
+                    </q-item>
                     
                     <q-separator class="q-my-sm"></q-separator>
 
@@ -92,35 +107,6 @@
                         </q-item-section>
                     </q-item>
 
-                    <q-separator class="q-my-sm"></q-separator>
-
-                    <q-item-label header class="text-weight-bold text-uppercase">
-                        货源
-                    </q-item-label>
-
-                    <q-item v-ripple clickable v-for="link in supplylinks" :key="link.text" @@click="Goto(link.url)">
-                        <q-item-section avatar>
-                            <q-icon color="grey-8" :name="link.icon"/>
-                        </q-item-section>
-                        <q-item-section>
-                            <q-item-label class="text-h6 text-grey-8">{{ link.text }}</q-item-label>
-                        </q-item-section>
-                    </q-item>
-
-                    <q-separator class="q-my-sm"></q-separator>
-
-                    <q-item-label header class="text-weight-bold text-uppercase">
-                        店铺
-                    </q-item-label>
-
-                    <q-item v-ripple clickable v-for="link in orderlinks" :key="link.text" @@click="Goto(link.url)">
-                        <q-item-section avatar>
-                            <q-icon color="grey-8" :name="link.icon"/>
-                        </q-item-section>
-                        <q-item-section>
-                            <q-item-label class="text-h6 text-grey-8">{{ link.text }}</q-item-label>
-                        </q-item-section>
-                    </q-item>
                 </q-list>
             </q-scroll-area>
         </q-drawer>
@@ -146,15 +132,16 @@
        userlinks: [
            { icon: 'person', text: '商户店铺',url:'@Url.ActionLink("User_Store", "Admin")' },
            { icon: 'local_atm', text: '资金提现',url:'@Url.ActionLink("User_Finance","Admin")' },
+           { icon: 'local_grocery_store', text: '订单结算',url:'@Url.ActionLink("User_Order","Admin")'  },
+           { icon: 'insert_chart', text: '销售统计',url:'@Url.ActionLink("User_Stat","Admin")' },
          ],
        supplylinks: [
            { icon: 'fas fa-dolly', text: '货源列表',url:'@Url.ActionLink("Supply_List", "Admin")' },
            { icon: 'vpn_key', text: '卡密列表',url:'@Url.ActionLink("Supply_Stock", "Admin")'  },
          ],
-       orderlinks: [
-           { icon: 'local_grocery_store', text: '订单结算',url:'@Url.ActionLink("Store_Order","Admin")'  },
-           { icon: 'insert_chart', text: '销售统计',url:'@Url.ActionLink("Store_Stat","Admin")' },
-         ],
+         config:{
+           supplyUserIdSys:@SiteContext.Config.SupplyUserIdSys,
+         },
          userLevelOptions:[
                       {icon:'star',name:'无',color:'primary',value:0},
                       {icon:'star',name:'一星',color:'primary',value:1},

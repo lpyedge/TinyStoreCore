@@ -36,6 +36,12 @@ namespace TinyStore.Model
         /// </summary>
         [SqlSugar.SugarColumn(Length = 28)]
         public string SupplyId { get; set; }
+        
+        /// <summary>
+        /// 货源用户编号
+        /// 用于区分是否系统货源订单
+        /// </summary>
+        public int SupplyUserId { get; set; }
 
         /// <summary>
         ///商品名称

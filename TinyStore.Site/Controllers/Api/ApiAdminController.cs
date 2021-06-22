@@ -7,9 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using TinyStore.Model;
-using TinyStore.Model.Extend;
 
 namespace TinyStore.Site.Controllers.Api
 {
@@ -166,7 +164,7 @@ namespace TinyStore.Site.Controllers.Api
         }
         
         [HttpPost]
-        public IActionResult UserSave(UserStore userStore)
+        public IActionResult UserSave(Model.Extend.UserStore userStore)
         {
             var admin = AdminCurrent();
             
@@ -684,7 +682,68 @@ namespace TinyStore.Site.Controllers.Api
             return ApiResult.RCode(ApiResult.ECode.Success);
         }
 
-        
+         [HttpPost]
+        public IActionResult OrderPageList([FromForm] string from, [FromForm] string to,
+            [FromForm] string keyname, [FromForm] string isSettle,
+            [FromForm] int pageIndex, [FromForm] int pageSize)
+        {
+            var admin = AdminCurrent();
+
+            bool? outIsSettle = null;
+            if (bool.TryParse(isSettle, out var tempIsSettle)) outIsSettle = tempIsSettle;
+
+            DateTime? dateFrom = null;
+            if (DateTime.TryParse(from, out DateTime tempdateFrom)) dateFrom = tempdateFrom;
+
+            DateTime? dateTo = null;
+            if (DateTime.TryParse(to, out DateTime tempdateTo)) dateTo = tempdateTo.AddDays(1);
+
+            var res =  BLL.OrderBLL.QueryPageListBySearch4SystemSettle(SiteContext.Config.SupplyUserIdSys,dateFrom, dateTo, keyname, outIsSettle,  pageIndex, pageSize);
+
+            return ApiResult.RData(res);
+        }
+
+        [HttpPost]
+        public IActionResult OrderSave([FromQuery] string storeId, OrderModel order)
+        {
+            var admin = AdminCurrent();
+           
+            OrderModel data =  BLL.OrderBLL.QueryModelById(order.OrderId);
+            if (data != null)
+            {
+                data.Memo = order.Memo;
+
+                BLL.OrderBLL.Update(data);
+
+                return ApiResult.RCode();
+            }
+
+            return ApiResult.RCode(ApiResult.ECode.UnKonwError);
+        }
+
+        [HttpPost]
+        public IActionResult OrderMultipleAction([FromForm] string storeId, [FromForm] string orderIds,
+            [FromForm] int action)
+        {
+            var admin = AdminCurrent();
+
+            var orderIdList = Global.Json.Deserialize<List<string>>(orderIds);
+
+            if (orderIdList != null && orderIdList.Count > 0)
+                switch (action)
+                {
+                    case 1:
+                    {
+                        //结算 isSettle = true
+                        BLL.OrderBLL.Update(
+                            p => orderIdList.Contains(p.OrderId) && p.IsPay && p.IsDelivery,
+                            p => new OrderModel {IsSettle = true, SettleDate = DateTime.Now});
+                    }
+                        break;
+                }
+
+            return ApiResult.RCode();
+        }
         
         public IActionResult AdminLogPageList([FromForm] int pageIndex, [FromForm] int pageSize, [FromForm] int adminId,
             [FromForm] int logType, [FromForm] DateTime begin, [FromForm] DateTime end)

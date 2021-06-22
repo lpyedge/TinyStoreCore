@@ -332,7 +332,7 @@
                return data;
            },           
            productDialogReadonly(){
-               return this.productCurrent.supplyId !== this.userExtend.userId.toString();
+               return this.productCurrent.supplyId !== '';
            }
        },
        methods: {
@@ -403,21 +403,21 @@
                this.productIndex =i;
                if (i>=0){
                    this.productCurrent= JSON.parse(JSON.stringify(this.productData[i]));
-                   if (this.productCurrent.supplyId !== this.userExtend.userId.toString()){    
-                       var isfind = false;
-                       for (i in this.supply.data){
-                           if (this.supply.data[i].supplyId === this.productCurrent.supplyId){
-                               this.productCurrent.supply = this.supply.data[i];
-                               isfind = true;
-                           }
-                       }
-                       if (!isfind){
-                           this.productCurrent.supplyId = this.userExtend.userId.toString();
-                       }
-                   }
+                   // if (this.productCurrent.supplyId !== ''){    
+                   //     var isfind = false;
+                   //     for (i in this.supply.data){
+                   //         if (this.supply.data[i].supplyId === this.productCurrent.supplyId){
+                   //             this.productCurrent.supply = this.supply.data[i];
+                   //             isfind = true;
+                   //         }
+                   //     }
+                   //     if (!isfind){
+                   //         this.productCurrent.supplyId = '';
+                   //     }
+                   // }
                }else{
                    //默认productId前端初始化然后向后端获取，获取成功使用后端获取的值，获取失败则用前端初始化的值
-                   this.productCurrent = {productId:Date.now().toString(),userId:this.userExtend.userId,supplyId:this.userExtend.userId.toString(),category:'',memo : '',icon:'#',quantityMin:1, deliveryType:this.deliveryTypeOptions[0].value, isShow:true};
+                   this.productCurrent = {productId:Date.now().toString(),userId:this.userExtend.userId,supplyId:'',category:'',memo : '',icon:'#',quantityMin:1, deliveryType:this.deliveryTypeOptions[0].value, isShow:true};
                    UserApi('NewDateId',{ state:1 },true)
                         .then((response)=> {
                             if (response.data.code === 1){ 

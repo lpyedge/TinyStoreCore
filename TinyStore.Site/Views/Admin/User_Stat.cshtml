@@ -1,0 +1,295 @@
+﻿<q-page padding>
+    <div class="text-h5 text-weight-bold text-grey-8">
+        <q-icon :name="userlinks[3].icon" size="md" class="on-left"></q-icon>{{userlinks[3].text}}
+    </div>
+    <q-separator class="q-my-sm"></q-separator>
+    <div class="row q-gutter-xs q-my-sm">
+        <div class="text-h6">TODO</div>
+        未实现！！！
+    </div>
+</q-page>
+
+<q-dialog v-model="orderDialog" persistent>
+    <q-card style="max-width: 500px; width: 500px;">
+        <q-card-section class="row items-center q-pb-none">
+            <div class="text-h6">订单详情</div>
+            <q-space></q-space>
+            <q-btn icon="close" flat round dense v-close-popup></q-btn>
+        </q-card-section>
+        <q-tabs
+            class="text-grey-8"
+            active-color="primary"
+            indicator-color="primary"
+            content-class="text-h5"
+            dense
+            align="left"
+            narrow-indicator
+            inline-label
+            v-model="orderDialog_tab">
+            <q-tab icon="info" name="default" label="基础"></q-tab>
+            <q-tab icon="fas fa-yen-sign" name="payment" label="款项"></q-tab>
+            <q-tab icon="send" name="stock" label="发货"></q-tab>
+        </q-tabs>
+        <q-card-section v-show="orderDialog_tab === 'default'" class="q-gutter-sm">
+            <q-input outlined dense stack-label bg-color="white"
+                     label="商品名称"
+                     readonly
+                     :value="orderCurrent.name">
+            </q-input>
+            <div class="row">
+                <q-input outlined dense stack-label bg-color="white"
+                         class="col"
+                         label="购买数量"
+                         readonly
+                         :value="orderCurrent.quantity">
+                </q-input>
+                <q-space class="col-auto q-mx-xs"></q-space>
+                <q-input outlined dense stack-label bg-color="white"
+                         class="col"
+                         label="商品售价"
+                         hint="商品销售单价"
+                         readonly
+                         :value="orderCurrent.amount">
+                </q-input>
+                <q-space class="col-auto q-mx-xs"></q-space>
+                <q-input outlined dense stack-label bg-color="white"
+                         readonly
+                         class="col"
+                         label="成本"
+                         hint="商品成本"
+                         :value="orderCurrent.cost">
+                </q-input>
+            </div>
+            <div class="row">
+                <q-input outlined dense stack-label bg-color="white"
+                         class="col"
+                         label="客户邮箱/电话"
+                         readonly
+                         :value="orderCurrent.contact">
+                </q-input>
+                <q-space class="col-auto q-mx-xs"></q-space>
+                <q-input outlined dense stack-label bg-color="white"
+                         class="col"
+                         label="客户留言"
+                         readonly
+                         :value="orderCurrent.message">
+                </q-input>
+            </div>
+            <q-separator class="q-my-xs"></q-separator>
+            <q-input outlined dense stack-label bg-color="white"
+                     autogrow readonly
+                     label="备注"
+                     :value="orderCurrent.memo">
+            </q-input>
+        </q-card-section>
+        <q-card-section v-show="orderDialog_tab === 'payment'" class="q-gutter-sm">
+            @* {{ void (isPayIndex = orderCurrent.isPay ? 1 : 0, isSettleIndex = orderCurrent.isSettle ? 1 : 0) }} *@
+            @* <q-btn :color="orderIsPayOptions[isPayIndex].color" :icon="orderIsPayOptions[isPayIndex].icon" :label="orderIsPayOptions[isPayIndex].name" @@click="orderCurrent.isPay = !orderCurrent.isPay"></q-btn> *@
+            <q-toggle :value="orderCurrent.isPay" color="orange" :label="orderIsPayOptions[1].name" left-label disable></q-toggle>
+            <q-badge v-if="orderCurrent.paymentDate" color="accent">支付日期:{{Quasar.date.formatDate(orderCurrent.paymentDate,'YYYY-MM-DD HH:mm')}}</q-badge>
+            <div v-if="orderCurrent.isPay" class="row">
+                <q-input outlined dense stack-label bg-color="white"
+                          class="col-auto"
+                          label="支付方式"
+                          readonly
+                          :value="orderCurrent.paymentType">
+                </q-input>
+                <q-input outlined dense stack-label bg-color="white"
+                         readonly
+                         class="col"
+                         label-slot
+                         :value="orderCurrent.tranId">
+                    <template v-slot:label>
+                        支付编号
+                        <q-badge v-if="orderCurrent.paymentFee" align="top" color="accent">手续费:{{orderCurrent.paymentFee}}</q-badge>
+                    </template>
+                </q-input>
+            </div>
+            <q-separator class="q-my-xs"></q-separator>
+            <q-toggle :value="orderCurrent.isRefund" color="orange" label="有退款" left-label disable></q-toggle>
+            <q-badge v-if="orderCurrent.refundDate" color="accent">退款日期:{{Quasar.date.formatDate(orderCurrent.refundDate,'YYYY-MM-DD HH:mm')}}</q-badge>
+            <q-input outlined dense stack-label bg-color="white"
+                     v-if="orderCurrent.isRefund"
+                     readonly
+                     label="退款金额"
+                     :value="orderCurrent.refundAmount">
+            </q-input>
+            <q-separator class="q-my-xs"></q-separator>
+            <q-toggle :value="orderCurrent.isSettle" color="orange" :label="orderIsSettleOptions[1].name" disable left-label></q-toggle>
+            <q-badge v-if="orderCurrent.settleDate" color="accent">结算日期:{{Quasar.date.formatDate(orderCurrent.settleDate,'YYYY-MM-DD HH:mm')}}</q-badge>
+        </q-card-section>
+        <q-card-section v-show="orderDialog_tab === 'stock'" class="q-gutter-sm">
+            <q-toggle :value="orderCurrent.isDelivery" color="orange" :label="orderIsDeliveryOptions[1].name" left-label disable></q-toggle>
+            <q-badge v-if="orderCurrent.deliveryDate" color="accent">发货日期:{{Quasar.date.formatDate(orderCurrent.paymentDate,'YYYY-MM-DD HH:mm')}}</q-badge>
+            <q-input outlined dense stack-label bg-color="white" input-style="min-height: 22rem;"
+                     v-if="orderCurrent.isDelivery"
+                     readonly
+                     type="textarea"
+                     label="发货数据" hint="格式： 每行一条卡密信息"
+                     :value="orderCurrent.stockData">
+            </q-input>
+        </q-card-section>
+    </q-card>
+</q-dialog>
+
+@section Scripts{
+
+    <script>
+   var _page = {
+       data:{
+           orderFilter:{
+               loading:false,
+               keyname:'',
+               isSettle:null,
+               dateRange:{
+                    from:Quasar.date.formatDate(Quasar.date.adjustDate(Date.now(),{date:1}),'YYYY-MM-DD'),
+                    to:Quasar.date.formatDate(Date.now(),'YYYY-MM-DD')
+               },
+               pagination:{                   
+                   page: 1,
+                   rowsPerPage: 25,
+                   rowsNumber:0,
+               },
+           },
+           orderData:[],
+           orderColumns:[
+               {
+                   align: 'left',
+                   name:'name',
+                   label:'商品名称',
+               },
+               {
+                   align: 'left',
+                   name:'amount',
+                   label:'订单总额',
+               },
+               {
+                   align: 'left',
+                   name:'profit',
+                   label:'毛利润',
+               },
+               {
+                   align: 'left',
+                   name:'contact',
+                   label:'客户资料',
+               },
+               {
+                   align: 'left',
+                   name:'createDate',
+                   label:'订单日期',
+               },
+               {
+                   align: 'left',
+                   // format: (val, row) => `${row.isShow}`,
+                   name:'state',
+                   label:'状态'
+               },
+           ],
+           orderSelected:[],
+           orderDialog:false,
+           orderCurrent:{},
+           orderDialog_tab:'default',
+       },
+       beforeMount(){
+           
+       },
+       computed:{
+       },
+       methods: {
+           loadOrderData(){
+               if(arguments.length>0 && arguments[0].pagination){
+                   this.orderFilter.pagination = arguments[0].pagination;
+               }
+               var dateFrom='', dateTo='';
+               if(this.orderFilter.dateRange){            
+                  var dateRangeType = Object.prototype.toString.call(this.orderFilter.dateRange);
+                  if (dateRangeType === '[object String]'){
+                       dateFrom=this.orderFilter.dateRange;    
+                       dateTo=this.orderFilter.dateRange;                    
+                  }else{
+                       dateFrom=this.orderFilter.dateRange.from;    
+                       dateTo=this.orderFilter.dateRange.to; 
+                  }   
+               }
+               
+               if (dateFrom==='' && dateTo==='' && this.orderFilter.keyname ===''){
+                   Notify.Warning('订单日期和关键词不能同时为空');
+                   return;
+               }
+               
+               this.orderFilter.loading =true;
+               AdminApi('OrderPageList',{
+                   keyname:this.orderFilter.keyname,
+                   isSettle:this.orderFilter.isSettle, 
+                   from:dateFrom,
+                   to:dateTo,
+                   pageSize:this.orderFilter.pagination.rowsPerPage,
+                   pageIndex:this.orderFilter.pagination.page},true)
+                  .then((response)=> {
+                      if (response.data.code === 1){ 
+                          this.orderData = response.data.data.rows;
+                          this.orderFilter.pagination.rowsNumber = response.data.data.total;   
+                          this.orderSelected = [];
+                      } else{
+                          Notify.Warning('订单数据加载失败');
+                      }
+                      this.orderFilter.loading =false;
+                  })
+                  .catch( (error)=> {
+                      this.orderFilter.loading =false;
+                      Notify.Warning('接口通信错误');
+                      console.error(error);
+                  });
+           },
+           orderFilterReset(){
+               this.orderFilter.keyname='';
+               this.orderFilter.pagination.page =1;
+               this.orderFilter.pagination.rowsPerPage =25;
+           },
+           orderDialogShow(i){
+              this.orderDialog=true;
+              this.orderIndex =i;
+              this.orderDialog_tab='default';
+              if (i>=0){
+                  this.orderCurrent= JSON.parse(JSON.stringify(this.orderData[i]));
+                  this.$set(this.orderCurrent,'isRefund',this.orderCurrent.refundAmount > 0);
+                  var stockData = '';
+                  if (this.orderCurrent.isDelivery){
+                      for (i in this.orderCurrent.stockList){                          
+                        stockData+= this.orderCurrent.stockList[i].name + '\n';
+                      }
+                  }
+                  this.$set(this.orderCurrent,'stockData',stockData);
+              }else{
+                  this.orderCurrent = {userId:this.userExtend.userId,supplyId:'',memo : '',quantity:1, isPay:false,isDelivery:false,isSettle:false,isRefund:false,refundAmount:0,stockData:''};
+              }
+           },
+           orderMultipleAction(action){
+               var orderIds = _.map(this.orderSelected, 'orderId');
+               this.orderFilter.loading =true;
+               AdminApi('OrderMultipleAction',{ orderIds:JSON.stringify(orderIds), action},true)
+               .then((response)=> {
+                     if (response.data.code === 1){ 
+                         this.loadOrderData();
+                     } else{
+                         Notify.Warning('操作执行失败');
+                     }
+                     this.orderFilter.loading =false;
+                 })
+                 .catch( (error)=> {
+                     this.orderFilter.loading =false;
+                     Notify.Warning('接口通信错误');
+                     console.error(error);
+                 });
+           },
+           dateRangeOptionsFn(date){
+               var date_end = Quasar.date.formatDate(Date.now(),'YYYY/MM/DD');
+               var date_start = Quasar.date.formatDate(Quasar.date.addToDate(Date.now(),{month:-3}),'YYYY/MM/DD');
+               return date >= date_start && date <= date_end;
+           },
+       }
+   };
+   DeepMerge(_layout,_page);
+   new Vue(_layout);
+    </script>
+}

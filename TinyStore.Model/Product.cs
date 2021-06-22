@@ -13,10 +13,17 @@ namespace TinyStore.Model
         /// </summary>
         [SqlSugar.SugarColumn(IsPrimaryKey = true, Length = 28)]
         public string ProductId { get; set; }
+        
 
         [SqlSugar.SugarColumn(Length = 28, IndexGroupNameList = new[] {"SupplyId"})]
         public new string SupplyId { get; set; }
-
+        
+        /// <summary>
+        /// 货源用户编号
+        /// 用于区分是否系统货源订单
+        /// </summary>
+        public int SupplyUserId{ get; set; }
+        
         /// <summary>
         /// 店铺编号
         /// </summary>
