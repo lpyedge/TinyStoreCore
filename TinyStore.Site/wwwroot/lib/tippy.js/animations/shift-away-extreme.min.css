@@ -1,0 +1,5 @@
+/**
+ * Skipped minification because the original files appears to be already minified.
+ * Do NOT use SRI with dynamically generated files! More information: https://www.jsdelivr.com/using-sri-with-dynamic-files
+ */
+.tippy-box[data-animation=shift-away-extreme][data-state=hidden]{opacity:0}.tippy-box[data-animation=shift-away-extreme][data-state=hidden][data-placement^=top]{transform:translateY(20px)}.tippy-box[data-animation=shift-away-extreme][data-state=hidden][data-placement^=bottom]{transform:translateY(-20px)}.tippy-box[data-animation=shift-away-extreme][data-state=hidden][data-placement^=left]{transform:translateX(20px)}.tippy-box[data-animation=shift-away-extreme][data-state=hidden][data-placement^=right]{transform:translateX(-20px)}
