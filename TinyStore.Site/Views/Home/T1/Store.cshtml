@@ -13,12 +13,12 @@
             <a class="home-icon txt-white" href="/" title="返回首页">
                 <i class="iconfont icon-shouye"></i>
             </a>
-            <a class="product-icon txt-white sideBar-open" title="打开商品列表">
+            <a class="product-icon txt-white sideBar-open" id="productsIcon">
                 <i class="iconfont icon-soft"></i>
             </a>
             <div class="row">
                 <div class="store-logo">
-                    <img id="storelogo">
+                    <img id="storelogo" />
                 </div>
                 <div class="store-text txt-white col">
                     <div class="store-name" id="storename">无</div>
@@ -94,13 +94,22 @@
             </div>
         </div>
     </div>
-    <partial name="Widgets/_Script_Store" />
+<partial name="Widgets/_Script_Store" />
+<style>
+    .jBox-wrapper .jBox-content {
+      font-size: 0.27rem;
+    }
+</style>
     <script>
 
         //侧面栏
         $(function () {
             $(".sideBar-open").click(ProductsShow);
-            $(".sideBar-close").click(ProductsHide);            
+            $(".sideBar-close").click(ProductsHide);     
+            
+            var $tooltip = tippy(document.getElementById('productsIcon'));
+            $tooltip.setContent('点击打开商品列表');
+            $tooltip.show();
         })
 
         $("#productlist").click(function (e) {

@@ -1,4 +1,5 @@
-# jquery.validate.bootstrap.popover
+# 
+jquery.validate.bootstrap.popover
 
 Show error message via bootstrap popover for jquery validate.
 

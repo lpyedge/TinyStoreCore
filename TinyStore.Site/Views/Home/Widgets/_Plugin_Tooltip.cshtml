@@ -1,0 +1,69 @@
+﻿<style>
+    /*tooltip 提示*/
+    .tooltip {
+    	position: relative;
+    	display: inline-block;
+    }
+    
+    .tooltip > .tooltip_content {
+    	text-align: center;
+    	border-radius: 6px;
+    	padding: 5px 10px;
+    
+    	/* 定位 */
+    	position: absolute;
+    	z-index: 1;
+    	visibility: visible;
+    }
+</style>
+
+<script>
+(function ($) {
+    var __sto = setTimeout;
+    window.setTimeout = function(callback,timeout,param)
+    {
+        var args = Array.prototype.slice.call(arguments,2);
+        var _cb = function(){
+            callback.apply(null,args);
+        }
+        __sto(_cb,timeout);
+　　}
+
+     /*
+       $("xxxx").tooltip({
+        content:'网络错误，请稍后重试',
+        timeout:1400
+       });
+    */
+    $.fn.tooltip = function (option) {      
+        $target = $(this);
+        
+        if ($target.length === 1 && option.content !== undefined ) {                
+            option = $.extend({ 
+                'timeout': 0,
+                'bgColor':'#000000',
+                'color':'#ffffff',   
+                'fontSize':'12px',        
+                'offset': { 'top': '0', 'left': '0'}
+            }, option);
+            
+            var divTooltip = document.createElement("div");
+            divTooltip.setAttribute("class", "tooltip_content");
+            divTooltip.setAttribute("style",'top:'+option.offset.top+';left:'+option.offset.left+';background-color:'+option.bgColor+';color:'+option.color+';font-size:'+option.fontSize);
+            divTooltip.innerHTML = option.content.replace(/\n/ig, '<br/>');
+            $target.append(divTooltip);
+            
+            $target.addClass('tooltip');
+            $target.find('tooltip_content').fadeIn();
+            
+            if (option.timeout > 0){
+                window.setTimeout(function () {
+                    arguments[0].removeClass('tooltip');
+                    arguments[0].find('tooltip_content').fadeOut();
+                    arguments[0].find('tooltip_content').remove();
+                }, timeout,$target);
+            }
+        }
+    }
+})(jQuery);
+</script>

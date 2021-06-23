@@ -1,6 +1,6 @@
 ﻿<partial name="Widgets/_Plugin_Payment" />
 <script src="https://cdn.staticfile.org/lodash.js/4.17.21/lodash.min.js"
-    asp-fallback-test="_.groupBy"
+    asp-fallback-test="window._"
     asp-fallback-src="~/lib/lodash/lodash.min.js"></script>
 <script>
     var store = @Json.Serialize(ViewBag.Store);
@@ -19,54 +19,50 @@
 
             //数量加减
         $("#OrderQty").parent().click(function (e) {
-            var $t = $(e.target);
-            var newval = Math.abs(parseInt($("#OrderQty").val()));
-                if ($t.attr("name") == "minus") {
-                    newval = newval - 1;
-                } else if ($t.attr("name") == "plus"){
-                    newval = newval + 1;
-                }
-                if (newval < 1) {
-                    newval = 1;
-                }
-                if (product.stockNumber != -1 && newval > product.stockNumber) {
-                    newval = product.stockNumber;
-                }
-            $("#OrderQty").val(newval);
-                SetPriceAndAmount();
-            });
+        var $t = $(e.target);
+        var newval = Math.abs(parseInt($("#OrderQty").val()));
+            if ($t.attr("name") == "minus") {
+                newval = newval - 1;
+            } else if ($t.attr("name") == "plus"){
+                newval = newval + 1;
+            }
+            if (newval < 1) {
+                newval = 1;
+            }
+            if (product.stockNumber != -1 && newval > product.stockNumber) {
+                newval = product.stockNumber;
+            }
+        $("#OrderQty").val(newval);
+            SetPriceAndAmount();
+        });
 
         $("#OrderQty").on("blur", function (event) {
-                event = CY.EventFix(event);
-                CY.StopPropagation(event);
-                var target = event.target;
-                var newVal = $(target).val();
-                SetPriceAndAmount();
-            });
-
-            $("#OrderUniqueId").on("blur", V_Contact);
-
-            $("#OrderContact").on("blur", V_Notice);
-
-            //
-            $("#OrderPlace").on("click", function () {
-                if (!product) {
-                    $.toast("请选择商品");
-                }
-                else if ($("#OrderQty").val().ParseInt() <= 0) {
-                    $.toast("请修改商品数量");
-                }
-                else if (product.stockNumber >= 0 && product.stockNumber < product.quantityMin) {
-                    $.toast("库存不足");
-                }
-                else if (!V_Contact() || !V_Notice()) {
-                    console.log("V_Contact","V_Notice")
-                }else {
-                    Payment.Show(product.productId, $("#OrderQty").val(),$("#OrderContact").val(),$("#OrderUniqueId").val());
-                }
-            });
-
+            event = CY.EventFix(event);
+            CY.StopPropagation(event);
+            var target = event.target;
+            var newVal = $(target).val();
+            SetPriceAndAmount();
         });
+
+        $("#OrderContact").on("blur", V_Notice);
+
+        //
+        $("#OrderPlace").on("click", function () {
+            if (!product) {
+                $.toast("请选择商品");
+            }
+            else if ($("#OrderQty").val().ParseInt() <= 0) {
+                $.toast("请修改商品数量");
+            }
+            else if (product.stockNumber >= 0 && product.stockNumber < product.quantityMin) {
+                $.toast("库存不足");
+            }
+            else if (V_Notice()) {
+                Payment.Show(product.productId, $("#OrderQty").val(),$("#OrderContact").val(),$("#OrderUniqueId").val());
+            }
+        });
+
+    });
 
     function RenderStoreInfo() {
         $("#storename").text(store.name);
@@ -74,80 +70,70 @@
         $("#storelogo").prop("src", store.logo);
     }
 
-        function GetProductModel(productid) {
-            if (productlist && productlist.length > 0) {
-                for (var i = 0; i < productlist.length; i++) {
-                    if (productlist[i].productId == productid) {
-                        return productlist[i];
-                    }
+    function GetProductModel(productid) {
+        if (productlist && productlist.length > 0) {
+            for (var i = 0; i < productlist.length; i++) {
+                if (productlist[i].productId == productid) {
+                    return productlist[i];
                 }
             }
-            return null;
         }
+        return null;
+    }
 
 
 
-        function RenderProductInfo() {
-            if (product) {
-                if (product.stockNumber == -1 || product.deliveryType != @((int)TinyStore.EDeliveryType.卡密)) {
-                    $("#ProductStock").hide();
-                } else {
-                    $("#ProductStock").show();
-                    $("#ProductStockQty").html(product.stockNumber + "件");
-                }
-                $("#OrderQty").val(product.stockNumber != 0 ? 1 : 0);
-                $("#ProductName").text(product.name);
-                $("#ProductIcon").prop("src", product.icon);
-                $("#ProductPrice").html('￥' + product.amount.Format0(2));
-                $("#ProductMemo").html(product.memo);
-            }
-        }
-
-        function SetPriceAndAmount() {
-            if (product) {
-                var qty = $("#OrderQty").val().ParseInt();
-                if (product.stockNumber == 0) {
-                    $("#add").prop("disabled", true);
-                }
-                if (product.deliveryType == @((int)TinyStore.EDeliveryType.卡密) && product.stockNumber >= 0 && product.stockNumber > product.quantityMin) {
-                    if (qty < product.quantityMin) {
-
-                        $.toast("下单数量不能少于" + product.quantityMin);
-                        qty = product.quantityMin;
-                        $("#OrderQty").val(qty);
-                    } else if (qty > product.stockNumber) {
-                        $.toast("下单数量不能大于" + product.stockNumber);
-                        qty = product.stockNumber;
-                        $("#OrderQty").val(qty);
-                    }
-                }
-
-                $("#OrderAmount").html('￥' + (product.amount * qty).Format0(2));
-            }
-        }
-
-
-
-        function V_Contact() {
-            if ($("#OrderUniqueId").val() == "") {
-                $.toast("角色编号不能为空");
-                return false;
-            }
-            return true;
-        }
-
-        function V_Notice() {
-            res = false;
-            if ($("#OrderContact").val() == "") {
-                $.toast("邮箱不能为空");
+    function RenderProductInfo() {
+        if (product) {
+            if (product.stockNumber == -1 || product.deliveryType != @((int)TinyStore.EDeliveryType.卡密)) {
+                $("#ProductStock").hide();
             } else {
-                if (CY.Regex.IsEmail($("#OrderContact").val())) {
-                    res = true;
-                } else {
-                    $.toast("邮箱格式不正确");
+                $("#ProductStock").show();
+                $("#ProductStockQty").html(product.stockNumber + "件");
+            }
+            $("#OrderQty").val(product.stockNumber != 0 ? 1 : 0);
+            $("#ProductName").text(product.name);
+            $("#ProductIcon").prop("src", product.icon);
+            $("#ProductPrice").html('￥' + product.amount.Format0(2));
+            $("#ProductMemo").html(product.memo);
+        }
+    }
+
+    function SetPriceAndAmount() {
+        if (product) {
+            var qty = $("#OrderQty").val().ParseInt();
+            if (product.stockNumber == 0) {
+                $("#add").prop("disabled", true);
+            }
+            if (product.deliveryType == @((int)TinyStore.EDeliveryType.卡密) && product.stockNumber >= 0 && product.stockNumber > product.quantityMin) {
+                if (qty < product.quantityMin) {
+
+                    $.toast("下单数量不能少于" + product.quantityMin);
+                    qty = product.quantityMin;
+                    $("#OrderQty").val(qty);
+                } else if (qty > product.stockNumber) {
+                    $.toast("下单数量不能大于" + product.stockNumber);
+                    qty = product.stockNumber;
+                    $("#OrderQty").val(qty);
                 }
-                return res;
+            }
+
+            $("#OrderAmount").html('￥' + (product.amount * qty).Format0(2));
+        }
+    }
+
+
+    function V_Notice() {
+        res = false;
+        if ($("#OrderContact").val() == "") {                
+            $.toast("邮箱不能为空 ！");
+        } else {
+            if (CY.Regex.IsEmail($("#OrderContact").val())) {
+                res = true;
+            } else {
+                $.toast("邮箱格式不正确 ！");
             }
         }
-
+        return res;
+    }
 </script>
