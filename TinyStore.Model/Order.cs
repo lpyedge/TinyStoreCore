@@ -14,6 +14,13 @@ namespace TinyStore.Model
         public string OrderId { get; set; }
 
         /// <summary>
+        ///支付编号
+        /// （每次发起支付随机生成此编号并保存，用于后期notify通知比对，防止订单号重复无法发起支付的情况）
+        /// </summary>
+        [SqlSugar.SugarColumn(Length = 28)]
+        public string PayOrderId { get; set; }
+        
+        /// <summary>
         ///店铺编号
         /// </summary>
         [SqlSugar.SugarColumn(Length = 28,IndexGroupNameList = new []{"StoreId"})]
@@ -69,6 +76,13 @@ namespace TinyStore.Model
         ///商品成本
         /// </summary>
         public double Cost { get; set; }
+        
+        
+        /// <summary>
+        ///优惠金额
+        /// </summary>
+        public double Reduction { get; set; }
+        
 
         /// <summary>
         ///客户端IP
@@ -122,7 +136,7 @@ namespace TinyStore.Model
         public string PaymentType { get; set; } = "";
 
         /// <summary>
-        ///交易编号
+        ///支付平台交易编号
         /// </summary>
         [SqlSugar.SugarColumn(Length = 100)]
         public string TranId { get; set; } = "";
@@ -219,5 +233,8 @@ namespace TinyStore.Model
                 return EState.客户下单;
             }
         }
+
+        [SugarColumn(IsIgnore = true)]
+        public double PayAmount => Amount * Quantity - Reduction;
     }
 }

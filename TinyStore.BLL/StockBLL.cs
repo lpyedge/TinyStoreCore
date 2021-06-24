@@ -15,23 +15,7 @@ namespace TinyStore.BLL
             [p => p.DeliveryDate] = SqlSugar.OrderByType.Desc,
             [P => P.IsDelivery] = SqlSugar.OrderByType.Asc
         };
-
-        private static SortDic<Model.StockModel> SortCreateDateDesc = new SortDic<Model.StockModel>()
-        {
-            [p => p.CreateDate] = SqlSugar.OrderByType.Desc
-        };
-
-        public static void DeleteByStockId(string stockid, int userId)
-        {
-            Delete(p => p.UserId == userId && p.StockId == stockid);
-        }
-
-        public static void DeleteByStockIds(List<string> stockids, int userId)
-        {
-            Delete(p => p.UserId == userId && stockids.Contains(p.StockId));
-        }
-
-
+        
         public static int QueryCountBySupplyIdCanUse(string supplyId)
         {
             return QueryCount(p => p.SupplyId == supplyId && p.IsShow == true && p.IsDelivery == false);
@@ -64,11 +48,6 @@ namespace TinyStore.BLL
 
             return QueryList(-1, exp.ToExpression(),
                 SortDeliveryDateDescAndIsUsedAsc);
-        }
-
-        public static void UpdateIsShowByStockIds(List<string> stockids, int userId, bool isshow)
-        {
-            Update(p => stockids.Contains(p.StockId) && p.UserId == userId, p => p.IsShow == isshow);
         }
     }
 }

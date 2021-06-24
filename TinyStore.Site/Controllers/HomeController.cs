@@ -37,7 +37,7 @@ namespace TinyStore.Site.Controllers
         {
             if (!string.IsNullOrWhiteSpace(orderId))
             {
-                var order = BLL.OrderBLL.QueryModelByOrderId(orderId);
+                var order = BLL.OrderBLL.QueryModelById(orderId);
                 if(order != null)
                 {
                     var store = BLL.StoreBLL.QueryModelByStoreId(order.StoreId);
@@ -122,7 +122,7 @@ namespace TinyStore.Site.Controllers
         {
             if (!string.IsNullOrWhiteSpace(orderId))
             {
-                var order = BLL.OrderBLL.QueryModelByOrderId(orderId);
+                var order = BLL.OrderBLL.QueryModelById(orderId);
                 if(order != null)
                 {
                     var store = BLL.StoreBLL.QueryModelByStoreId(order.StoreId);
@@ -134,100 +134,7 @@ namespace TinyStore.Site.Controllers
                         var PayTickets = new List<LPayments.PayTicket>();
                         foreach (var payment in store.PaymentList.Where(p=>p.IsEnable))
                         {
-                            if (payment.IsSystem)
-                            {
-                                var pay = SiteContext.Payment.GetPayment(payment.Name);
-                                var payticket = pay.Pay(order.OrderId, order.Amount, ECurrency.CNY, order.Name,
-                                    Utils.RequestInfo._ClientIP(Request),
-                                    "https://" + SiteContext.Config.SiteDomain + "/o/" + order.OrderId,
-                                    "https://" + SiteContext.Config.SiteDomain + "/PayNotify/" + payment.Name);
-                                
-                                payticket.Token = (pay as IPayChannel).Platform.ToString().ToLowerInvariant();
-                                    
-                                PayTickets.Add(payticket);
-                            }
-                            else
-                            {
-                                switch (payment.BankType)
-                                {
-                                    case EBankType.支付宝:
-                                    {
-                                        PayTickets.Add(new LPayments.PayTicket()
-                                        {
-                                            Action = EAction.QrCode,
-                                            Uri = payment.QRCode,
-                                            Datas = new Dictionary<string, string>(),
-                                            Success = true,
-                                            Message = "支付宝扫码转账",
-                                            Token = "alipay"
-                                        });
-                                    }
-                                        break;
-                                    case EBankType.微信:
-                                    { 
-                                        PayTickets.Add(new LPayments.PayTicket()
-                                        {
-                                            Action = EAction.QrCode,
-                                            Uri = payment.QRCode,
-                                            Datas = new Dictionary<string, string>(),
-                                            Success = true,
-                                            Message = "微信扫码转账",
-                                            Token = "wechat"
-                                        });
-                                    }
-                                        break;
-                                    case EBankType.银联:
-                                    {
-                                        //https://blog.csdn.net/gsls200808/article/details/89490358
-                                        
-                                        //https://qr.95516.com/00010000/01116734936470044423094034227630
-                                        //https://qr.95516.com/00010000/01126270004886947443855476629280
-                                        //https://qr.95516.com/00010002/01012166439217005044479417630044
-                                        PayTickets.Add(new LPayments.PayTicket()
-                                        {
-                                            Action = EAction.QrCode,
-                                            Uri = payment.QRCode,
-                                            Datas = new Dictionary<string, string>(),
-                                            Success = true,
-                                            Message = "银联扫码转账(云闪付,银行App)",
-                                            Token = "unionpay"
-                                        });
-                                    }
-                                        break;
-                                    case EBankType.工商银行:
-                                    case EBankType.农业银行:
-                                    case EBankType.建设银行:
-                                    case EBankType.中国银行:
-                                    case EBankType.交通银行:
-                                    case EBankType.邮储银行:
-                                    {
-                                        PayTickets.Add(new LPayments.PayTicket()
-                                        {
-                                            Action = EAction.QrCode,
-                                            Uri = SiteContext.Payment.TransferToBank(payment, order.Amount),
-                                            Datas = new Dictionary<string, string>(),
-                                            Success = true,
-                                            Message = "支付宝扫码转账",
-                                            Token = "alipay"
-                                        });
-                                    }
-                                        break;
-                                    default:
-                                    { 
-                                        PayTickets.Add(new LPayments.PayTicket()
-                                        {
-                                            Action = EAction.QrCode,
-                                            Uri = payment.QRCode,
-                                            Datas = new Dictionary<string, string>(),
-                                            Success = true,
-                                            Message = payment.Memo,
-                                            Token = ""
-                                        });
-                                    }
-                                        break;
-                                }
-                                
-                            }
+                            
                         }
 
                         ViewBag.PayTickets = PayTickets;

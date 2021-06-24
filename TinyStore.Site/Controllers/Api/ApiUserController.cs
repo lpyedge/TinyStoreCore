@@ -71,7 +71,7 @@ namespace TinyStore.Site.Controllers
                 user.Password = "";
 
                 var storelist = BLL.StoreBLL.QueryListByUserId(user.UserId);
-                UserExtendModel userextra = BLL.UserExtendBLL.QueryModelByUserId(user.UserId);
+                UserExtendModel userextra = BLL.UserExtendBLL.QueryModelById(user.UserId);
 
                 UserLog(user.UserId, EUserLogType.登录, Request);
 
@@ -93,7 +93,7 @@ namespace TinyStore.Site.Controllers
                 return ApiResult.RCode(ApiResult.ECode.DataFormatError);
 
 
-            UserExtendModel userExtendOrigin = BLL.UserExtendBLL.QueryModelByUserId(user.UserId);
+            UserExtendModel userExtendOrigin = BLL.UserExtendBLL.QueryModelById(user.UserId);
 
             // if (!string.IsNullOrEmpty(Email))
             // {
@@ -134,7 +134,7 @@ namespace TinyStore.Site.Controllers
             if (string.IsNullOrEmpty(userExtend.BankAccount) || string.IsNullOrEmpty(userExtend.BankPersonName))
                 return ApiResult.RCode(ApiResult.ECode.DataFormatError);
 
-            UserExtendModel userExtendOrigin = BLL.UserExtendBLL.QueryModelByUserId(user.UserId);
+            UserExtendModel userExtendOrigin = BLL.UserExtendBLL.QueryModelById(user.UserId);
 
             userExtendOrigin.BankType = userExtend.BankType;
             userExtendOrigin.BankAccount = userExtend.BankAccount;
@@ -158,7 +158,7 @@ namespace TinyStore.Site.Controllers
             if (data1.Count > 0)
                 return ApiResult.RCode(ApiResult.ECode.TargetExist);
 
-            var userExtend = BLL.UserExtendBLL.QueryModelById(user.UserId);
+            var userExtend = BLL.BaseBLL<UserExtendModel>.QueryModelById(user.UserId);
             if (userExtend.Amount < amount)
                 return ApiResult.RCode(ApiResult.ECode.AuthorizationFailed);
 
@@ -194,7 +194,7 @@ namespace TinyStore.Site.Controllers
                 Extra = withDraw.WithDrawId
             });
 
-            return ApiResult.RData(BLL.UserExtendBLL.QueryModelById(user.UserId));
+            return ApiResult.RData(BLL.BaseBLL<UserExtendModel>.QueryModelById(user.UserId));
         }
 
         [HttpPost]
@@ -719,7 +719,7 @@ namespace TinyStore.Site.Controllers
                 return ApiResult.RCode();
             }
 
-            OrderModel data = BLL.OrderBLL.QueryModelById(order.OrderId);
+            OrderModel data = BLL.BaseBLL<OrderModel>.QueryModelById(order.OrderId);
             if (data != null && data.UserId == user.UserId && data.StoreId == store.StoreId)
             {
                 data.Memo = order.Memo;
@@ -843,7 +843,7 @@ namespace TinyStore.Site.Controllers
                             var productStat = new Model.Extend.ProductStat()
                             {
                                 Name = productName,
-                                Amount = orderInDayList.Sum(p => p.Amount * p.Quantity),
+                                Amount = orderInDayList.Sum(p => p.PayAmount),
                                 Cost = orderInDayList.Sum(p => p.Cost * p.Quantity),
                                 Quantity = orderInDayList.Sum(p => p.Quantity),
                                 Count = orderInDayList.Count(),

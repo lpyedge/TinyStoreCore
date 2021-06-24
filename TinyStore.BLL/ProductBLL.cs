@@ -10,26 +10,6 @@ namespace TinyStore.BLL
         {
             [p => p.Sort] = SqlSugar.OrderByType.Asc,
         };
-
-        public static void DeleteByProductIdAndStoreId(string productid, string storeId)
-        {
-            Delete(p => p.ProductId == productid && p.StoreId == storeId);
-        }
-
-        public static List<Model.ProductModel> QueryListByCategoryIdAndStoreIdIsStock(string category, string storeId)
-        {
-            var where = SqlSugar.Expressionable.Create<Model.ProductModel>()
-                .And(p => p.StoreId == storeId)
-                .And(p => p.DeliveryType == EDeliveryType.卡密)
-                .AndIF(!string.IsNullOrWhiteSpace(category), p => p.Category == category);
-            return QueryList(-1, where.ToExpression(), SortAsc);
-        }
-
-        public static Model.ProductModel QueryModelByProductIdAndStoreId(string productId, string storeId)
-        {
-            return QueryModel(p => p.ProductId == productId && p.StoreId == storeId);
-        }
-
         public static Model.ProductModel QueryModelByProductId(string productId)
         {
             return QueryModel(p => p.ProductId == productId);
@@ -38,17 +18,7 @@ namespace TinyStore.BLL
         {
             return QueryList(-1, p=>p.StoreId == storeId, SortAsc);
         }
-        public static List<Model.ProductModel> QueryListBySearch(string storeId, string category,
-            string keyname, int pageindex, int pagesize)
-        {
-            var where = SqlSugar.Expressionable.Create<Model.ProductModel>()
-                .And(p => p.StoreId == storeId)
-                .AndIF(!string.IsNullOrWhiteSpace(category), p => p.Category == category)
-                .AndIF(!string.IsNullOrWhiteSpace(keyname), p => p.Name.Contains(keyname) || p.Memo.Contains(keyname));
-
-            return QueryList(-1, where.ToExpression(), SortAsc);
-        }
-
+        
         public static List<Model.ProductModel> QueryListByStoreShow(string storeId)
         {
             List<Model.ProductModel> data;
@@ -88,66 +58,6 @@ namespace TinyStore.BLL
             return data;
         }
 
-        // public static Model.ProductModel QueryModelByProductIdAndStoreIdOrCategory(string productId, string storeId,
-        //     string category)
-        // {
-        //     var where = SqlSugar.Expressionable.Create<Model.ProductModel>()
-        //         .And(p => p.ProductId == productId && p.StoreId == storeId)
-        //         .AndIF(!string.IsNullOrWhiteSpace(category), p => p.Category == category);
-        //
-        //     return QueryModel(where.ToExpression());
-        // }
-        //
-        //
-        // public static List<string> QueryCategoryListHasProductShowByStoreId(string storeId)
-        // {
-        //     using (var conn = DbClient)
-        //     {
-        //         return conn.Queryable<Model.ProductModel>()
-        //             .Where(p => p.StoreId == storeId && p.IsShow == true)
-        //             .Select(p => p.Category)
-        //             .ToList();
-        //     }
-        // }
-        //
-        //
-        // public static List<Model.ProductModel> QueryListByIdsAndStoreId(List<string> ids, string storeId)
-        // {
-        //     return QueryList(-1, p => ids.Contains(p.ProductId) && p.StoreId == storeId, SortAsc);
-        // }
-        //
-        //
-        // public static void DeleteByCategoryIdAndStoreId(string category, string storeId)
-        // {
-        //     Delete(p => p.Category == category && p.StoreId == storeId);
-        // }
-        //
-        // public static List<Model.ProductModel> QueryListByCategoryIdShow(string category, string storeId)
-        // {
-        //     List<Model.ProductModel> data;
-        //
-        //     using (var conn = DbClient)
-        //     {
-        //         data = conn.Queryable<Model.ProductModel>()
-        //             .Where(p => p.Category == category && p.StoreId == storeId && p.IsShow == true)
-        //             .OrderBy(p => p.Sort, SqlSugar.OrderByType.Asc)
-        //             .Select(p => new Model.ProductModel
-        //                 {ProductId = p.ProductId,Icon = p.Icon, DeliveryType = p.DeliveryType, Name = p.Name, Amount = p.Amount})
-        //             .ToList();
-        //     }
-        //
-        //     return data;
-        // }
-        //
-        //
-        //
-        // public static List<Model.ProductModel> QueryListByCategoryIdAndStoreId(string category, string storeId)
-        // {
-        //     var where = SqlSugar.Expressionable.Create<Model.ProductModel>()
-        //         .And(p => p.StoreId == storeId)
-        //         .AndIF(!string.IsNullOrWhiteSpace(category), p => p.Category == category);
-        //     return QueryList(-1, where.ToExpression(), SortAsc);
-        // }
         public static void DeleteByIdsAndUserId(List<string> ids,string sotreId)
         {
             Delete(p => ids.Contains(p.ProductId) && p.StoreId == sotreId);

@@ -897,7 +897,43 @@ namespace TinyStore.Site
                             body, notifyIp);
 
                         if (res.Status == PayResult.EStatus.Completed)
-                            OrderHelper.Pay(res.OrderID, res.Amount, res.TxnID);
+                        {
+                            OrderModel order = BLL.OrderBLL.QueryModelByPayOrderId(res.OrderID);
+                            if (order != null)
+                            {
+                                var user = BLL.BaseBLL<UserExtendModel>.QueryModelById(order.UserId);
+                                if (user!= null && !order.IsPay && string.Equals(
+                                    order.PayAmount.ToString("f2"), res.Amount.ToString("f2"),
+                                    StringComparison.OrdinalIgnoreCase))
+                                {
+                                    order.TranId = res.TxnID;
+                                    order.IsPay = true;
+                                    order.PaymentDate = DateTime.Now;
+                                    order.PaymentFee = res.Amount * Config.SysPaymentRate;
+                                    order.LastUpdateDate = DateTime.Now;
+                                    BLL.OrderBLL.Update(order);
+
+                                    var income = res.Amount - order.PaymentFee;
+                                    
+                                    BLL.BillBLL.Insert(new BillModel
+                                    {
+                                        BillId = Global.Generator.DateId(1),
+                                        UserId = order.UserId,
+                                        Amount = income,
+                                        AmountCharge = 0,
+                                        BillType = EBillType.收款,
+                                        CreateDate = DateTime.Now
+                                    });
+
+                                    BLL.UserExtendBLL.Update(p => p.UserId == order.UserId,
+                                        p => new UserExtendModel() { Amount = p.Amount + income});
+                                    
+                                    if (!order.IsDelivery) 
+                                        OrderHelper.Delivery(order);
+                                }
+
+                            }
+                        }
                         else
                             Global.FileSave(Config.AppData + "SignError/" +
                                             DateTime.Now.ToString("yyMMddHHmmssfff") + ".log", "OrderName:" +
@@ -1005,33 +1041,7 @@ namespace TinyStore.Site
                 {
                     Utils.MemoryCacher.Set(orderid, orderid, Utils.MemoryCacher.CacheItemPriority.Normal, null,
                         TimeSpan.FromMinutes(1));
-                    OrderModel order = BLL.OrderBLL.QueryModelByOrderId(orderid);
-                    if (order != null)
-                    {
-                        if (!order.IsPay && string.Equals(
-                            (order.Amount * order.Quantity).ToString("f2"), incomme.ToString("f2"),
-                            StringComparison.OrdinalIgnoreCase))
-                        {
-                            order.TranId = txnId;
-                            order.IsPay = true;
-                            order.PaymentDate = DateTime.Now;
-                            order.PaymentFee = order.Amount * order.Quantity * Config.SysPaymentRate;
-                            order.LastUpdateDate = DateTime.Now;
-                            BLL.OrderBLL.Update(order);
-
-                            BLL.BillBLL.Insert(new BillModel
-                            {
-                                BillId = Global.Generator.DateId(1),
-                                UserId = order.UserId,
-                                Amount = order.Amount,
-                                AmountCharge = 0,
-                                BillType = EBillType.收款,
-                                CreateDate = DateTime.Now
-                            });
-                        }
-
-                        if (!order.IsDelivery) Delivery(order);
-                    }
+                    
                 }
             }
 
@@ -1049,7 +1059,7 @@ namespace TinyStore.Site
                     var supplyUserIdSys = (supply != null && supply.UserId == Config.SupplyUserIdSys);
                     //货源成本是否可以支付
                     var supplyCostVilidate = true;
-                    UserExtendModel user = BLL.UserExtendBLL.QueryModelById(order.UserId);
+                    UserExtendModel user = BLL.BaseBLL<UserExtendModel>.QueryModelById(order.UserId);
                     
                     if (supplyUserIdSys)
                     {
@@ -1060,7 +1070,7 @@ namespace TinyStore.Site
                     if (supplyCostVilidate)
                     {
                         ProductModel product =
-                            BLL.ProductBLL.QueryModelByProductIdAndStoreId(order.ProductId, order.StoreId);
+                            BLL.ProductBLL.QueryModelByProductId(order.ProductId);
                         var liststock = new List<Model.Extend.StockOrder>();
                         if (product != null)
                         {
@@ -1167,6 +1177,7 @@ namespace TinyStore.Site
                     msg_email = msg_email.Replace("{OrderUrl}", "//" + Config.SiteDomain + "/o/" + order.OrderId);
                     msg_email = msg_email.Replace("{OrderId}", order.OrderId);
                     msg_email = msg_email.Replace("{Amount}", (order.Amount * order.Quantity).ToString("f2"));
+                    msg_email = msg_email.Replace("{Reduction}", (order.Reduction).ToString("f2"));
                     msg_email = msg_email.Replace("{StoreQQ}", store.QQ);
                     var addtemplate = string.Empty;
                     if (order.StockList.Count > 0)

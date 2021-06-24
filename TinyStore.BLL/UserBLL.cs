@@ -80,7 +80,5 @@ namespace TinyStore.BLL
                 return new PageList<Model.Extend.UserStore>(data,total);
             }
         }
-
-
     }
 }

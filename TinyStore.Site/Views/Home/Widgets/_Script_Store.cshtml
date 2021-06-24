@@ -58,7 +58,28 @@
                 $.toast("库存不足");
             }
             else if (V_Notice()) {
-                Payment.Show(product.productId, $("#OrderQty").val(),$("#OrderContact").val(),$("#OrderUniqueId").val());
+                CY.Ajax("OrderInsert",
+                    {
+                        "productid": product.productId,
+                        "quantity": $("#OrderQty").val(),
+                        "contact": $("#OrderContact").val(),
+                        "message": $("#OrderMessage").val()
+                    },
+                    function (response) {
+                        if (response.code === 1) {
+                            location.href = '/Pay/'+response.data.orderId;                            
+                            $.toast("提交数据验证未通过");
+                        }
+                        else if (response.code === 0) {
+                            $.toast("请检查您的下单数量是否满足购买条件");
+                        }else if (response.code === 11) {
+                            $.toast("提交数据验证未通过");
+                        }else if (response.code === 13) {
+                            $.toast("服务器数据异常");
+                        }else if (response.code === 15) {
+                            $.toast("提交数据格式错误");
+                        }
+                    });
             }
         });
 

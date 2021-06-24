@@ -14,23 +14,6 @@ namespace TinyStore.BLL
         {
             Delete(p => p.AdminId == adminid);
         }
-
-        public static void DeleteByIds(List<int> adminids)
-        {
-            Delete(p => adminids.Contains(p.AdminId));
-        }
-        
-        public static List<Model.AdminModel> QueryListAll()
-        {
-            using (var db = DbClient)
-            {
-                var data = db.Queryable<Model.AdminModel>()
-                    .Select(p => new Model.AdminModel { Account = p.Account, AdminId = p.AdminId, IsRoot = p.IsRoot, CreateDate = p.CreateDate })
-                    .OrderBy(SortCreateDateDesc.First().Key, SortCreateDateDesc.First().Value)
-                    .ToList();
-                return data;
-            }
-        }
         public static Model.AdminModel QueryModelByAccount(string account)
         {
             return QueryModel(p => p.Account == account);
@@ -53,6 +36,5 @@ namespace TinyStore.BLL
                 return new PageList<Model.AdminModel>(data,total);
             }
         }
-
     }
 }
