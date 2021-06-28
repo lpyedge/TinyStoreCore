@@ -193,20 +193,20 @@ namespace LPayments
     /// </summary>
     public enum EPayType
     {
-        [Description("电脑网关")] PC,
-        [Description("手机网关")] H5,
-        [Description("二维码")] QRcode,
-        [Description("App")] App,
-        [Description("Other")] Other
+        [Description("二维码")] QRcode = 1,
+        [Description("电脑网关")] PC = 2,
+        [Description("手机网关")] H5 = 3, 
+        [Description("App")] App = 4,
+        [Description("Other")] Other =5
     }
 
     public enum EAction
     {
-        QrCode,
-        UrlPost,
-        UrlGet,
-        UrlScheme,
-        Token,
+        QrCode = 1,
+        UrlPost = 2,
+        UrlGet = 3,
+        UrlScheme = 4,
+        Token =5,
     }
     
     /// <summary>

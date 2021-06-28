@@ -8,20 +8,9 @@
                 <i class="iconfont icon-chahao"></i>
             </div>
             <div class="title">请选择支付方式</div>
-            <div class="content">
-                <div class="payment row">
-                    <div class="unit">
-                        <a name="wechat">
-                            <span class="wechat"></span>
-                            微信支付
-                        </a>
-                    </div>
-                    <div class="unit">
-                        <a name="alipay">
-                            <span class="alipay"></span>
-                            支付宝支付
-                        </a>
-                    </div>
+            <div class="content" >
+                <div class="payments row" id="payments">
+                    
                 </div>
             </div>
         </div>
@@ -30,41 +19,114 @@
 <style>
     
     /*支付方式*/
-    .payment {
+    .payments {
         display:flex;
         justify-content: space-evenly;
     }
 
-    .payment .unit {
-        margin: 0.3rem 0.6rem;
-        text-align: center
+    .payments .payment {
+       /*margin: 0.1rem 0.2rem;*/
+       text-align: center;
+       width: 100%;
+    } 
+    .payments .payment .subject{
+        background-color: #e0e0e0;
+        border-bottom:1px solid grey;
+        border-radius: 0.08rem;
+        text-align: center;
+        width: 100%;
+        display: block;
     }
 
-    .payment span {
-        width: 2.14rem;
-        height: 2.14rem;
-        border-radius: 0.43rem;
-        margin-bottom: 0.14rem;
-        display: block
+    .payments .payment > div {
+            display: none;
     }
+    /*.payments .payment > div:first-child {*/
+    /*         display: block;*/
+    /* }*/
 
-    .payment .wechat {
-        background: url(/images/wechat.png) no-repeat center #3daf34;
-        background-size: cover
+    .payments .payment > div img {
+        width: 6rem;
+        height: 6rem;
+        margin: 0.14rem;
     }
-
-    .payment .alipay {
-        background: url(/images/alipay.png) no-repeat center #02a8f2;
-        background-size: cover
-    }
-
 </style>
+
+<script id="tmpl_payments" type="text/x-dot-template">
+    {{~it.payments :prop:index}}
+     <div class="payment">
+        <label class="subject">{{=prop.name}}</label>
+        <div> 
+            <a href="{{=prop.link}}" target="_blank">
+                <img src="{{=prop.img}}" alt="{{=prop.name}}"/>
+            </a>
+        </div>        
+    </div>
+    {{~}}
+</script>
+
+<script src="https://cdn.staticfile.org/qrcode-generator/1.4.4/qrcode.min.js"
+        asp-fallback-test="window.qrcode"
+        asp-fallback-src="~/lib/qrcode-generator/qrcode.min.js"></script>
+
 <script>
     var Payment = {};
     var $payment_dialog = $("#payment .dialog");
-    //todo 需要根据店铺配置的支付方式展示
 
-    Payment.Show = function () {
+    Payment.Show = function (paytickets) {
+        if (paytickets && paytickets.length > 0) {
+            console.log(paytickets);            
+            var ismobile = CY.Page.Browser.versions.mobile;
+            var payments = [];
+            for (const i in payTickets) {                
+                if (ismobile){
+                    if (payTickets[i].payType === 1){
+                        if (payTickets[i].token === "alipay"){                            
+                            if (payTickets[i].uri.indexOf('//qr.alipay.com/') > -1){
+                                payTickets[i].uri = 'alipays://platformapi/startapp?saId=10000007&qrcode='+encodeURIComponent(payTickets[i].uri);
+                            }if (payTickets[i].uri.indexOf('appId=09999988') > -1){
+                                payTickets[i].uri = 'alipays://platformapi/startapp?appId=20000067&url='+encodeURIComponent(payTickets[i].uri);
+                             }                        
+                            payments.push({
+                                name : payTickets[i].message,
+                                img : '/images/alipay.png',
+                                link : payTickets[i].uri,
+                            });
+                        }
+                    }else if (payTickets[i].payType === 3){                    
+                        payments.push({
+                            name : payTickets[i].message,
+                            img : payTickets[i].token === "alipay" ? '/images/alipay.png' :'/images/wechat.png',
+                            link : payTickets[i].uri,
+                        });
+                    }
+                }else{                
+                    if (payTickets[i].payType === 1){
+                        if (payTickets[i].uri.indexOf('appId=09999988') > -1){
+                            payTickets[i].uri = 'alipays://platformapi/startapp?appId=20000067&url='+encodeURIComponent(payTickets[i].uri);
+                        }
+                        payments.push({
+                            name : payTickets[i].message,
+                            img : qrcodeImg(payTickets[i].uri),
+                            link : '#',
+                        });
+                    }else if (payTickets[i].payType === 2){
+                        payments.push({
+                            name : payTickets[i].message,
+                            img : payTickets[i].token === "alipay" ? '/images/alipay.png' :'/images/wechat.png',
+                            link : payTickets[i].uri,
+                        });                    
+                    }
+                }
+            }
+            $("#payments").html(doT.template($("#tmpl_payments").text())({ payments }));
+            $("#payments").find(".payment").click(function (){
+                $("#payments").find(".payment > div").hide("normal");
+                var $payment = $(arguments[0].target).parent(".payment");
+                $payment.find("div").show("slow");
+            });
+        }
+        
         $(".blackmask,#payment").fadeIn(150);
         $payment_dialog.addClass("fadeIn-up");
         $payment_dialog.removeClass("fadeOut-up");
@@ -92,64 +154,71 @@
         if (!isVisibility && Payment.orderId) {
             location.href = "/o/" + Payment.orderId;
         }
-    }    
-
-    $(function () {
-        //支付
-        $("#payment").find("[name]").on("click", function (e) {
-            var payname = $(this).attr("name");
-            if (payname) {
-                if (Payment.orderId) {
-                    CY.Ajax("OrderPay", {
-                        "orderid": Payment.orderId,
-                        "paymenttype": payname
-                    }, function (response) {
-                        if (response.code === 1) {                            
-                            if (response.data && response.data.url) {
-                                CY.Page.AppLaunch(msg.data.url);
-                            }
-                        } else if (response.code === 0){
-                            $.toast("订单不存在或已经成功付款");
-                        } else if (response.code === 13){
-                            $.toast("服务器数据异常");
-                        } else if (response.code === 15){
-                            $.toast("支付方式不存在");
-                        }
-                    });
-                } else {
-                    CY.Ajax("OrderInsert",
-                        {
-                            "productid": Payment.productId,
-                            "quantity": Payment.quantity,
-                            "contact": Payment.contact,
-                            "message": Payment.message,
-                            "paymenttype": payname
-                        },
-                        function (response) {
-                            if (response.code === 1) {
-                                Payment.orderId = response.data.orderId;
-                                if (response.data && response.data.url) {
-                                    CY.Page.AppLaunch(response.data.url);
-                                }
-                                CY.Page.VisibilityListener(Payment.AppLaunched);
-                            }
-                            else if (response.code === 0) {
-                                $.toast("请检查您的下单数量是否满足购买条件");
-                            }else if (response.code === 11) {
-                                $.toast("提交数据验证未通过");
-                            }else if (response.code === 13) {
-                                $.toast("服务器数据异常");
-                            }else if (response.code === 15) {
-                                $.toast("提交数据格式错误");
-                            }
-                        });
-                }
-            }
-            else {
-                $.toast("请完善信息！");
-            }
-        });
-    })
+    }
+    
+    function qrcodeImg(str) {
+        var qr = qrcode(0, "Q");
+        qr.addData(str);
+        qr.make();
+        return qr.createDataURL();
+    }
+    
+    // $(function () {
+    //     //支付
+    //     $("#payment").find("[name]").on("click", function (e) {
+    //         var payname = $(this).attr("name");
+    //         if (payname) {
+    //             if (Payment.orderId) {
+    //                 CY.Ajax("OrderPay", {
+    //                     "orderid": Payment.orderId,
+    //                     "paymenttype": payname
+    //                 }, function (response) {
+    //                     if (response.code === 1) {                            
+    //                         if (response.data && response.data.url) {
+    //                             CY.Page.AppLaunch(msg.data.url);
+    //                         }
+    //                     } else if (response.code === 0){
+    //                         $.toast("订单不存在或已经成功付款");
+    //                     } else if (response.code === 13){
+    //                         $.toast("服务器数据异常");
+    //                     } else if (response.code === 15){
+    //                         $.toast("支付方式不存在");
+    //                     }
+    //                 });
+    //             } else {
+    //                 CY.Ajax("OrderInsert",
+    //                     {
+    //                         "productid": Payment.productId,
+    //                         "quantity": Payment.quantity,
+    //                         "contact": Payment.contact,
+    //                         "message": Payment.message,
+    //                         "paymenttype": payname
+    //                     },
+    //                     function (response) {
+    //                         if (response.code === 1) {
+    //                             Payment.orderId = response.data.orderId;
+    //                             if (response.data && response.data.url) {
+    //                                 CY.Page.AppLaunch(response.data.url);
+    //                             }
+    //                             CY.Page.VisibilityListener(Payment.AppLaunched);
+    //                         }
+    //                         else if (response.code === 0) {
+    //                             $.toast("请检查您的下单数量是否满足购买条件");
+    //                         }else if (response.code === 11) {
+    //                             $.toast("提交数据验证未通过");
+    //                         }else if (response.code === 13) {
+    //                             $.toast("服务器数据异常");
+    //                         }else if (response.code === 15) {
+    //                             $.toast("提交数据格式错误");
+    //                         }
+    //                     });
+    //             }
+    //         }
+    //         else {
+    //             $.toast("请完善信息！");
+    //         }
+    //     });
+    // })
 
 
 </script>

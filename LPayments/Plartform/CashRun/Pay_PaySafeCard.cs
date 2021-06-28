@@ -115,6 +115,7 @@ namespace LPayments.Plartform.CashRun
 
             return new PayTicket()
             {
+                PayType = PayChannnel.ePayType,
                 Action = EAction.UrlPost,
                 Uri = this[PayUrl],
                 Datas = datas

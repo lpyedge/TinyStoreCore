@@ -192,6 +192,7 @@ namespace LPayments.Plartform.WebMoney
             
             return new PayTicket()
             {
+                PayType = PayChannnel.ePayType,
                 Action = EAction.UrlPost,
                 Uri = "https://merchant.wmtransfer.com/lmi/payment.asp",
                 Datas = datas

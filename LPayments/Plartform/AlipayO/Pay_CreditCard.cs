@@ -170,6 +170,7 @@ namespace LPayments.Plartform.AliPayO
 
             return new PayTicket()
             {
+                PayType = PayChannnel.ePayType,
                 Action = EAction.Token,
                 Token = checkoutId,
                 //Uri = "https://oppwa.com/v1/paymentWidgets.js?checkoutId="

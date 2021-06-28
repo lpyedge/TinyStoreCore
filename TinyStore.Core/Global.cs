@@ -448,7 +448,19 @@ namespace TinyStore
                 /// </summary>
                 HSBC,
             }
-            
+
+           
+            /// <summary>
+            /// 唤醒支付宝并传参 跳转到对应支付宝Schema链接 参数需uri编码
+            /// 我的客服:
+            /// alipays://platformapi/startapp?appId=20000691&url=
+            /// 通用浏览器模式:
+            /// alipays://platformapi/startapp?appId=20000067&url=
+            /// 扫一扫
+            /// alipays://platformapi/startapp?saId=10000007&qrcode=
+            /// </summary>
+            public static string LaunchUri =>"alipays://platformapi/startapp?saId=10000007&qrcode=";
+
             /// <summary>
             /// 支付宝扫码转账到银行卡
             /// </summary>
@@ -456,22 +468,31 @@ namespace TinyStore
             /// <param name="cardNo"></param>
             /// <param name="bankAccount"></param>
             /// <param name="amount"></param>
+            /// <param name="memo"></param>
             /// <returns></returns>
-            public static string ToBankCard(EBankMark bankMark,string cardNo,string bankAccount,double amount)
+            public static string ToBankCard(EBankMark bankMark,string cardNo,string bankAccount,double amount,string memo = "")
             {
-              
-                
                 var toCardUri =
-                    $"alipays://platformapi/startapp?appId=09999988&actionType=toCard&cardNo={cardNo}&bankMark={bankMark.ToString()}&money={amount.ToString("0.xx")}&bankAccount={Uri.EscapeDataString(bankAccount)}";
+                    $"alipays://platformapi/startapp?appId=09999988&actionType=toCard&cardNo={cardNo}&bankMark={bankMark.ToString()}&amount={amount.ToString("0.00")}&money={amount.ToString("0.00")}&bankAccount={Uri.EscapeDataString(bankAccount)}";
 
-                //我的客服:20000691
-                //xxxxxx:20000067
-                //都可以生效
-                var serviceUri = $"alipays://platformapi/startapp?appId=20000691&url={Uri.EscapeDataString(toCardUri)}";
-                
-                return serviceUri;
+                return toCardUri;
             }
 
+            /// <summary>
+            /// 支付宝扫码转账到银行卡
+            /// alipayUserId 获取 通过接入 https://opendocs.alipay.com/open/284/106000 
+            /// </summary>
+            /// <param name="alipayUserId"></param>
+            /// <param name="amount"></param>
+            /// <param name="memo"></param>
+            /// <returns></returns>
+            public static string ToBankCard(string alipayUserId,double amount,string memo="")
+            {
+                var toCardUri =
+                    $"alipays://platformapi/startapp?appId=09999988&actionType=toAccount&goBack=NO&amount={amount.ToString("0.00")}&userId={alipayUserId}&memo={Uri.EscapeDataString(memo)}";
+                
+                return toCardUri;
+            }
             #region alipay schema
 
             // 支付宝：

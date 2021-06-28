@@ -108,8 +108,6 @@ namespace LPayments.Plartform.OrangeBank
             if (string.IsNullOrEmpty(this[SecretKey])) throw new ArgumentNullException("SecretKey");
             if (!Currencies.Contains(p_Currency)) throw new ArgumentException("Currency is not allowed!");
 
-            var pt = new PayTicket();
-
             var uri
 #if DEBUG
                 = new Uri("https://mixpayuat4.orangebank.com.cn/mct1/payorder");
@@ -172,39 +170,41 @@ namespace LPayments.Plartform.OrangeBank
 
                     if (m_qrcode)
                     {
-                        pt.Uri = resdatadic["trade_qrcode"];
-                        //pt.FormHtml = Core.FormQR(Core.QR(resdatadic["trade_qrcode"], this.GetType()), p_OrderId, p_Amount, p_OrderName);
+                        return new PayTicket()
+                        {
+                            PayType = PayChannnel.ePayType,
+                            Action = EAction.QrCode,
+                            Uri = resdatadic["trade_qrcode"]
+                        };
                     }
                     else
                     {
-                        //var formhtml =
-                        //    new StringBuilder("<form id='Core.PaymentFormNam' name='Core.PaymentFormName" +
-                        //                      "' action='" + uri + "' method='post' >");
-                        //foreach (var item in dic)
-                        //{
-                        //    formhtml.AppendFormat("<input type='hidden' name='{0}' value='{1}' />", item.Key, item.Value);
-                        //}
-
-                        //formhtml.Append("<input type='submit' value='pay' style='display: none;'/>");
-                        //formhtml.Append("</form>");
-                        //if (Context.AutoSubmit)
-                        //    formhtml.Append("<script>document.forms['" + Core.PaymentFormName + "'].submit();</script>");
-                        //pt.FormHtml = formhtml.ToString();
+                        return new PayTicket()
+                        {
+                            PayType = PayChannnel.ePayType,
+                            Action = EAction.UrlPost,
+                            Uri = uri.ToString(),
+                            Datas = dic
+                        };
                     }
-
-                    pt.Message = resdic["msg"];
                 }
                 else
                 {
-                    pt.Message = "验签失败!";
+                    return new PayTicket()
+                    {
+                        PayType = PayChannnel.ePayType,
+                        Message = "验签失败!"
+                    };
                 }
             }
             else
             {
-                pt.Message = resdic["msg"];
+                return new PayTicket()
+                {
+                    PayType = PayChannnel.ePayType,
+                    Message = resdic["msg"]
+                };
             }
-
-            return pt;
         }
     }
 }

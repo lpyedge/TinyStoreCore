@@ -56,7 +56,7 @@
                     </div>
                 </div>
                 <div class="col column" style="text-align: center;height:5rem;width: 18rem">
-                    <div class="col text-h6 q-pt-sm">
+                    <div class="col text-h6 q-pt-md">
                         {{item.name}}
                         <q-badge class="q-ma-sm" v-if="item.bankType" floating>
                             {{bankTypeName(item.bankType)}}
@@ -66,8 +66,6 @@
                         </q-badge>
                     </div>
                     <div class="col text-subtitle1  q-pb-sm">{{item.account}}</div>
-                    
-                        
                 </div>
                 <q-icon class="cursor-pointer absolute-bottom-right q-ma-xs" color="negative" size="1.4rem" name="far fa-edit" @@click="paymentDialogShow(i)"></q-icon>
             </q-card-section>
@@ -99,15 +97,11 @@
             </q-select>
             <q-input outlined dense stack-label bg-color="white"
                      label="收款帐号"
-                     v-model.trim="paymentCurrent.account"
-                     ref="paymentCurrent_account"
-                     :rules="[val => !!val || '必须输入收款帐号']">
+                     v-model.trim="paymentCurrent.account">
             </q-input>
             <q-input outlined dense stack-label bg-color="white"
                      label="收款名称"
-                     v-model.trim="paymentCurrent.name"
-                     ref="paymentCurrent_name"
-                     :rules="[val => !!val || '必须输入收款名称']">
+                     v-model.trim="paymentCurrent.name">
             </q-input>
 
             <q-input outlined dense stack-label bg-color="white"
@@ -137,9 +131,11 @@
     <script src="https://cdn.staticfile.org/qrcode-generator/1.4.4/qrcode.min.js"
             asp-fallback-test="window.qrcode"
             asp-fallback-src="~/lib/qrcode-generator/qrcode.min.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.3.1/dist/jsQR.min.js"
             asp-fallback-test="window.jsQR"
             asp-fallback-src="~/lib/jsqr/dist/jsqr.min.js"></script>
+    
     <script>
         var _page = {
             data: {
@@ -189,9 +185,11 @@
                     return qr.createDataURL();
                 },
                 qrcodeRead() {
+                        console.log(arguments);
                     if (arguments.length === 1 && arguments[0].target && arguments[0].target.files && arguments[0].target.files.length === 1) {
                         var file = arguments[0].target.files[0];
                         var img = new Image();
+                        //img.setAttribute('crossOrigin', 'anonymous');
                         img.onload = () => {
                             var canvas = document.createElement('canvas');
                             var context = canvas.getContext('2d');
@@ -200,8 +198,10 @@
                             context.drawImage(img, 0, 0);
                             var myData = context.getImageData(0, 0, img.width, img.height);
                             var qrcode = jsQR(myData.data, img.width, img.height);
+                            console.log("qrcode",qrcode);
                             if (qrcode) {
                                 this.paymentCurrent.qrCode = qrcode.data;
+                                
                             }
                         }
                         var reader = new FileReader();
@@ -217,20 +217,19 @@
                     if (i >= 0) {
                         this.paymentCurrent = JSON.parse(JSON.stringify(this.paymentListCustom[i]));
                     } else {
-                        this.paymentCurrent = { subject:'',bankType:this.bankTypeOptions[0].value,isEnable: false,isSystem:false };
+                        this.paymentCurrent = { subject:'',qrCode:'',bankType:this.bankTypeOptions[0].value,isEnable: false,isSystem:false };
                     }
                 },
                 paymentDialogEdit() {
                     var subjectExist = _.filter(this.storeCurrent.paymentList, (data)=>{return data.subject.toLowerCase() === this.paymentCurrent.subject.toLowerCase()});
-                    if (subjectExist.length !== 0){
+                    var sujectExistNum = this.paymentIndex >= 0 ? 1: 0;
+                    if (subjectExist.length !== sujectExistNum){
                         Notify.Warning('标题不得重复');
                         return;
                     }
                    
                     this.$refs.paymentCurrent_subject.validate();
-                    this.$refs.paymentCurrent_name.validate();
-                    this.$refs.paymentCurrent_account.validate();
-                    if (!this.$refs.paymentCurrent_subject.hasError && !this.$refs.paymentCurrent_name.hasError && !this.$refs.paymentCurrent_account.hasError){
+                    if (!this.$refs.paymentCurrent_subject.hasError){
                         if (this.paymentIndex >= 0) {
                            var index = 0;
                            for (i in this.storeCurrent.paymentList) {

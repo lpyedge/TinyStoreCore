@@ -194,6 +194,7 @@ namespace LPayments.Plartform.PaymentWall
 
             return new PayTicket()
             {
+                PayType = PayChannnel.ePayType,
                 Action = EAction.UrlPost,
                 Uri = "https://api.paymentwall.com/api/" + this[ApiType],
                 Datas = datas

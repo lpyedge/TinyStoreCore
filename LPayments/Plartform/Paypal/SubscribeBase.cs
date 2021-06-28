@@ -173,6 +173,7 @@ namespace LPayments.Plartform.Paypal
             
             return new PayTicket()
             {
+                PayType = PayChannnel.ePayType,
                 Action = EAction.UrlPost,
                 Uri = "https://www.paypal.com/cgi-bin/webscr",
                 Datas = datas

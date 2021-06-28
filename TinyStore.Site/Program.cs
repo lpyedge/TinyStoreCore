@@ -23,7 +23,7 @@ namespace TinyStore.Site
             Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((hostingContext, config) =>
                 {
-                    config.SetBasePath(Directory.GetCurrentDirectory());
+                    config.SetBasePath(AppDomain.CurrentDomain.BaseDirectory);
                     //注意相对路径用/分隔
                     config.AddJsonFile("App_Data/Config.json", optional: false, reloadOnChange: true);
                 })
@@ -40,8 +40,7 @@ namespace TinyStore.Site
                                     new FileInfo(AppDomain.CurrentDomain.BaseDirectory + "App_Data/SSL/prrvate.key");
                                 if (certPemFile.Exists && privateKeyPemFile.Exists)
                                 {
-                                    httpsConfig.ServerCertificate = X509Certificate2.CreateFromPemFile(certPemFile.FullName,
-                                            privateKeyPemFile.FullName);
+                                    httpsConfig.ServerCertificate = X509Certificate2.CreateFromPemFile(certPemFile.FullName,privateKeyPemFile.FullName);
                                     httpsConfig.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13;
                                 }
                             });

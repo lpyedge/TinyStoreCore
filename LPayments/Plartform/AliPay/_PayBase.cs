@@ -127,18 +127,18 @@ namespace LPayments.Plartform.AliPay
 
                 var json = Utils.DynamicJson.Parse(res);
 
-
-                if (res.Contains("\"sign\":") && res.Contains("\"alipay_trade_precreate_response\":"))
+                if (res.Contains("\"code\":\"10000\"") && res.Contains("\"alipay_trade_precreate_response\":"))
                 {
                     var resdic = new Dictionary<string, string>();
                     resdic["code"] = json.alipay_trade_precreate_response.code.ToString();
                     resdic["msg"] = json.alipay_trade_precreate_response.msg.ToString();
                     resdic["out_trade_no"] = json.alipay_trade_precreate_response.out_trade_no.ToString();
                     resdic["qr_code"] = json.alipay_trade_precreate_response.qr_code.ToString();
-                    if (resdic["code"] == "10000" && p_OrderId == resdic["out_trade_no"])
+                    if (p_OrderId == resdic["out_trade_no"])
                     {
                         return new PayTicket()
                         {
+                            PayType = PayChannnel.ePayType,
                             Action = EAction.QrCode,
                             Uri = resdic["qr_code"]
                         };
@@ -149,6 +149,7 @@ namespace LPayments.Plartform.AliPay
 
                 return new PayTicket(false)
                 {
+                    PayType = PayChannnel.ePayType,
                     Message = res
                 };
             }
@@ -156,6 +157,7 @@ namespace LPayments.Plartform.AliPay
             {
                 return new PayTicket()
                 {
+                    PayType = PayChannnel.ePayType,
                     Action = EAction.Token,
                     Token = Utils.Core.LinkStr(datas.Where(p => (p.Key != "method" && p.Key != "version"))
                             .ToDictionary(p => p.Key, p => p.Value),
@@ -177,6 +179,7 @@ namespace LPayments.Plartform.AliPay
                         {
                             return new PayTicket()
                             {
+                                PayType = PayChannnel.ePayType,
                                 Action = EAction.UrlScheme,
                                 Uri = "alipay://alipayclient/?" + Utils.HttpWebUtility.UriDataEncode(match.Value),
                             };
@@ -186,6 +189,7 @@ namespace LPayments.Plartform.AliPay
                             var data = Utils.DynamicJson.Parse(match.Value);
                             return new PayTicket()
                             {
+                                PayType = PayChannnel.ePayType,
                                 Action = EAction.UrlScheme,
                                 Uri = string.Format(
                                     "alipays://platformapi/startApp?appId=20000125&orderSuffix={0}#Intent;scheme=alipays;package=com.eg.android.AlipayGphone;end",
@@ -196,12 +200,14 @@ namespace LPayments.Plartform.AliPay
 
                     return new PayTicket(false)
                     {
+                        PayType = PayChannnel.ePayType,
                         Message = res
                     };
                 }
 
                 return new PayTicket(false)
                 {
+                    PayType = PayChannnel.ePayType,
                     Message = "extend is not support !"
                 };
             }
@@ -209,6 +215,7 @@ namespace LPayments.Plartform.AliPay
             {
                 return new PayTicket()
                 {
+                    PayType = PayChannnel.ePayType,
                     Action = EAction.UrlPost,
                     Uri = GateWay + "?charset=" + Charset,
                     Datas = datas,

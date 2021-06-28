@@ -135,6 +135,11 @@ namespace TinyStore.Site
 
             //默认允许访问目录为wwwroot 默认映射访问路径为/ 
             app.UseStaticFiles();
+            // //linux下：dotnet 运行dll文件时发现样式路径错误，需要加如下代码才能正常显示，就是指向静态文件目录 #发现暂时不需要
+            // app.UseStaticFiles(new StaticFileOptions()
+            // {
+            //     FileProvider = new PhysicalFileProvider(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"wwwroot"))
+            // });
 
             //再次设配置默认配置,必须调用完app.UseStaticFiles();然后再调用下面的方法,不然会出现错误
             //且FileProvider和RequestPath不能设置,保证配置的ContentTypeProvider会对应到默认映射上
@@ -158,7 +163,8 @@ namespace TinyStore.Site
             app.UseStaticFiles(new StaticFileOptions()
             {
                 //通过配置FileProvider和RequestPath实现某个目录映射某个路径的访问
-                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "views", "home")),
+                //linux下大小写敏感，注意目录名称
+                FileProvider = new PhysicalFileProvider(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Views", "Home")),
                 RequestPath = "/themes",
 
                 //通过配置ServeUnknownFileTypes 为 true 可以允许所有未知类型的文件，一般不建议这么设置,安全性较低

@@ -119,14 +119,13 @@ namespace LPayments.Plartform.Xfers
                 ["signature"] = Utils.Core.SHA1(this[ApiKey] + this[ApiSecret] + p_OrderId + p_Amount.ToString("0.##") + p_Currency),
             };
             
-            var pt = new PayTicket()
+            return new PayTicket()
             {
+                PayType = PayChannnel.ePayType,
                 Action = EAction.UrlPost,
                 Uri = "https://www.xfers.io/api/v2/payments",
                 Datas = datas,
             };
-            
-            return pt;
         }
 
         //所有在paycheck里面的对HttpRequest的操作都要避免

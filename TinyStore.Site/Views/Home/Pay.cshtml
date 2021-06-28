@@ -1,3 +1,4 @@
+@using LPayments
 <!doctype html>
 <html>
 <head>
@@ -7,32 +8,99 @@
 <body>
     <!--主框架-->
     <div id="page">
-        <div class="home-header flex flex-center items-center txt-white font-family-T">热门推荐</div>
+        <div class="home-header flex flex-center items-center txt-white font-family-T">订单支付</div>
         <div class="home-box column">
-            <div class="stores-hot col-auto" id="storehot">
-            </div>
             <div class="company col flex items-center">
-                <div class="row items-center">
-                    <div class="col">
-                        <div class="titile-EN">COMPANY</div>
-                        <div class="titile-CN">关于我们</div>
-                    </div>
-                    <div class="col-auto"><span class="more dialog-open">详情</span></div>
-                </div>
                 <div class="content">
-                    支持各种虚拟道具买卖，方便，安全快捷，买家无需注册，商家只需注册店铺，添加商品即可实现在线销售，可实时了解营收情况。
+                    @ViewBag.Store.Name
+                    <br>
+                    @ViewBag.Order.Name
+                    <br>
+                    @ViewBag.Order.OrderId
+                    <br>
+                    @ViewBag.Order.PayAmount
                 </div>
+            </div>
+            <div class="stores-hot col-auto" id="payments">
             </div>
         </div>
     </div>
 
-    <script>
-        var store =  @Json.Serialize(ViewBag.Store);
-        var order =  @Json.Serialize(ViewBag.Order);
-        var paytickets =  @Json.Serialize(ViewBag.PayTickets);
+    <script id="tmpl_payments" type="text/x-dot-template">
+        {{~it.initials:initial:i}}
+        <ul name="initial-{{=initial}}">
+            <span class="letter-title">{{=initial}}</span>
+            {{ for(var j=0; j<it.datas[initial].length; j++) { }}
+            <li><a href="/s/{{=it.datas[initial][j].uniqueId}}"><img src="{{=it.datas[initial][j].logo}}" /><span>{{=it.datas[initial][j].name}}</span></a></li>
+            {{ } }}
+        </ul>
+        {{~}}
+    </script>
 
-        console.log(paytickets);
+<script src="https://cdn.staticfile.org/qrcode-generator/1.4.4/qrcode.min.js"
+    asp-fallback-test="window.qrcode"
+    asp-fallback-src="~/lib/qrcode-generator/qrcode.min.js"></script>
+
+    <script>
+    var payTickets =@Json.Serialize(ViewBag.PayTickets);
+    $(function () {        
+        $("#name").text(order.name);
+        $("#qty").text("X" + order.quantity);
+        $("#amount").text("￥" + (order.amount * order.quantity - order.reduction));
+        $("#contact").text(order.contact);
+        $("#message").text(order.message);
         
+        var ismobile = CY.Page.Browser.versions.mobile;
+        var payments = [];
+        for (const i in payTickets) {
+            if (ismobile){
+                if (payTickets[i].payType === 1){
+                    if (payTickets[i].token === "alipay"){
+                        payments.push({
+                            name : payTickets[i].message,
+                            img : payTickets[i].uri,
+                            link : payTickets[i].uri,
+                        });
+                    }
+                }else if (payTickets[i].payType === 3){                    
+                    payments.push({
+                        name : payTickets[i].message,
+                        img : payTickets[i].uri,
+                        link : payTickets[i].uri,
+                    });
+                }else if (payTickets[i].payType === 5){                    
+                    payments.push({
+                        name : payTickets[i].message,
+                        img : payTickets[i].uri,
+                        link : payTickets[i].uri,
+                    });
+                }
+            }else{                
+                if (payTickets[i].payType === 1){
+                    payments.push({
+                        name : payTickets[i].message,
+                        img : payTickets[i].uri,
+                        link : payTickets[i].uri,
+                    });
+                }else if (payTickets[i].payType === 2){
+                    payments.push({
+                        name : payTickets[i].message,
+                        img : payTickets[i].uri,
+                        link : payTickets[i].uri,
+                    });                    
+                }else if (payTickets[i].payType === 5){
+                    payments.push({
+                        name : payTickets[i].message,
+                        img : payTickets[i].uri,
+                        link : payTickets[i].uri,
+                    });                    
+                }
+            }
+          console.log( payTickets[i]);
+        }
+        
+        //$("#payments").html(doT.template($("#tmpl_payments").text())({ 'initials': initials, 'datas': payTickets}));
+    });
     </script>
 </body>
 </html>

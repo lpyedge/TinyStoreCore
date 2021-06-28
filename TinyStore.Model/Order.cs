@@ -18,7 +18,7 @@ namespace TinyStore.Model
         /// （每次发起支付随机生成此编号并保存，用于后期notify通知比对，防止订单号重复无法发起支付的情况）
         /// </summary>
         [SqlSugar.SugarColumn(Length = 28)]
-        public string PayOrderId { get; set; }
+        public string PayOrderId { get; set; } = "";
         
         /// <summary>
         ///店铺编号
@@ -76,12 +76,12 @@ namespace TinyStore.Model
         ///商品成本
         /// </summary>
         public double Cost { get; set; }
-        
-        
+
+
         /// <summary>
         ///优惠金额
         /// </summary>
-        public double Reduction { get; set; }
+        public double Reduction { get; set; } = 0;
         
 
         /// <summary>

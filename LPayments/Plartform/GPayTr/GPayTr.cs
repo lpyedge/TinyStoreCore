@@ -280,8 +280,9 @@ namespace LPayments.Plartform.GPayTr
                 // pt.Uri = json.link;
                 // pt.FormHtml = "<script>location.href='" + (string) json.redirect_url + "';</script>";
                 
-                return new PayTicket(false)
+                return new PayTicket()
                 {
+                    PayType = PayChannnel.ePayType,
                     Action = EAction.UrlGet,
                     Uri = (string) json.redirect_url,
                     Token = json
@@ -291,6 +292,7 @@ namespace LPayments.Plartform.GPayTr
             {
                 return new PayTicket(false)
                 {
+                    PayType = PayChannnel.ePayType,
                     Message = res
                 };
             }

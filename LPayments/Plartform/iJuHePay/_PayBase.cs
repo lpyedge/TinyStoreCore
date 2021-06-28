@@ -103,6 +103,7 @@ namespace LPayments.Plartform.iJuHePay
 
             return new PayTicket()
             {
+                PayType = PayChannnel.ePayType,
                 Action = EAction.UrlPost,
                 Uri = "https://ijuhepay.cn/GateWay/ReceiveOrder.aspx",
                 Datas = datas

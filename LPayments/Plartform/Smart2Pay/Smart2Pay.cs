@@ -144,6 +144,7 @@ namespace LPayments.Plartform.Smart2Pay
 
             return new PayTicket()
             {
+                PayType = PayChannnel.ePayType,
                 Action = EAction.UrlPost,
                 Uri = "https://admin.smart2pay.com/payment/pay.cgi",
                 Datas = datas

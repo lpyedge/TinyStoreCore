@@ -153,6 +153,7 @@ namespace LPayments.Plartform.G2APay
             {
                 return new PayTicket(false)
                 {
+                    PayType = PayChannnel.ePayType,
                     Message = res
                 };
             }
@@ -175,6 +176,7 @@ namespace LPayments.Plartform.G2APay
 
             return new PayTicket()
             {
+                PayType = PayChannnel.ePayType,
                 Action = EAction.UrlGet,
                 Uri = "https://checkout.pay.g2a.com/index/gateway?" + HttpWebUtility.BuildQueryString(datas),
                 Datas = datas

@@ -79,8 +79,7 @@ namespace LPayments.Plartform.Payssion
             if (string.IsNullOrEmpty(this[SecretKey])) throw new ArgumentNullException("SecretKey");
             if (!Currencies.Contains(p_Currency)) throw new ArgumentException("Currency is not allowed!");
 
-            var pt = new PayTicket();
-
+           
             if (string.IsNullOrWhiteSpace(m_pmid))
             {
                 var url =
@@ -96,6 +95,7 @@ namespace LPayments.Plartform.Payssion
                 // pt.FormHtml = "<script>location.href='" + url + "';</script>";
                 return new PayTicket()
                 {
+                    PayType = PayChannnel.ePayType,
                     Action = EAction.UrlGet,
                     Uri = url
                 };
@@ -138,6 +138,7 @@ namespace LPayments.Plartform.Payssion
                     // pt.FormHtml = "<script>location.href='" + (string) json.redirect_url + "';</script>";
                     return new PayTicket()
                     {
+                        PayType = PayChannnel.ePayType,
                         Action = EAction.UrlGet,
                         Uri = (string) json.redirect_url
                     };
@@ -145,6 +146,7 @@ namespace LPayments.Plartform.Payssion
 
                 return new PayTicket(false)
                 {
+                    PayType = PayChannnel.ePayType,
                     Message = res
                 };
             }

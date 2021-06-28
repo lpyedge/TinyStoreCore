@@ -1,4 +1,5 @@
 ﻿<partial name="Widgets/_Plugin_Payment" />
+
 <script src="https://cdn.staticfile.org/dayjs/1.10.4/dayjs.min.js"
         asp-fallback-test="window.dayjs"
         asp-fallback-src="~/lib/dayjs/dayjs.min.js"></script>
@@ -7,6 +8,7 @@
     var intervalHandle;
     var order = @Json.Serialize(ViewBag.Order);
     var store = @Json.Serialize(ViewBag.Store);
+    var payTickets =@Json.Serialize(ViewBag.PayTickets);
 
         function OrderInfo() {
                 CY.Ajax("OrderInfo", {
@@ -21,9 +23,6 @@
                             }
                             LoadOrderInfo();
                         }
-                    }
-                    else {
-                        $.toast(msg.Message);
                     }
                 });
         }
@@ -48,7 +47,7 @@
             $("#createdate").text(dayjs(order.createDate).format("YYYY-MM-DD HH:mm:ss"));
             $("#name").text(order.name);
             $("#qty").text("X" + order.quantity);
-            $("#amount").text("￥" + (order.amount * order.quantity));
+            $("#amount").text("￥" + (order.amount * order.quantity - order.reduction));
             $("#contact").text(order.contact);
             $("#message").text(order.message);
             //$("#memo").text(order.Memo);
@@ -60,11 +59,12 @@
         LoadOrderInfo();
 
         if (!order.IsPay) {
-            intervalHandle = window.setInterval(OrderInfo, 2000);
+            intervalHandle = window.setInterval(OrderInfo, 4500);
         }
 
         $("#showpay").click(function () {
-            Payment.Show(order.orderId);
+            Payment.Show(payTickets);
+            // location.href = '/Pay/'+ order.orderId;
         });
 
     });

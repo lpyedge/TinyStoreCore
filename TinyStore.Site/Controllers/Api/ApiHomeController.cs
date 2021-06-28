@@ -86,135 +86,133 @@ namespace TinyStore.Site.Controllers.Api
             }
         }
 
-        [HttpPost]
-        public IActionResult OrderPay([FromForm] string orderId, [FromForm] string paymentType)
-        {
-            OrderModel order = OrderBLL.QueryModelById(orderId);
-        
-            if (order == null || order.IsPay)
-                return ApiResult.RCode(ApiResult.ECode.Fail);
-        
-            StoreModel store = StoreBLL.QueryModelById(order.StoreId);
-            if (store == null)
-                return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
-        
-            Payment payment = store.PaymentList.FirstOrDefault(p =>
-                p.IsEnable && string.Equals(p.Name, paymentType, StringComparison.OrdinalIgnoreCase));
-        
-            if (payment == null)
-                return ApiResult.RCode(ApiResult.ECode.DataFormatError);
-
-            var payorderid = Global.Generator.DateId(1);
-            if (paymentType != order.PaymentType)
-            {
-                order.PayOrderId = payorderid;
-                order.PaymentType = paymentType;
-                OrderBLL.Update(order);
-            }
-
-            
-
-            // var payticket = SiteContext.Payment.GetPayment(payment.Name).Pay(order.OrderId,(order.Amount*order.Quantity-order.Reduction),ECurrency.CNY,order.Name,clietnIP,
-            //     Url.ActionLink("Order","Home",new {orderid=order.OrderId}),
-            //     Url.ActionLink("PayNotify","ApiHome",new {payname=payment.Name}));
-
-            LPayments.PayTicket payticket;
-            if (payment.IsSystem)
-            {
-                var pay = SiteContext.Payment.GetPayment(payment.Name);
-                payticket = pay.Pay(payorderid, order.PayAmount, ECurrency.CNY, order.Name,
-                    Utils.RequestInfo._ClientIP(Request),
-                    "https://" + SiteContext.Config.SiteDomain + Url.ActionLink("Order","Home",new {orderid=order.OrderId}),
-                    "https://" + SiteContext.Config.SiteDomain + Url.ActionLink("PayNotify","ApiHome",new {payname=payment.Name}));
-                
-                payticket.Token = (pay as IPayChannel).Platform.ToString().ToLowerInvariant();
-            }
-            else
-            {
-                switch (payment.BankType)
-                {
-                    case EBankType.支付宝:
-                    {
-                        payticket = new LPayments.PayTicket()
-                        {
-                            Action = EAction.QrCode,
-                            Uri = payment.QRCode,
-                            Datas = new Dictionary<string, string>(),
-                            Success = true,
-                            Message = "支付宝扫码转账",
-                            Token = "alipay"
-                        };
-                    }
-                        break;
-                    case EBankType.微信:
-                    { 
-                        payticket = new LPayments.PayTicket()
-                        {
-                            Action = EAction.QrCode,
-                            Uri = payment.QRCode,
-                            Datas = new Dictionary<string, string>(),
-                            Success = true,
-                            Message = "微信扫码转账",
-                            Token = "wechat"
-                        };
-                    }
-                        break;
-                    case EBankType.银联:
-                    {
-                        //https://blog.csdn.net/gsls200808/article/details/89490358
-                        
-                        //https://qr.95516.com/00010000/01116734936470044423094034227630
-                        //https://qr.95516.com/00010000/01126270004886947443855476629280
-                        //https://qr.95516.com/00010002/01012166439217005044479417630044
-                        payticket = new LPayments.PayTicket()
-                        {
-                            Action = EAction.QrCode,
-                            Uri = payment.QRCode,
-                            Datas = new Dictionary<string, string>(),
-                            Success = true,
-                            Message = "银联扫码转账(云闪付,银行App)",
-                            Token = "unionpay"
-                        };
-                    }
-                        break;
-                    case EBankType.工商银行:
-                    case EBankType.农业银行:
-                    case EBankType.建设银行:
-                    case EBankType.中国银行:
-                    case EBankType.交通银行:
-                    case EBankType.邮储银行:
-                    {
-                        payticket = new LPayments.PayTicket()
-                        {
-                            Action = EAction.QrCode,
-                            Uri = SiteContext.Payment.TransferToBank(payment, order.PayAmount),
-                            Datas = new Dictionary<string, string>(),
-                            Success = true,
-                            Message = "支付宝扫码转账",
-                            Token = "alipay"
-                        };
-                    }
-                        break;
-                    default:
-                    { 
-                        payticket = new LPayments.PayTicket()
-                        {
-                            Action = EAction.QrCode,
-                            Uri = payment.QRCode,
-                            Datas = new Dictionary<string, string>(),
-                            Success = true,
-                            Message = payment.Memo,
-                            Token = ""
-                        };
-                    }
-                        break;
-                }
-                
-            }
-            
-            return ApiResult.RData(payticket);
-           
-        }
+        // [HttpPost]
+        // public IActionResult OrderPay([FromForm] string orderId, [FromForm] string paymentType)
+        // {
+        //     OrderModel order = OrderBLL.QueryModelById(orderId);
+        //
+        //     if (order == null || order.IsPay)
+        //         return ApiResult.RCode(ApiResult.ECode.Fail);
+        //
+        //     StoreModel store = StoreBLL.QueryModelById(order.StoreId);
+        //     if (store == null)
+        //         return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
+        //     
+        //     Payment payment = store.PaymentList.FirstOrDefault(p =>
+        //         p.IsEnable && string.Equals(p.Name, paymentType, StringComparison.OrdinalIgnoreCase));
+        //     
+        //     if (payment == null)
+        //         return ApiResult.RCode(ApiResult.ECode.DataFormatError);
+        //     
+        //     var payorderid = Global.Generator.DateId(1);
+        //     if (paymentType != order.PaymentType)
+        //     {
+        //         order.PayOrderId = payorderid;
+        //         order.PaymentType = paymentType;
+        //         OrderBLL.Update(order);
+        //     }
+        //     
+        //     // var payticket = SiteContext.Payment.GetPayment(payment.Name).Pay(order.OrderId,(order.Amount*order.Quantity-order.Reduction),ECurrency.CNY,order.Name,clietnIP,
+        //     //     Url.ActionLink("Order","Home",new {orderid=order.OrderId}),
+        //     //     Url.ActionLink("PayNotify","ApiHome",new {payname=payment.Name}));
+        //     
+        //     LPayments.PayTicket payticket;
+        //     if (payment.IsSystem)
+        //     {
+        //         var pay = SiteContext.Payment.GetPayment(payment.Name);
+        //         payticket = pay.Pay(payorderid, order.PayAmount, ECurrency.CNY, order.Name,
+        //             Utils.RequestInfo._ClientIP(Request),
+        //             "https://" + SiteContext.Config.SiteDomain + Url.ActionLink("Order","Home",new {orderid=order.OrderId}),
+        //             "https://" + SiteContext.Config.SiteDomain + Url.ActionLink("PayNotify","ApiHome",new {payname=payment.Name}));
+        //         
+        //         payticket.Token = (pay as IPayChannel).Platform.ToString().ToLowerInvariant();
+        //     }
+        //     else
+        //     {
+        //         switch (payment.BankType)
+        //         {
+        //             case EBankType.支付宝:
+        //             {
+        //                 payticket = new LPayments.PayTicket()
+        //                 {
+        //                     Action = EAction.QrCode,
+        //                     Uri = payment.QRCode,
+        //                     Datas = new Dictionary<string, string>(),
+        //                     Success = true,
+        //                     Message = "支付宝扫码转账",
+        //                     Token = "alipay"
+        //                 };
+        //             }
+        //                 break;
+        //             case EBankType.微信:
+        //             { 
+        //                 payticket = new LPayments.PayTicket()
+        //                 {
+        //                     Action = EAction.QrCode,
+        //                     Uri = payment.QRCode,
+        //                     Datas = new Dictionary<string, string>(),
+        //                     Success = true,
+        //                     Message = "微信扫码转账",
+        //                     Token = "wechat"
+        //                 };
+        //             }
+        //                 break;
+        //             case EBankType.银联:
+        //             {
+        //                 //https://blog.csdn.net/gsls200808/article/details/89490358
+        //                 
+        //                 //https://qr.95516.com/00010000/01116734936470044423094034227630
+        //                 //https://qr.95516.com/00010000/01126270004886947443855476629280
+        //                 //https://qr.95516.com/00010002/01012166439217005044479417630044
+        //                 payticket = new LPayments.PayTicket()
+        //                 {
+        //                     Action = EAction.QrCode,
+        //                     Uri = payment.QRCode,
+        //                     Datas = new Dictionary<string, string>(),
+        //                     Success = true,
+        //                     Message = "银联扫码转账(云闪付,银行App)",
+        //                     Token = "unionpay"
+        //                 };
+        //             }
+        //                 break;
+        //             case EBankType.工商银行:
+        //             case EBankType.农业银行:
+        //             case EBankType.建设银行:
+        //             case EBankType.中国银行:
+        //             case EBankType.交通银行:
+        //             case EBankType.邮储银行:
+        //             {
+        //                 payticket = new LPayments.PayTicket()
+        //                 {
+        //                     Action = EAction.QrCode,
+        //                     Uri = SiteContext.Payment.TransferToBank(payment, order.PayAmount),
+        //                     Datas = new Dictionary<string, string>(),
+        //                     Success = true,
+        //                     Message = "支付宝扫码转账",
+        //                     Token = "alipay"
+        //                 };
+        //             }
+        //                 break;
+        //             default:
+        //             { 
+        //                 payticket = new LPayments.PayTicket()
+        //                 {
+        //                     Action = EAction.QrCode,
+        //                     Uri = payment.QRCode,
+        //                     Datas = new Dictionary<string, string>(),
+        //                     Success = true,
+        //                     Message = payment.Memo,
+        //                     Token = ""
+        //                 };
+        //             }
+        //                 break;
+        //         }
+        //         
+        //     }
+        //     
+        //     return ApiResult.RData(payticket);
+        //    
+        // }
         
         [HttpPost]
         public IActionResult OrderInfo([FromForm] string orderId)

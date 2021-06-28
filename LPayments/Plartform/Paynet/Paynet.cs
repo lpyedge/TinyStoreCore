@@ -118,8 +118,6 @@ namespace LPayments.Plartform.Paynet
             if (string.IsNullOrEmpty(this[Secret])) throw new ArgumentNullException("Secret");
             if (!Currencies.Contains(p_Currency)) throw new ArgumentException("Currency is not allowed!");
 
-            var pt = new PayTicket();
-
             var authorizationUri
 #if DEBUG
                 = new Uri("https://sandbox-api.payment.net/v1/oauth/token");
@@ -176,6 +174,7 @@ namespace LPayments.Plartform.Paynet
                     // pt.Uri = ;
                     return new PayTicket()
                     {
+                        PayType = PayChannnel.ePayType,
                         Action = EAction.UrlGet,
                         Uri = gatewayUri.ToString()
                     };
@@ -183,12 +182,14 @@ namespace LPayments.Plartform.Paynet
 
                 return new PayTicket(false)
                 {
+                    PayType = PayChannnel.ePayType,
                     Message = checkoutres
                 };
             }
 
             return new PayTicket(false)
             {
+                PayType = PayChannnel.ePayType,
                 Message = authorizationres
             };
         }

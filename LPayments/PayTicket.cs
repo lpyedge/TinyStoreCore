@@ -40,6 +40,11 @@ namespace LPayments
         /// 支付数据
         /// </summary>
         public IDictionary<string, string> Datas { get; set; }
+        
+        /// <summary>
+        /// 支付方式
+        /// </summary>
+        public EPayType PayType { get; set; }
 
         /// <summary>
         /// 支付数据请求方式

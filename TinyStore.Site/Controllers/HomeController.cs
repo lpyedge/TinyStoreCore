@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
 using LPayments;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.Extensions.Logging;
 
 namespace TinyStore.Site.Controllers
 {
@@ -21,7 +17,6 @@ namespace TinyStore.Site.Controllers
             //返回Views目录下当前Controller名称目录下的当前Action名称的模板文件
             //return View("xxx/yyy");返回Views目录下当前Controller名称目录下xxx目录下的yyy模板文件
             //return View("default/index");
-
         }
 
 
@@ -45,6 +40,160 @@ namespace TinyStore.Site.Controllers
                     {
                         ViewBag.Store = store;
                         ViewBag.Order = order;
+
+                        if (!order.IsPay)
+                        {
+                            var payOrderId = Global.Generator.DateId(1);
+                            order.PayOrderId = payOrderId;
+                            BLL.OrderBLL.Update(order);
+                            
+                            var payTickets = new List<LPayments.PayTicket>();
+                            var index = 0;
+                            foreach (var payment in store.PaymentList.Where(p=>p.IsEnable))
+                            {
+                                LPayments.PayTicket payticket;
+                                if (payment.IsSystem)
+                                {
+                                    var pay = SiteContext.Payment.GetPayment(payment.Name);
+                                    //发起请求payOrderId会生成 _xx 后缀，防止同一支付平台不允许订单重复
+                                    payticket = pay.Pay(payOrderId+"_"+index.ToString("00"), order.PayAmount, ECurrency.CNY, order.Name,
+                                        Utils.RequestInfo._ClientIP(Request),
+                                        "https://" + SiteContext.Config.SiteDomain + Url.ActionLink("Order","Home",new {orderid=order.OrderId}),
+                                        "https://" + SiteContext.Config.SiteDomain + Url.ActionLink("PayNotify","ApiHome",new {payname=payment.Name}));
+
+                                    if (payticket.Action == EAction.UrlPost)
+                                    {
+                                        payticket.Action = EAction.UrlGet;
+                                        var uri = payticket.Uri.IndexOf('?') > -1 ? payticket.Uri +"&"+ Utils.HttpWebUtility.BuildQueryString(payticket.Datas) : payticket.Uri + "?" + Utils.HttpWebUtility.BuildQueryString(payticket.Datas) ;
+                                        payticket.Uri = uri;
+                                    }
+                                    payticket.Token = (pay as IPayChannel).Platform.ToString().ToLowerInvariant();
+                                    switch (payment.Name)
+                                    {
+                                        case "Alipay|AliPay|H5":
+                                            payticket.Message = "支付宝支付" ;
+                                            break;
+                                        case "Alipay|AliPay|QRcode":
+                                            payticket.Message = "支付宝二维码" ;
+                                            break;
+                                        case "Alipay|AliPay|PC":
+                                            payticket.Message = "支付宝支付" ;
+                                            break;
+                                        case "WeChat|WeChat|H5":
+                                            payticket.Message = "微信支付" ;
+                                            break;
+                                        case "WeChat|WeChat|QRcode":
+                                            payticket.Message = "微信二维码" ;
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                    payTickets.Add(payticket);
+                                }
+                                else
+                                {
+                                    switch (payment.BankType)
+                                    {
+                                        case EBankType.支付宝:
+                                        {
+                                            payticket = new LPayments.PayTicket()
+                                            {
+                                                PayType = EPayType.QRcode,
+                                                Action = EAction.QrCode,
+                                                Uri = payment.QRCode,
+                                                Datas = new Dictionary<string, string>(),
+                                                Success = true,
+                                                Message = "支付宝扫码转账",
+                                                Token = "alipay"
+                                            };
+                                    
+                                            payTickets.Add(payticket);
+                                        }
+                                            break;
+                                        case EBankType.微信:
+                                        { 
+                                            payticket = new LPayments.PayTicket()
+                                            {
+                                                PayType = EPayType.QRcode,
+                                                Action = EAction.QrCode,
+                                                Uri = payment.QRCode,
+                                                Datas = new Dictionary<string, string>(),
+                                                Success = true,
+                                                Message = "微信扫码转账",
+                                                Token = "wechat"
+                                            };
+                                    
+                                            payTickets.Add(payticket);
+                                        }
+                                            break;
+                                        case EBankType.银联:
+                                        {
+                                            //https://blog.csdn.net/gsls200808/article/details/89490358
+                                            
+                                            //https://qr.95516.com/00010000/01116734936470044423094034227630
+                                            //https://qr.95516.com/00010000/01126270004886947443855476629280
+                                            //https://qr.95516.com/00010002/01012166439217005044479417630044
+                                            payticket = new LPayments.PayTicket()
+                                            {
+                                                PayType = EPayType.QRcode,
+                                                Action = EAction.QrCode,
+                                                Uri = payment.QRCode,
+                                                Datas = new Dictionary<string, string>(),
+                                                Success = true,
+                                                Message = "银联扫码转账(云闪付,银行App)",
+                                                Token = "unionpay"
+                                            };
+                                    
+                                            payTickets.Add(payticket);
+                                        }
+                                            break;
+                                        case EBankType.工商银行:
+                                        case EBankType.农业银行:
+                                        case EBankType.建设银行:
+                                        case EBankType.中国银行:
+                                        case EBankType.交通银行:
+                                        case EBankType.邮储银行:
+                                        {
+                                            payticket = new LPayments.PayTicket()
+                                            {
+                                                PayType = EPayType.QRcode,
+                                                Action = EAction.QrCode,
+                                                Uri = SiteContext.Payment.TransferToBank(payment, order.PayAmount),
+                                                Datas = new Dictionary<string, string>(),
+                                                Success = true,
+                                                Message = "支付宝扫码转账",
+                                                Token = "alipay"
+                                            };
+                                    
+                                            payTickets.Add(payticket);
+                                        }
+                                            break;
+                                        default:
+                                        { 
+                                            payticket = new LPayments.PayTicket()
+                                            {
+                                                PayType = EPayType.QRcode,
+                                                Action = EAction.QrCode,
+                                                Uri = payment.QRCode,
+                                                Datas = new Dictionary<string, string>(),
+                                                Success = true,
+                                                Message = payment.Memo,
+                                                Token = ""
+                                            };
+                                    
+                                            payTickets.Add(payticket);
+                                        }
+                                            break;
+                                    }
+                                    
+                                }
+
+                                index++;
+                            }
+
+                            ViewBag.PayTickets = payTickets;
+                        }
+                        
                         if (store.Template == EStoreTemplate.模板一)
                         {
                             return View("T1/Order");
@@ -128,16 +277,10 @@ namespace TinyStore.Site.Controllers
                     var store = BLL.StoreBLL.QueryModelByStoreId(order.StoreId);
                     if (store != null)
                     {
+                        
+                        
                         ViewBag.Store = store;
                         ViewBag.Order = order;
-
-                        var PayTickets = new List<LPayments.PayTicket>();
-                        foreach (var payment in store.PaymentList.Where(p=>p.IsEnable))
-                        {
-                            
-                        }
-
-                        ViewBag.PayTickets = PayTickets;
                         
                         return View();
                     }

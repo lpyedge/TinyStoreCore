@@ -183,12 +183,14 @@ namespace LPayments.Plartform.IPayLinks
                 HttpWebUtility.HttpMethod.Post, dic.ToDictionary(p => p.Key, p => p.Value));
 
             //var rl = Notify(null, null, null , res);
-            var pt = new PayTicket();
-            pt.Uri = p_ReturnUrl;
-            pt.Token = Notify(new Dictionary<string, string>(), new Dictionary<string, string>(),
-                new Dictionary<string, string>(), res, p_ClientIP.ToString());
-            pt.Sync = false;
-            return pt;
+            return new PayTicket()
+            {
+                PayType = PayChannnel.ePayType,
+                Uri = p_ReturnUrl,
+                Token = Notify(new Dictionary<string, string>(), new Dictionary<string, string>(),
+                    new Dictionary<string, string>(), res, p_ClientIP.ToString()),
+                Sync = false
+            };
         }
 
         public class PayExtend

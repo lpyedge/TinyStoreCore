@@ -205,6 +205,7 @@ namespace LPayments.Plartform.UnionPay
 
             return new PayTicket()
             {
+                PayType = PayChannnel.ePayType,
                 Action = EAction.UrlPost,
                 Uri = GATEWAY,
                 Datas = datas

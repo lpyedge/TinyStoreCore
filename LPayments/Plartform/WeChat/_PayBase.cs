@@ -192,6 +192,7 @@ namespace LPayments.Plartform.WeChat
 
                         return new PayTicket()
                         {
+                            PayType = PayChannnel.ePayType,
                             Action = EAction.QrCode,
                             Uri = url,
                             Token = result.ToJson()
@@ -201,6 +202,7 @@ namespace LPayments.Plartform.WeChat
                     {
                         return new PayTicket(false)
                         {
+                            PayType = PayChannnel.ePayType,
                             Message = ex.Message + "\r\n\r\n" + result.ToJson()
                         };
                     }
@@ -237,6 +239,7 @@ namespace LPayments.Plartform.WeChat
                                 // pt.FormHtml = "<script>location.href='" + m.Value + "';</script>";
                                 return new PayTicket()
                                 {
+                                    PayType = PayChannnel.ePayType,
                                     Action = EAction.UrlScheme,
                                     Uri = m.Value,
                                 };
@@ -244,6 +247,7 @@ namespace LPayments.Plartform.WeChat
 
                             return new PayTicket(false)
                             {
+                                PayType = PayChannnel.ePayType,
                                 Message = source + "\r\n\r\n" + result.ToJson()
                             };
                         }
@@ -251,6 +255,7 @@ namespace LPayments.Plartform.WeChat
                         {
                             return new PayTicket()
                             {
+                                PayType = PayChannnel.ePayType,
                                 Action = EAction.UrlGet,
                                 Uri = url,
                             };
@@ -260,6 +265,7 @@ namespace LPayments.Plartform.WeChat
                     {
                         return new PayTicket(false)
                         {
+                            PayType = PayChannnel.ePayType,
                             Message = ex.Message + "\r\n\r\n" + result.ToJson()
                         };
                     }
@@ -284,6 +290,7 @@ namespace LPayments.Plartform.WeChat
 
                         return new PayTicket()
                         {
+                            PayType = PayChannnel.ePayType,
                             Action = EAction.Token,
                             Token = jsApiParam.ToJson(),
                             Message = result.ToJson(),
@@ -293,6 +300,7 @@ namespace LPayments.Plartform.WeChat
                     {
                         return new PayTicket(false)
                         {
+                            PayType = PayChannnel.ePayType,
                             Message = ex.Message + "\r\n\r\n" + result.ToJson()
                         };
                     }
@@ -318,6 +326,7 @@ namespace LPayments.Plartform.WeChat
 
                         return new PayTicket()
                         {
+                            PayType = PayChannnel.ePayType,
                             Action = EAction.Token,
                             Token = jsApiParam.ToJson(),
                             Message = result.ToJson(),
@@ -327,6 +336,7 @@ namespace LPayments.Plartform.WeChat
                     {
                         return new PayTicket(false)
                         {
+                            PayType = PayChannnel.ePayType,
                             Message = ex.Message + "\r\n\r\n" + result.ToJson()
                         };
                     }
@@ -335,6 +345,7 @@ namespace LPayments.Plartform.WeChat
             
             return new PayTicket(false)
             {
+                PayType = PayChannnel.ePayType,
                 Message = result.ToJson()
             };
         }

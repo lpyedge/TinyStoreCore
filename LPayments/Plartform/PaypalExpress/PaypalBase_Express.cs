@@ -289,6 +289,7 @@ namespace LPayments.Plartform.PaypalExpress
                 //加上useraction=commit则用户在paypal的付款界面不展示收货地址和继续按钮，展示点击付款按钮，更适合虚拟产品的支付
                 return new PayTicket()
                 {
+                    PayType = PayChannnel.ePayType,
                     Action = EAction.UrlGet,
 
                     Uri =
@@ -303,6 +304,7 @@ namespace LPayments.Plartform.PaypalExpress
 
             return new PayTicket(false)
             {
+                PayType = PayChannnel.ePayType,
                 Message = "ErrorCode=" + decoder["L_ERRORCODE0"] + "&" + "Desc=" + decoder["L_SHORTMESSAGE0"] + "&" +
                           "Desc2=" + decoder["L_LONGMESSAGE0"]
             };

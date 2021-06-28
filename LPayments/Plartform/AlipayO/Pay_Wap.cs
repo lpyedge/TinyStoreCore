@@ -134,6 +134,7 @@ namespace LPayments.Plartform.AliPayO
 
             return new PayTicket()
             {
+                PayType = PayChannnel.ePayType,
                 Action = EAction.UrlPost,
                 Uri = "https://mapi.alipay.com/gateway.do?_input_charset=utf-8",
                 Datas = datas

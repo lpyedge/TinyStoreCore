@@ -195,6 +195,7 @@ namespace LPayments.Plartform.KuaiQian
 
             return new PayTicket()
             {
+                PayType = PayChannnel.ePayType,
                 Action =  EAction.UrlPost,
                 Uri = GATEWAY,
                 Datas = datas

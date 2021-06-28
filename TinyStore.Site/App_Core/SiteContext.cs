@@ -898,7 +898,9 @@ namespace TinyStore.Site
 
                         if (res.Status == PayResult.EStatus.Completed)
                         {
-                            OrderModel order = BLL.OrderBLL.QueryModelByPayOrderId(res.OrderID);
+                            //发起请求payOrderId会生成 _xx 后缀，防止同一支付平台不允许订单重复
+                            var payOrderId = res.OrderID.Split("_")[0];
+                            OrderModel order = BLL.OrderBLL.QueryModelByPayOrderId(payOrderId);
                             if (order != null)
                             {
                                 var user = BLL.BaseBLL<UserExtendModel>.QueryModelById(order.UserId);
