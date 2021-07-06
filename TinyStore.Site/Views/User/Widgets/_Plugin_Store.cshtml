@@ -66,7 +66,7 @@ Store.StoreCurrent = function (index) {
         }
         if (storeList && storeList.length > index)
             return storeList[index];
-        return null;
+        return {name:'暂无店铺'};
     }
 };
 

@@ -119,11 +119,11 @@
 
                     <q-separator class="q-my-sm"></q-separator>
 
-                    <q-item-label header class="text-weight-bold text-uppercase">
+                    <q-item-label header class="text-weight-bold text-uppercase" v-if="storeList.length > 0">
                         店铺<q-badge class="on-right cursor-pointer">{{storeCurrent.name}}</q-badge>
                     </q-item-label>
 
-                    <q-item v-ripple clickable v-for="link in storelinks" :key="link.text" @@click="Goto(link.url)">
+                    <q-item v-ripple clickable v-for="link in storelinks" :key="link.text" @@click="Goto(link.url)"  v-if="storeList.length > 0">
                         <q-item-section avatar>
                             <q-icon color="grey-8" :name="link.icon"/>
                         </q-item-section>
@@ -132,7 +132,7 @@
                         </q-item-section>
                     </q-item>
 
-                    <q-separator class="q-mt-md q-mb-lg"></q-separator>
+                    <q-separator class="q-mt-md q-mb-lg" v-if="storeList.length > 0"></q-separator>
 
                     <q-item-label header class="text-weight-bold text-uppercase">
                         客服

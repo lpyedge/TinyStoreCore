@@ -46,8 +46,8 @@ namespace TinyStore.Model
         /// <summary>
         /// 店铺Logo
         /// </summary>
-        [SqlSugar.SugarColumn(Length = 100)] 
-        public string Logo { get; set; }
+        [SqlSugar.SugarColumn(Length = 100)]
+        public string Logo { get; set; } = "/images/logo.png";
 
         /// <summary>
         ///  店铺名称 首字母

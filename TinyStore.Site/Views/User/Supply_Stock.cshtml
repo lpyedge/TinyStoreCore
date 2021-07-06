@@ -178,7 +178,7 @@
                keyname:'',
                isShow:null,
                supplyCustom:[],
-               supplyCurrent:{},
+               supplyCurrent:{ supplyId :''},
                pagination:{                   
                    page: 1,
                    rowsPerPage: 25,
@@ -236,9 +236,11 @@
                           this.stockData = response.data.data.rows;
                           this.stockFilter.pagination.rowsNumber = response.data.data.total;   
                           this.stockSelected = [];
-                      } else{
-                          Notify.Warning('卡密数据加载失败');
-                      }
+                      } else if (response.data.code === 13){
+                         Notify.Warning('货源数据不存在');
+                     } else{
+                        Notify.Warning('卡密数据加载失败');
+                    }
                       this.stockFilter.loading =false;
                   })
                   .catch( (error)=> {
@@ -297,7 +299,12 @@
            stockFilterReset(){
                this.stockFilter.keyname='';
                this.stockFilter.isShow=null;
-               this.stockFilter.supplyCurrent=this.stockFilter.supplyCustom[0];
+               if (this.stockFilter.supplyCustom.length> 0){
+                    this.stockFilter.supplyCurrent=this.stockFilter.supplyCustom[0];
+               }
+               else{
+                   this.stockFilter.supplyCurrent={supplyId:''};
+               }
                this.stockFilter.pagination.page =1;
                this.stockFilter.pagination.rowsPerPage =25;
            },

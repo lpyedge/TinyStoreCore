@@ -404,6 +404,8 @@ namespace TinyStore.Site.Controllers
         {
             UserModel user = UserCurrent();
 
+            if(string.IsNullOrWhiteSpace(supplyId))
+                return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
             SupplyModel supplyModel = BLL.SupplyBLL.QueryModelById(supplyId);
             if (supplyModel == null)
                 return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
