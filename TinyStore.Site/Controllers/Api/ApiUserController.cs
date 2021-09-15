@@ -32,7 +32,7 @@ namespace TinyStore.Site.Controllers
 
         private UserModel UserCurrent()
         {
-            return HttpContext.Items[HeaderToken.HeaderKey] as UserModel;
+            return HttpContext.Items[UserHeaderToken.ItemKey] as UserModel;
         }
 
         private void UserLog(int userId, EUserLogType type, HttpRequest request, string storeId = "",
@@ -64,7 +64,11 @@ namespace TinyStore.Site.Controllers
                 user.ClientKey = Global.Generator.Guid();
                 BLL.UserBLL.Update(user);
 
-                HeaderToken.SetHeaderToken(HttpContext, user.UserId.ToString(), user.ClientKey);
+                HeaderToken.SetHeaderToken(HttpContext, UserHeaderToken.HeaderKey,new HeaderToken.TokenData()
+                {
+                    Id = user.UserId.ToString(),
+                    Key = user.ClientKey
+                });
 
                 user.ClientKey = "";
                 user.Salt = "";

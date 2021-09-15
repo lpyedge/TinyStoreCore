@@ -20,7 +20,7 @@ namespace TinyStore.Site.Controllers.Api
     {
         private Model.AdminModel AdminCurrent()
         {
-            return HttpContext.Items[HeaderToken.HeaderKey] as Model.AdminModel;
+            return HttpContext.Items[AdminHeaderToken.ItemKey] as Model.AdminModel;
         }
 
         private void AdminLog(int adminId, EAdminLogType type, HttpRequest request, string memo = "")
@@ -50,7 +50,11 @@ namespace TinyStore.Site.Controllers.Api
                 admin.ClientKey = Global.Generator.Guid();
                 BLL.AdminBLL.Update(admin);
                 
-                HeaderToken.SetHeaderToken(HttpContext, admin.AdminId.ToString(), admin.ClientKey);
+                HeaderToken.SetHeaderToken(HttpContext, UserHeaderToken.HeaderKey,new HeaderToken.TokenData()
+                {
+                    Id = admin.AdminId.ToString(),
+                    Key = admin.ClientKey
+                });
                 
                 admin.ClientKey = "";
                 admin.Salt = "";

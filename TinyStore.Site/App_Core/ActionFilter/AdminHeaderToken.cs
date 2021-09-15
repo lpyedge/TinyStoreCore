@@ -8,35 +8,37 @@ namespace TinyStore.Site
 {
     public sealed class AdminHeaderToken : HeaderToken
     {
+        public const string HeaderKey = "AdminToken";
+        public const string ItemKey = "Admin";
+        
         /// <summary>
         /// 可以传参传入要忽略的Action名称,传入的Action不会执行判断
         /// </summary>
         /// <param name="ignoreactions"></param>
-        public AdminHeaderToken(params string[] ignoreactions) : base( ignoreactions)
+        public AdminHeaderToken(params string[] ignoreactions) : base(HeaderKey, ItemKey,  ignoreactions)
         {
         }
 
-        public override void OnTokenGet(ActionExecutingContext context, string token)
+        internal override void OnTokenGet(ActionExecutingContext context, TokenData tokendata)
         {
             var ispass = false;
-            if (!string.IsNullOrWhiteSpace(token))
+            if (tokendata!=null)
             {
-                var data = HeaderToken.FromToken(token);
                 try
                 {
-                    var admin = BLL.AdminBLL.QueryModelById(int.Parse(data.Id));
+                    var admin = BLL.AdminBLL.QueryModelById(int.Parse(tokendata.Id));
                     if (admin != null)
                     {
                         var isvalidate =
 #if DEBUG
                             true;
 #else
-                        admin.ClientKey == data.Key;
+                        admin.ClientKey == tokendata.Key;
 #endif
                         if (isvalidate)
                         {
                             ispass = true;
-                            context.HttpContext.Items[HeaderKey] = admin;
+                            context.HttpContext.Items[ItemKey] = admin;
                         }
                     }
                 }

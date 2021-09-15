@@ -3,101 +3,131 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Controllers;
 
 namespace TinyStore.Site
 {
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
     public abstract class HeaderToken : ActionFilterAttribute
     {
-        public const string HeaderKey = "Token";
+          //public T ModelGet<T>(IDictionary<object, object> items, string itemkey) where T : class, new()
+        //{
+        //    if (string.IsNullOrWhiteSpace(itemkey) && items.ContainsKey(itemkey))
+        //    {
+        //        return (items[itemkey] as T);
+        //    }
+        //    return default(T);
+        //}
+
+        //public void ModelSet<T>(IDictionary<object, object> items, string itemkey,dynamic model) where T : class, new()
+        //{
+        //    if (string.IsNullOrWhiteSpace(itemkey) )
+        //    {
+        //        items[itemkey] = model;
+        //    }
+        //}
+
+
+        protected string[] _Ignoreactionss;
 
         /// <summary>
-        /// 可以传参传入要忽略的Action名称,传入的Action不会执行判断
+        ///     可以传参传入要忽略的Action名称,传入的Action不会执行判断
         /// </summary>
+        /// <param name="headerTokenKey"></param>
+        /// <param name="itemKey"></param>
         /// <param name="ignoreactions"></param>
-        protected HeaderToken(params string[] ignoreactions)
+        public HeaderToken(string headerTokenKey, string itemKey, params string[] ignoreactions)
         {
-            Ignoreactionss = ignoreactions.Select(p => p.ToLowerInvariant()).ToArray();
+            HeaderTokenKey = headerTokenKey;
+            ItemKey = itemKey;
+            _Ignoreactionss = ignoreactions.Select(p => p.ToLowerInvariant()).ToArray();
         }
 
+        private string HeaderTokenKey { get; }
+        private string ItemKey { get; }
 
-        public abstract void OnTokenGet(ActionExecutingContext context, string token);
+        internal abstract void OnTokenGet(ActionExecutingContext context, TokenData tokendata);
 
-        static System.Security.Cryptography.SymmetricAlgorithm Provider =>
-            Utils.DESCrypto.Generate(nameof(HeaderToken), Utils.DESCrypto.CryptoEnum.Rijndael);
-
-        protected class TokenModel
+        internal class TokenData
         {
             public string Id { get; set; }
 
             public string Key { get; set; }
+            
+            public string Extra { get; set; }
         }
 
-        protected static TokenModel FromToken(string token)
+        internal static TokenData FromHeaderToken(string token)
         {
             if (!string.IsNullOrWhiteSpace(token))
             {
-                byte[] buff = Convert.FromBase64String(token);
-                var str = Utils.DESCrypto.Decrypt(Provider, buff);
-                return Global.Json.Deserialize<TokenModel>(str);
+                var buff = Convert.FromBase64String(token);
+                var str = Encoding.UTF8.GetString(buff);
+                return Global.Json.Deserialize<TokenData>(str);
             }
 
             return null;
         }
 
-        protected static string ToToken(TokenModel tokendata)
+        internal static string ToHeaderToken(TokenData tokendata)
         {
             if (tokendata != null)
             {
                 var str = Global.Json.Serialize(tokendata);
-                var buff = Utils.DESCrypto.Encrypt2Byte(Provider, str);
+                var buff = Encoding.UTF8.GetBytes(str);
                 return Convert.ToBase64String(buff);
             }
 
             return "";
         }
-
-        protected string[] Ignoreactionss;
-
+        
+        internal static void SetHeaderToken(HttpContext httpContext, string headerTokenKey, TokenData tokendata)
+        {
+            if (!httpContext.Response.Headers.ContainsKey("Access-Control-Allow-Headers"))
+            {
+                httpContext.Response.Headers["Access-Control-Allow-Headers"] = headerTokenKey;
+            }
+            else if(!httpContext.Response.Headers["Access-Control-Allow-Headers"].Contains(headerTokenKey))
+            {
+                httpContext.Response.Headers["Access-Control-Allow-Headers"] += "," + headerTokenKey;
+            }
+            
+            if (!httpContext.Response.Headers.ContainsKey("Access-Control-Expose-Headers"))
+            {
+                httpContext.Response.Headers["Access-Control-Expose-Headers"] = headerTokenKey;
+            }
+            else if(!httpContext.Response.Headers["Access-Control-Expose-Headers"].Contains(headerTokenKey))
+            {
+                httpContext.Response.Headers["Access-Control-Expose-Headers"] += "," + headerTokenKey;
+            }
+            
+            httpContext.Response.Headers[headerTokenKey] = HeaderToken.ToHeaderToken(tokendata);
+        }
+        
         public override void OnActionExecuting(ActionExecutingContext context)
         {
             base.OnActionExecuting(context);
 
-            var actionname =
-                ((Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor) context.ActionDescriptor).ActionName
-                .ToLowerInvariant();
-            if (!Ignoreactionss.Contains(actionname))
+            var actionname = ((ControllerActionDescriptor) context.ActionDescriptor).ActionName.ToLowerInvariant();
+            if (!_Ignoreactionss.Contains(actionname))
             {
-                string token = context.HttpContext.Request.Headers[HeaderKey];
-                OnTokenGet(context, token);
+                var headerTokenStr = context.HttpContext.Request.Headers[HeaderTokenKey];
+                TokenData tokendata = null;
+                if (!string.IsNullOrWhiteSpace(headerTokenStr))
+                {
+                    tokendata = FromHeaderToken(headerTokenStr);
+                }
+                OnTokenGet(context, tokendata);
             }
         }
 
-        public static void SetHeaderToken(HttpContext httpContext, string Id, string Key)
+        public override void OnActionExecuted(ActionExecutedContext context)
         {
-            var tokendata = new TokenModel()
-            {
-                Id = Id,
-                Key = Key
-            };
-            if (!httpContext.Response.Headers.ContainsKey("Access-Control-Allow-Headers"))
-            {
-                httpContext.Response.Headers["Access-Control-Allow-Headers"] = HeaderKey;
-            }
-            else if(!httpContext.Response.Headers["Access-Control-Allow-Headers"].Contains(HeaderKey))
-            {
-                httpContext.Response.Headers["Access-Control-Allow-Headers"] += "," + HeaderKey;
-            }
-            if (!httpContext.Response.Headers.ContainsKey("Access-Control-Expose-Headers"))
-            {
-                httpContext.Response.Headers["Access-Control-Expose-Headers"] = HeaderKey;
-            }
-            else if(!httpContext.Response.Headers["Access-Control-Expose-Headers"].Contains(HeaderKey))
-            {
-                httpContext.Response.Headers["Access-Control-Expose-Headers"] += "," + HeaderKey;
-            }
-            httpContext.Response.Headers[HeaderKey] = HeaderToken.ToToken(tokendata);
+            base.OnActionExecuted(context);
+            context.HttpContext.Response.Headers.Add("Access-Control-Allow-Headers", HeaderTokenKey);
+            context.HttpContext.Response.Headers.Add("Access-Control-Expose-Headers", HeaderTokenKey);
         }
     }
 }
