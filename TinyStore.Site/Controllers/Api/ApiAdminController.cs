@@ -50,7 +50,7 @@ namespace TinyStore.Site.Controllers.Api
                 admin.ClientKey = Global.Generator.Guid();
                 BLL.AdminBLL.Update(admin);
                 
-                HeaderToken.SetHeaderToken(HttpContext, UserHeaderToken.HeaderKey,new HeaderToken.TokenData()
+                Response.Headers[AdminHeaderToken.HeaderKey] = HeaderToken.ToHeaderToken( new HeaderToken.TokenData()
                 {
                     Id = admin.AdminId.ToString(),
                     Key = admin.ClientKey

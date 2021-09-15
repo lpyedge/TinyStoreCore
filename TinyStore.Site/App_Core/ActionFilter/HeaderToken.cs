@@ -83,29 +83,6 @@ namespace TinyStore.Site
             return "";
         }
         
-        internal static void SetHeaderToken(HttpContext httpContext, string headerTokenKey, TokenData tokendata)
-        {
-            if (!httpContext.Response.Headers.ContainsKey("Access-Control-Allow-Headers"))
-            {
-                httpContext.Response.Headers["Access-Control-Allow-Headers"] = headerTokenKey;
-            }
-            else if(!httpContext.Response.Headers["Access-Control-Allow-Headers"].Contains(headerTokenKey))
-            {
-                httpContext.Response.Headers["Access-Control-Allow-Headers"] += "," + headerTokenKey;
-            }
-            
-            if (!httpContext.Response.Headers.ContainsKey("Access-Control-Expose-Headers"))
-            {
-                httpContext.Response.Headers["Access-Control-Expose-Headers"] = headerTokenKey;
-            }
-            else if(!httpContext.Response.Headers["Access-Control-Expose-Headers"].Contains(headerTokenKey))
-            {
-                httpContext.Response.Headers["Access-Control-Expose-Headers"] += "," + headerTokenKey;
-            }
-            
-            httpContext.Response.Headers[headerTokenKey] = HeaderToken.ToHeaderToken(tokendata);
-        }
-        
         public override void OnActionExecuting(ActionExecutingContext context)
         {
             base.OnActionExecuting(context);
@@ -126,8 +103,15 @@ namespace TinyStore.Site
         public override void OnActionExecuted(ActionExecutedContext context)
         {
             base.OnActionExecuted(context);
-            context.HttpContext.Response.Headers.Add("Access-Control-Allow-Headers", HeaderTokenKey);
-            context.HttpContext.Response.Headers.Add("Access-Control-Expose-Headers", HeaderTokenKey);
+            if (!context.HttpContext.Response.Headers.ContainsKey("Access-Control-Allow-Headers"))
+                context.HttpContext.Response.Headers["Access-Control-Allow-Headers"] = HeaderTokenKey;
+            else if(!context.HttpContext.Response.Headers["Access-Control-Allow-Headers"].Contains(HeaderTokenKey))
+                context.HttpContext.Response.Headers["Access-Control-Allow-Headers"] += "," + HeaderTokenKey;
+
+            if (!context.HttpContext.Response.Headers.ContainsKey("Access-Control-Expose-Headers"))
+                context.HttpContext.Response.Headers["Access-Control-Expose-Headers"] = HeaderTokenKey;
+            else if(!context.HttpContext.Response.Headers["Access-Control-Expose-Headers"].Contains(HeaderTokenKey))
+                context.HttpContext.Response.Headers["Access-Control-Expose-Headers"] += "," + HeaderTokenKey;
         }
     }
 }

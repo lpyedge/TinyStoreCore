@@ -22,7 +22,7 @@ namespace TinyStore.Site
         internal override void OnTokenGet(ActionExecutingContext context, TokenData tokendata)
         {
             var ispass = false;
-            if (tokendata!=null)
+            if (tokendata != null)
             {
                 try
                 {
