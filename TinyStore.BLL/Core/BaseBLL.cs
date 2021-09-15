@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
@@ -20,7 +21,7 @@ namespace TinyStore.BLL
 
         protected static string _ConnStr { get; private set; }
 
-        public static SqlSugarClient DbClient
+        public static SqlSugarClient DBClient
         {
             get
             {
@@ -64,7 +65,36 @@ namespace TinyStore.BLL
                     break;
             }
         }
-
+        
+        /// <summary>
+        /// 初始化数据库
+        /// </summary>
+        public static void InitDataBase()
+        {
+            using (var db = DBClient)
+            {
+                db.DbMaintenance.CreateDatabase();
+            }
+        }
+        
+        /// <summary>
+        /// 初始化数据表
+        /// </summary>
+        public static void InitDataTables()
+        {
+            using (var db = DBClient)
+            {
+                var modelTypeList = Assembly.GetExecutingAssembly().GetTypes()
+                    .Where(p =>
+                    {
+                        return p.IsClass && p.IsPublic 
+                                         && p.CustomAttributes.Any(a=>a.AttributeType == typeof(SqlSugar.SugarTable));
+                    }).ToArray();
+                    
+                db.CodeFirst.InitTables(modelTypeList);
+            }
+        }
+        
         internal class SortDic<T> : Dictionary<Expression<Func<T, object>>, OrderByType>
         {
             public SortDic()
@@ -84,7 +114,7 @@ namespace TinyStore.BLL
         public static bool ColumnAdd(string tablename, string columnname, string sqlsbtype, bool nullenbale,
             string defaultvalue = null)
         {
-            using (var conn = DbClient)
+            using (var conn = DBClient)
             {
                 var sql1 =
                     "IF NOT EXISTS (SELECT 1 FROM syscolumns INNER JOIN sysobjects ON sysobjects.id = syscolumns.id WHERE syscolumns.name = '" +
@@ -99,7 +129,7 @@ namespace TinyStore.BLL
 
         public static bool ColumnDrop(string tablename, string columnname)
         {
-            using (var conn = DbClient)
+            using (var conn = DBClient)
             {
                 var sql1 =
                     "IF EXISTS (SELECT 1 FROM syscolumns INNER JOIN sysobjects ON sysobjects.id = syscolumns.id WHERE syscolumns.name = '" +
@@ -113,7 +143,7 @@ namespace TinyStore.BLL
         public static bool ColumnEdit(string tablename, string columnname, string sqlsbtype, bool nullenbale,
             string defaultvalue = null)
         {
-            using (var conn = DbClient)
+            using (var conn = DBClient)
             {
                 var sql1 =
                     "IF EXISTS (SELECT 1 FROM syscolumns INNER JOIN sysobjects ON sysobjects.id = syscolumns.id WHERE syscolumns.name = '" +
@@ -127,7 +157,7 @@ namespace TinyStore.BLL
 
         public static bool ColumnRename(string tablename, string columnname, string columnnamenew)
         {
-            using (var conn = DbClient)
+            using (var conn = DBClient)
             {
                 var sql1 =
                     "IF EXISTS (SELECT 1 FROM syscolumns INNER JOIN sysobjects ON sysobjects.id = syscolumns.id WHERE syscolumns.name = '" +
@@ -149,7 +179,7 @@ namespace TinyStore.BLL
 
         public static Task<T> InsertAsync(T model)
         {
-            using (var db = DbClient)
+            using (var db = DBClient)
             {
                 var query = db.Insertable(model);
 #if Cache
@@ -170,7 +200,7 @@ namespace TinyStore.BLL
 
         public static Task<T> InsertRangeAsync(IEnumerable<T> modellist)
         {
-            using (var db = DbClient)
+            using (var db = DBClient)
             {
                 var query = db.Insertable(modellist.ToList());
 #if Cache
@@ -190,7 +220,7 @@ namespace TinyStore.BLL
 
         public static Task<bool> UpdateAsync(T model)
         {
-            using (var db = DbClient)
+            using (var db = DBClient)
             {
                 var query = db.Updateable(model);
 #if Cache
@@ -211,7 +241,7 @@ namespace TinyStore.BLL
 
         public static Task<bool> UpdateRangeAsync(IEnumerable<T> modellist)
         {
-            using (var db = DbClient)
+            using (var db = DBClient)
             {
                 var query = db.Updateable(modellist.ToList());
 #if Cache
@@ -247,7 +277,7 @@ namespace TinyStore.BLL
         /// <returns></returns>
         public static Task<bool> UpdateAsync(Expression<Func<T, bool>> wexpr, Expression<Func<T, T>> sexprs)
         {
-            using (var db = DbClient)
+            using (var db = DBClient)
             {
                 var query = db.Updateable<T>().SetColumns(sexprs).Where(wexpr);
 #if Cache
@@ -283,7 +313,7 @@ namespace TinyStore.BLL
         /// <returns></returns>
         public static Task<bool> UpdateAsync(Expression<Func<T, bool>> wexpr, Expression<Func<T, bool>> sexprs)
         {
-            using (var db = DbClient)
+            using (var db = DBClient)
             {
                 var query = db.Updateable<T>().SetColumns(sexprs).Where(wexpr);
 #if Cache
@@ -303,7 +333,7 @@ namespace TinyStore.BLL
 
         public static Task<bool> DeleteAsync(T model)
         {
-            using (var db = DbClient)
+            using (var db = DBClient)
             {
                 var query = db.Deleteable(model);
 #if Cache
@@ -323,7 +353,7 @@ namespace TinyStore.BLL
 
         public static Task<bool> DeleteRangeAsync(IEnumerable<T> modellist)
         {
-            using (var db = DbClient)
+            using (var db = DBClient)
             {
                 var query = db.Deleteable(modellist.ToList());
 #if Cache
@@ -343,7 +373,7 @@ namespace TinyStore.BLL
 
         public static Task<bool> DeleteByIdAsync(dynamic id)
         {
-            using (var db = DbClient)
+            using (var db = DBClient)
             {
                 var client = db.GetSimpleClient<T>();
 #if Cache
@@ -363,7 +393,7 @@ namespace TinyStore.BLL
 
         public static Task<bool> DeleteByIdsAsync(params dynamic[] idlist)
         {
-            using (var db = DbClient)
+            using (var db = DBClient)
             {
                 var client = db.GetSimpleClient<T>();
 #if Cache
@@ -388,7 +418,7 @@ namespace TinyStore.BLL
         /// <returns></returns>
         public static Task<bool> DeleteAsync(Expression<Func<T, bool>> wexpr)
         {
-            using (var db = DbClient)
+            using (var db = DBClient)
             {
                 var query = db.Deleteable<T>().Where(wexpr);
 #if Cache
@@ -451,7 +481,7 @@ namespace TinyStore.BLL
 #endif
         )
         {
-            using (var db = DbClient)
+            using (var db = DBClient)
             {
                 var query = db.Queryable<T>();
                 if (wexpr != null) query.Where(wexpr);
@@ -490,7 +520,7 @@ namespace TinyStore.BLL
 #endif
         )
         {
-            using (var db = DbClient)
+            using (var db = DBClient)
             {
                 var query = db.Queryable<T>().Where(wexpr);
 #if Cache
@@ -531,7 +561,7 @@ namespace TinyStore.BLL
 #endif
         )
         {
-            using (var db = DbClient)
+            using (var db = DBClient)
             {
                 var query = db.Queryable<T>().Where(wexpr);
                 if (oexprs != null && oexprs.Count > 0)
@@ -554,7 +584,7 @@ namespace TinyStore.BLL
 
         public static Task<T> QueryModelByIdAsync(dynamic id)
         {
-            using (var db = DbClient)
+            using (var db = DBClient)
             {
                 var client = db.GetSimpleClient<T>();
 
@@ -594,7 +624,7 @@ namespace TinyStore.BLL
 #endif
         )
         {
-            using (var db = DbClient)
+            using (var db = DBClient)
             {
                 var query = db.Queryable<T>();
                 if (wexpr != null) query.Where(wexpr);
@@ -621,7 +651,7 @@ namespace TinyStore.BLL
 
         public static Task<int> ExecuteCommandAsync(string sql, params SugarParameter[] parameters)
         {
-            using (var db = DbClient)
+            using (var db = DBClient)
             {
                 return db.Ado.ExecuteCommandAsync(sql, parameters);
             }
@@ -634,7 +664,7 @@ namespace TinyStore.BLL
 
         public static Task<List<T>> ExecuteQueryListAsync(string sql, params SugarParameter[] parameters)
         {
-            using (var db = DbClient)
+            using (var db = DBClient)
             {
                 return db.Ado.SqlQueryAsync<T>(sql, parameters);
             }
@@ -647,7 +677,7 @@ namespace TinyStore.BLL
 
         public static Task<T> ExecuteQuerySingleAsync(string sql, params SugarParameter[] parameters)
         {
-            using (var db = DbClient)
+            using (var db = DBClient)
             {
                 return db.Ado.SqlQuerySingleAsync<T>(sql, parameters);
             }

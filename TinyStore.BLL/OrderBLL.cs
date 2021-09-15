@@ -66,7 +66,7 @@ namespace TinyStore.BLL
                 .And(p => p.StoreId == storeId && p.IsPay == true)
                 .AndIF(datefrom != null && dateto != null, p => SqlFunc.Between(p.CreateDate, datefrom, dateto));
 
-            using (var conn = DbClient)
+            using (var conn = DBClient)
             {
                 return conn.Queryable<Model.OrderModel>()
                     .Where(expr.ToExpression())
@@ -88,7 +88,7 @@ namespace TinyStore.BLL
 
         public static List<Model.OrderModel> QueryOrderListNotify(int userId, int lastDays)
         {
-            using (var conn = DbClient)
+            using (var conn = DBClient)
             {
                 var dateNotify = DateTime.Now.AddDays(lastDays);
                 return conn.Queryable<Model.OrderModel>()

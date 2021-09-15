@@ -26,7 +26,7 @@ namespace TinyStore.BLL
 
         public static PageList<Model.AdminModel> QueryPageList(int pageindex, int pagesize)
         {
-            using (var db = DbClient)
+            using (var db = DBClient)
             {
                 int total = 0;
                 var data = db.Queryable<Model.AdminModel>()

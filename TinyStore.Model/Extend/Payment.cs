@@ -4,6 +4,7 @@ using System.Text;
 
 namespace TinyStore.Model.Extend
 {
+    [Serializable]
     public class Payment
     {
         /// <summary>

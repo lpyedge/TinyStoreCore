@@ -3,12 +3,13 @@
 namespace TinyStore.Model
 {
     [Serializable]
+    [SqlSugar.SugarTable(nameof(AdminModel),IsDisabledUpdateAll=true)]
     public class AdminModel
     {
         [SqlSugar.SugarColumn(IsIdentity = true,IsPrimaryKey = true)]
         public int AdminId { get; set; }
         
-        [SqlSugar.SugarColumn(Length = 25,IndexGroupNameList = new []{"Account"})]
+        [SqlSugar.SugarColumn(Length = 25,IndexGroupNameList = new []{nameof(AdminModel)})]
         public string Account { get; set; }
         
         [SqlSugar.SugarColumn(Length = 40)]

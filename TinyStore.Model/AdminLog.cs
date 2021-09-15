@@ -4,6 +4,7 @@ using System;
 namespace TinyStore.Model
 {
     [Serializable]
+    [SqlSugar.SugarTable(nameof(AdminLogModel),IsDisabledUpdateAll=true)]
     public class AdminLogModel
     {
         /// <summary>
@@ -44,13 +45,13 @@ namespace TinyStore.Model
         /// <summary>
         ///商户日志类型
         /// </summary>
-        [SqlSugar.SugarColumn(IndexGroupNameList = new []{"AdminLogType"})]
+        [SqlSugar.SugarColumn(IndexGroupNameList = new []{nameof(AdminLogModel)})]
         public EAdminLogType AdminLogType { get; set; }
 
         /// <summary>
         ///创建日期
         /// </summary>
-        [SqlSugar.SugarColumn(IndexGroupNameList = new []{"CreateDate333"})]
+        [SqlSugar.SugarColumn(IndexGroupNameList = new []{nameof(AdminLogModel)})]
         public DateTime CreateDate { get; set; }
 
 

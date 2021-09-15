@@ -27,7 +27,7 @@ namespace TinyStore.BLL
 
         public static PageList<Model.Extend.UserStore> QueryPageListBySearch(string keyname, int pageindex, int pagesize)
         {
-            using (var db = DbClient)
+            using (var db = DBClient)
             {
                 List<UserStore> data = new List<UserStore>();
                 int total = 0;

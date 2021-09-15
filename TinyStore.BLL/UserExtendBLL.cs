@@ -15,7 +15,7 @@ namespace TinyStore.BLL
 
         public static Model.UserExtendModel QueryFinace()
         {
-            using (var db = DbClient)
+            using (var db = DBClient)
             {
                 return db.Queryable<Model.UserExtendModel>()
                     .Select(p => new UserExtendModel()

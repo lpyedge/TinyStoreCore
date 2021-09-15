@@ -34,33 +34,17 @@ namespace TinyStore.Site
             // var ConnStr1 = configuration.GetSection("Config:ConnStr").Value;
             // var ConnStr2 = configuration.GetSection("Config:ConnStr").Get<string>();
             // configuration.GetSection("Config").Get<ConfigModel>();
-            //Global.AppSettings.Configuration.GetSection("Config").Bind(Config);
+            //Global.AppService.Configuration.GetSection("Config").Bind(Config);
 
             Config = configuration.GetSection("Config").Get<ConfigModel>();
 
-            InitData();
-        }
-
-        private static void InitData()
-        {
             BLL.BaseBLL.Init(DbType.Sqlite, Config.AppData + "Data.db");
 
             if (!File.Exists(Config.AppData + "Data.db"))
             {
-                BLL.BaseBLL.DbClient.DbMaintenance.CreateDatabase();
-                BLL.BaseBLL.DbClient.CodeFirst.InitTables<AdminModel>();
-                BLL.BaseBLL.DbClient.CodeFirst.InitTables<AdminLogModel>();
-                BLL.BaseBLL.DbClient.CodeFirst.InitTables<BillModel>();
-                BLL.BaseBLL.DbClient.CodeFirst.InitTables<OrderModel>();
-                BLL.BaseBLL.DbClient.CodeFirst.InitTables<OrderTrashModel>();
-                BLL.BaseBLL.DbClient.CodeFirst.InitTables<ProductModel>();
-                BLL.BaseBLL.DbClient.CodeFirst.InitTables<StockModel>();
-                BLL.BaseBLL.DbClient.CodeFirst.InitTables<StoreModel>();
-                BLL.BaseBLL.DbClient.CodeFirst.InitTables<SupplyModel>();
-                BLL.BaseBLL.DbClient.CodeFirst.InitTables<UserModel>();
-                BLL.BaseBLL.DbClient.CodeFirst.InitTables<UserExtendModel>();
-                BLL.BaseBLL.DbClient.CodeFirst.InitTables<UserLogModel>();
-                BLL.BaseBLL.DbClient.CodeFirst.InitTables<WithDrawModel>();
+                
+                BLL.BaseBLL.InitDataBase();
+                BLL.BaseBLL.InitDataTables();
 
 #if DEBUG
                 InitDevData();

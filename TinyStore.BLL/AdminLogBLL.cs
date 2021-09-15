@@ -26,7 +26,7 @@ namespace TinyStore.BLL
 
         public static PageList<Model.AdminLogModel> QueryPageListByAdminIdAndType(int AdminId, int type, DateTime begin, DateTime end, int pageindex, int pagesize)
         {
-            using (var db = DbClient)
+            using (var db = DBClient)
             {
                 var count = 0;
                 var list = db.Queryable<Model.AdminLogModel, Model.AdminModel>((p, s) => p.AdminId == s.AdminId)

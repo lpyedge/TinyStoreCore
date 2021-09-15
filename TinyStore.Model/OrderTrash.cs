@@ -5,6 +5,7 @@ using System.Collections.Generic;
 namespace TinyStore.Model
 {
     [Serializable]
+    [SqlSugar.SugarTable(nameof(OrderTrashModel),IsDisabledUpdateAll=true)]
     public class OrderTrashModel : OrderModel
     {
 

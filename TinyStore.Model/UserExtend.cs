@@ -3,6 +3,7 @@
 namespace TinyStore.Model
 {
     [Serializable]
+    [SqlSugar.SugarTable(nameof(UserExtendModel),IsDisabledUpdateAll=true)]
     public class UserExtendModel
     {
         [SqlSugar.SugarColumn(IsPrimaryKey = true)]

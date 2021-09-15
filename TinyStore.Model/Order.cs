@@ -5,6 +5,7 @@ using System.Collections.Generic;
 namespace TinyStore.Model
 {
     [Serializable]
+    [SqlSugar.SugarTable(nameof(OrderModel),IsDisabledUpdateAll=true)]
     public class OrderModel
     {
         /// <summary>
@@ -23,19 +24,19 @@ namespace TinyStore.Model
         /// <summary>
         ///店铺编号
         /// </summary>
-        [SqlSugar.SugarColumn(Length = 28,IndexGroupNameList = new []{"StoreId"})]
+        [SqlSugar.SugarColumn(Length = 28,IndexGroupNameList = new []{nameof(OrderModel)})]
         public string StoreId { get; set; }
 
         /// <summary>
         /// 商户编号
         /// </summary>
-        [SqlSugar.SugarColumn(IndexGroupNameList = new []{"UserId"})]
+        [SqlSugar.SugarColumn(IndexGroupNameList = new []{nameof(OrderModel)})]
         public int UserId { get; set; }
         
         /// <summary>
         ///商品编号
         /// </summary>
-        [SqlSugar.SugarColumn(Length = 28,IndexGroupNameList = new []{"ProductId"})]
+        [SqlSugar.SugarColumn(Length = 28,IndexGroupNameList = new []{nameof(OrderModel)})]
         public string ProductId { get; set; }
         
         /// <summary>
@@ -126,7 +127,7 @@ namespace TinyStore.Model
         /// <summary>
         ///是否付款
         /// </summary>
-        [SqlSugar.SugarColumn(IndexGroupNameList = new[] {"IsPay"})]
+        [SqlSugar.SugarColumn(IndexGroupNameList = new[] {nameof(OrderModel)})]
         public bool IsPay { get; set; } = false;
 
         /// <summary>
@@ -157,7 +158,7 @@ namespace TinyStore.Model
         /// <summary>
         ///是否发货
         /// </summary>
-        [SqlSugar.SugarColumn(IndexGroupNameList = new []{"IsDelivery"})]
+        [SqlSugar.SugarColumn(IndexGroupNameList = new []{nameof(OrderModel)})]
         public bool IsDelivery { get; set; }= false;
         
         /// <summary>
@@ -176,7 +177,7 @@ namespace TinyStore.Model
         /// <summary>
         /// 是否结算  => 货源供货商
         /// </summary>
-        [SqlSugar.SugarColumn(IndexGroupNameList = new[] {"IsSettle"})]
+        [SqlSugar.SugarColumn(IndexGroupNameList = new[] {nameof(OrderModel)})]
         public bool IsSettle { get; set; } = false;
 
         /// <summary>
@@ -202,7 +203,7 @@ namespace TinyStore.Model
         /// <summary>
         /// 最后变更状态时间
         /// </summary>
-        [SqlSugar.SugarColumn(IndexGroupNameList = new[] {"LastUpdateDate"})]
+        [SqlSugar.SugarColumn(IndexGroupNameList = new[] {nameof(OrderModel)})]
         public DateTime LastUpdateDate { get; set; } 
         
         /// <summary>

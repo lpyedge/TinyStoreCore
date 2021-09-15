@@ -2,6 +2,7 @@ using System;
 
 namespace TinyStore.Model.Extend
 {
+    [Serializable]
     public class ProductStat
     {
         public string Name { get; set; }

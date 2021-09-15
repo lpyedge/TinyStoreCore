@@ -3,6 +3,7 @@ using System;
 namespace TinyStore.Model
 {
     [Serializable]
+    [SqlSugar.SugarTable(nameof(BillModel),IsDisabledUpdateAll=true)]
     public class BillModel
     {
         /// <summary>
@@ -14,13 +15,13 @@ namespace TinyStore.Model
         /// <summary>
         ///店铺编号
         /// </summary>
-        [SqlSugar.SugarColumn(Length = 28, IndexGroupNameList = new[] {"StoreId"})]
+        [SqlSugar.SugarColumn(Length = 28, IndexGroupNameList = new[] {nameof(BillModel)})]
         public string StoreId { get; set; } = "";
 
         /// <summary>
         /// 商户编号
         /// </summary>
-        [SqlSugar.SugarColumn(IndexGroupNameList = new []{"UserId"})]
+        [SqlSugar.SugarColumn(IndexGroupNameList = new []{nameof(BillModel)})]
         public int UserId { get; set; }
 
         /// <summary>
@@ -36,13 +37,13 @@ namespace TinyStore.Model
         /// <summary>
         /// 账目类型
         /// </summary>
-        [SqlSugar.SugarColumn(IndexGroupNameList = new[] {"BillType"})]
+        [SqlSugar.SugarColumn(IndexGroupNameList = new[] {nameof(BillModel)})]
         public EBillType BillType { get; set; }
         
         /// <summary>
         /// 发生日期
         /// </summary>
-        [SqlSugar.SugarColumn(IndexGroupNameList = new[] {"CreateDate"})]
+        [SqlSugar.SugarColumn(IndexGroupNameList = new[] {nameof(BillModel)})]
         public DateTime CreateDate { get; set; } = DateTime.Now;
 
         /// <summary>

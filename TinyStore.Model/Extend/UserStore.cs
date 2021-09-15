@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace TinyStore.Model.Extend
 {
+    [Serializable]
     public class UserStore
     {
         public int UserId { get; set; }

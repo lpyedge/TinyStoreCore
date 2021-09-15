@@ -22,7 +22,7 @@ namespace TinyStore.BLL
         public static List<Model.ProductModel> QueryListByStoreShow(string storeId)
         {
             List<Model.ProductModel> data;
-            using (var conn = DbClient)
+            using (var conn = DBClient)
             {
                 data = conn.Queryable<Model.ProductModel>()
                     .Where(p => p.StoreId == storeId && p.IsShow == true)

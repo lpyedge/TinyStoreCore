@@ -5,6 +5,7 @@ using System.Collections.Generic;
 namespace TinyStore.Model
 {
     [Serializable]
+    [SqlSugar.SugarTable(nameof(StoreModel),IsDisabledUpdateAll=true)]
     public class StoreModel
     {
         /// <summary>
@@ -16,7 +17,7 @@ namespace TinyStore.Model
         /// <summary>
         /// 商户编号
         /// </summary>
-        [SqlSugar.SugarColumn(IndexGroupNameList = new []{"UserId"})]
+        [SqlSugar.SugarColumn(IndexGroupNameList = new []{nameof(StoreModel)})]
         public int UserId { get; set; }
 
         /// <summary>
@@ -52,7 +53,7 @@ namespace TinyStore.Model
         /// <summary>
         ///  店铺名称 首字母
         /// </summary>
-        [SqlSugar.SugarColumn(Length = 1,IndexGroupNameList = new []{"Initial"})] 
+        [SqlSugar.SugarColumn(Length = 1,IndexGroupNameList = new []{nameof(StoreModel)})] 
         public string Initial { get; set; }
 
         /// <summary>
@@ -86,7 +87,7 @@ namespace TinyStore.Model
         /// <summary>
         /// 店铺标识
         /// </summary>
-        [SqlSugar.SugarColumn(Length = 25,IndexGroupNameList = new []{"UniqueId"})]
+        [SqlSugar.SugarColumn(Length = 25,IndexGroupNameList = new []{nameof(StoreModel)})]
         public string UniqueId { get; set; }
 
 

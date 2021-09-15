@@ -13,7 +13,7 @@ namespace TinyStore.BLL
 
         public static double QueryFinace()
         {
-            using (var db = DbClient)
+            using (var db = DBClient)
             {
                 return db.Queryable<Model.WithDrawModel>()
                     .Where(p => !p.IsFinish)

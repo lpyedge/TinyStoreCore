@@ -6,6 +6,7 @@ using System.Linq;
 namespace TinyStore.Model
 {
     [Serializable]
+    [SqlSugar.SugarTable(nameof(ProductModel),IsDisabledUpdateAll=true)]
     public class ProductModel : SupplyModel
     {
         /// <summary>
@@ -15,7 +16,7 @@ namespace TinyStore.Model
         public string ProductId { get; set; }
         
 
-        [SqlSugar.SugarColumn(Length = 28, IndexGroupNameList = new[] {"SupplyId"})]
+        [SqlSugar.SugarColumn(Length = 28, IndexGroupNameList = new[] {nameof(ProductModel)})]
         public new string SupplyId { get; set; }
         
         /// <summary>
@@ -27,13 +28,13 @@ namespace TinyStore.Model
         /// <summary>
         /// 店铺编号
         /// </summary>
-        [SqlSugar.SugarColumn(Length = 28, IndexGroupNameList = new[] {"StoreId"})]
+        [SqlSugar.SugarColumn(Length = 28, IndexGroupNameList = new[] {nameof(ProductModel)})]
         public string StoreId { get; set; }
 
         /// <summary>
         /// 排序
         /// </summary>
-        [SqlSugar.SugarColumn(IndexGroupNameList = new[] {"Sort"})]
+        [SqlSugar.SugarColumn(IndexGroupNameList = new[] {nameof(ProductModel)})]
         public int Sort { get; set; }
 
         /// <summary>

@@ -35,7 +35,7 @@ namespace TinyStore.BLL
         }
         public static List<Model.StoreModel> QueryListMini()
         {
-            using (var conn = DbClient)
+            using (var conn = DBClient)
             {
                 return conn.Queryable<Model.StoreModel>().Select(p => new Model.StoreModel
                 {
@@ -50,7 +50,7 @@ namespace TinyStore.BLL
 
         public static List<Model.StoreModel> QueryHotList(int top)
         {
-            using (var conn = DbClient)
+            using (var conn = DBClient)
             {
                 return conn.Queryable<Model.StoreModel>().Select(p => new Model.StoreModel
                     {

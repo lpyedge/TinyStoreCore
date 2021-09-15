@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 
 namespace TinyStore.Model
 {
+    [Serializable]
+    [SqlSugar.SugarTable(nameof(WithDrawModel),IsDisabledUpdateAll=true)]
     public class WithDrawModel
     {
         /// <summary>
@@ -18,7 +20,7 @@ namespace TinyStore.Model
         /// <summary>
         /// 店铺编号
         /// </summary>
-        [SqlSugar.SugarColumn(IndexGroupNameList = new []{"UserId"})]
+        [SqlSugar.SugarColumn(IndexGroupNameList = new []{nameof(WithDrawModel)})]
         public int UserId { get; set; }
         
         /// <summary>
@@ -52,7 +54,7 @@ namespace TinyStore.Model
         /// <summary>
         /// 创建日期
         /// </summary>
-        [SqlSugar.SugarColumn(IndexGroupNameList = new []{"CreateDate"})]
+        [SqlSugar.SugarColumn(IndexGroupNameList = new []{nameof(WithDrawModel)})]
         public DateTime CreateDate { get; set; }
         
         /// <summary>
@@ -69,7 +71,7 @@ namespace TinyStore.Model
         /// <summary>
         /// 已结束
         /// </summary>
-        [SqlSugar.SugarColumn(IndexGroupNameList = new []{"IsFinish"})]
+        [SqlSugar.SugarColumn(IndexGroupNameList = new []{nameof(WithDrawModel)})]
         public bool IsFinish { get; set; }
         
         /// <summary>
