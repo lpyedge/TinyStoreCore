@@ -30,7 +30,11 @@ namespace TinyStore.Site
         //}
 
 
-        protected string[] _Ignoreactionss;
+        public string[] _Ignoreactions
+        {
+            get;
+            protected set;
+        }
 
         /// <summary>
         ///     可以传参传入要忽略的Action名称,传入的Action不会执行判断
@@ -42,7 +46,7 @@ namespace TinyStore.Site
         {
             HeaderTokenKey = headerTokenKey;
             ItemKey = itemKey;
-            _Ignoreactionss = ignoreactions.Select(p => p.ToLowerInvariant()).ToArray();
+            _Ignoreactions = ignoreactions.Select(p => p.ToLowerInvariant()).ToArray();
         }
 
         private string HeaderTokenKey { get; }
@@ -88,7 +92,7 @@ namespace TinyStore.Site
             base.OnActionExecuting(context);
 
             var actionname = ((ControllerActionDescriptor) context.ActionDescriptor).ActionName.ToLowerInvariant();
-            if (!_Ignoreactionss.Contains(actionname))
+            if (!_Ignoreactions.Contains(actionname))
             {
                 var headerTokenStr = context.HttpContext.Request.Headers[HeaderTokenKey];
                 TokenData tokendata = null;
