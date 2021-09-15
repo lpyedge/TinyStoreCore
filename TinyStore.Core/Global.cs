@@ -18,7 +18,7 @@ namespace TinyStore
         {
         }
         
-        public class AppSettings
+        public class AppService
         {
             //nuget Microsoft.Extensions.DependencyInjection
             public static ServiceProvider ServiceProvider { get; private set; }

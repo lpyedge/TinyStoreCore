@@ -99,8 +99,8 @@ namespace TinyStore.Site
             #endregion
 
             //注册全局HttpContext并缓存全局Configuration
-            Global.AppSettings.Inited = SiteContext.Inited;
-            Global.AppSettings.ConfigureServices(services, Configuration);
+            Global.AppService.Inited = SiteContext.Inited;
+            Global.AppService.ConfigureServices(services, Configuration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
