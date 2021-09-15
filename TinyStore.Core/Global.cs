@@ -227,6 +227,7 @@ namespace TinyStore
                     //https://docs.microsoft.com/zh-cn/dotnet/api/system.text.json.jsonserializeroptions?view=net-5.0
                     setting = new System.Text.Json.JsonSerializerOptions()
                     {
+                        //序列化输出内容不更改属性大小写
                         PropertyNamingPolicy = null,
                         DictionaryKeyPolicy = null,
                         WriteIndented = false,

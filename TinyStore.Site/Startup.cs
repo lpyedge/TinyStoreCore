@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -34,8 +34,9 @@ namespace TinyStore.Site
                 // })
                 .AddJsonOptions(options =>
                 {
-                    //序列化输出内容不更改属性大小写
-                    //options.JsonSerializerOptions.PropertyNamingPolicy = null;
+                    Global.Json.Settings.JsonSerializerSettingsAction(options.JsonSerializerOptions);
+                    //首字母小写驼峰式命名
+                    options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
                 })
                 .AddRazorRuntimeCompilation();
 
