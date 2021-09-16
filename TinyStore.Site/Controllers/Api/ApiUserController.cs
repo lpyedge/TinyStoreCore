@@ -420,7 +420,7 @@ namespace TinyStore.Site.Controllers
             var res = BLL.StockBLL.QueryPageListByUserSearch(supplyId, user.UserId, keyname, outIsShow, pageIndex,
                 pageSize);
 
-            return ApiResult.RData(new GridData<StockModel>(res.Rows, res.Total));
+            return ApiResult.RData(new BLL.PageList<StockModel>(res.Rows, res.Total));
         }
 
         [HttpPost]

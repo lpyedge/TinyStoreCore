@@ -63,25 +63,30 @@ namespace TinyStore.Site
         public bool result => code == ECode.Success;
 
         public string message { get; private set; }
+        
         public static JsonResult RCode()
         {
             return new JsonResult(new ApiResult());
         }
-        public static JsonResult RCode(ECode? p_code = null)
+        public static JsonResult RCode(ECode? code = null)
         {
-            var result = p_code != null ? new ApiResult((ECode) p_code) : new ApiResult();
+            var result = new ApiResult(code ?? ECode.Success);
             return new JsonResult(result);
         }
 
-        public static JsonResult RCode(string p_message = null, ECode p_code = ECode.Fail)
+        public static JsonResult RCode(string message = null, ECode code = ECode.Fail)
         {
-            var result = p_message != null ? new ApiResult(p_message, p_code) : new ApiResult();
+            var result = message != null ? new ApiResult(message, code) : new ApiResult();
             return new JsonResult(result);
         }
 
-        public static JsonResult RData<T>(T p_data)
+        
+        public static JsonResult RData<T>(T data,ECode? code = null)
         {
-            var result = new ApiResult<T>(p_data);
+            var result = new ApiResult<T>(data)
+            {
+                code = code ?? ECode.Success
+            };
             return new JsonResult(result);
         }
     }
@@ -100,21 +105,5 @@ namespace TinyStore.Site
         }
 
         public T data { get; set; }
-    }
-    
-    
-    public class GridData<T>
-    {
-        public GridData(IList<T> p_rows, int p_total = 0, dynamic p_footer = null)
-        {
-            rows = p_rows;
-            total = p_total == 0 ? p_rows.Count : p_total;
-            footer = p_footer;
-        }
-
-        public IList<T> rows { get; private set; }
-        public int total { get; private set; }
-        public dynamic footer { get; private set; }
-
     }
 }
