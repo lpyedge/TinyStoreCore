@@ -212,7 +212,6 @@ namespace TinyStore
             {
                 return System.Text.Json.JsonSerializer.Deserialize<T>(json, DefaultSettings);
             }
-
             public static class Settings
             {
                 public static Func<System.Text.Json.JsonSerializerOptions> JsonSerializerSettingsFunc = () =>
@@ -227,26 +226,160 @@ namespace TinyStore
                     //https://docs.microsoft.com/zh-cn/dotnet/api/system.text.json.jsonserializeroptions?view=net-5.0
                     setting = new System.Text.Json.JsonSerializerOptions()
                     {
-                        //序列化输出内容不更改属性大小写
+                        //将对象的属性名称转换为其他格式（例如 camel 大小写）的策略；若为 null，则保持属性名称不变。
                         PropertyNamingPolicy = null,
+                        //获取或设置用于将 IDictionary 密钥名称转换为其他格式（如 camel 大小写）的策略
                         DictionaryKeyPolicy = null,
+                        //定义 JSON 是否应使用整齐打印。
                         WriteIndented = false,
-                        ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve,
-                        NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.Strict,
-                        AllowTrailingCommas = true,
-                        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.Default,
+                        //如何处理对象引用。
+                        ReferenceHandler = null,//不设置null序列化dictionary会出现额外的$id属性
+                        //序列化或反序列化时应如何处理数字类型。
+                        NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString,
+                    
+                        //在序列化和反序列化期间处理字段。 默认值为 false。
                         IncludeFields = false,
-                        MaxDepth = 0,
+                        //序列化过程中是否忽略只读字段
                         IgnoreReadOnlyFields = true,
+                        //是否 null 在序列化过程中忽略值。 默认值为 false。
                         IgnoreNullValues = false,
+                        //序列化过程中是否忽略只读属性
                         IgnoreReadOnlyProperties = true,
-                        PropertyNameCaseInsensitive = true,
+                        //在序列化或反序列化过程中忽略具有默认值的属性。 默认值为 Never。
                         DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.Never,
+                    
+                        //确定在反序列化过程中属性名称是否使用不区分大小写的比较。 默认值为 false。
+                        PropertyNameCaseInsensitive = true,
+                        //定义反序列化过程中如何处理注释
                         ReadCommentHandling = System.Text.Json.JsonCommentHandling.Skip,
+                        //临时缓冲区时要使用的默认缓冲区大小（以字节为单位）。
                         DefaultBufferSize = new System.Text.Json.JsonSerializerOptions().DefaultBufferSize,
-                        Converters = { }
+                        //反序列化的 JSON 有效负载中是否允许（和忽略）对象或数组中 JSON 值的列表末尾多余的逗号。
+                        AllowTrailingCommas = true,
+                        //获取或设置要在转义字符串时使用的编码器
+                        Encoder = System.Text.Encodings.Web.JavaScriptEncoder.Default,
+                        //序列化或反序列化 JSON 时允许的最大深度，默认值 0 表示最大深度为 64。
+                        MaxDepth = 0,
+                        //https://github.com/fujieda/DynaJson
+                        //https://github.com/SwingCosmic/LoveKicher.DynamicJson
+                        Converters = { new DynamicJsonConverter() }//JsonSerializer.Deserialize 返回dynamic类型对象 默认不支持，手动实现
                     };
                 };
+                
+                private class DynamicJsonConverter : System.Text.Json.Serialization.JsonConverter<dynamic>
+                {
+                    public override dynamic Read(ref System.Text.Json.Utf8JsonReader reader,
+                        Type typeToConvert,
+                        System.Text.Json.JsonSerializerOptions options)
+                    {
+
+                        if (reader.TokenType == System.Text.Json.JsonTokenType.True)
+                        {
+                            return true;
+                        }
+
+                        if (reader.TokenType == System.Text.Json.JsonTokenType.False)
+                        {
+                            return false;
+                        }
+
+                        if (reader.TokenType == System.Text.Json.JsonTokenType.Number)
+                        {
+                            if (reader.TryGetInt64(out long l))
+                            {
+                                return l;
+                            }
+
+                            return reader.GetDouble();
+                        }
+
+                        if (reader.TokenType == System.Text.Json.JsonTokenType.String)
+                        {
+                            if (reader.TryGetDateTime(out DateTime datetime))
+                            {
+                                return datetime;
+                            }
+
+                            return reader.GetString();
+                        }
+
+                        if (reader.TokenType == System.Text.Json.JsonTokenType.StartObject)
+                        {
+                            using System.Text.Json.JsonDocument documentV = System.Text.Json.JsonDocument.ParseValue(ref reader);
+                            return ReadObject(documentV.RootElement);
+                        }
+                        // Use JsonElement as fallback.
+                        // Newtonsoft uses JArray or JObject.
+                        System.Text.Json.JsonDocument document = System.Text.Json.JsonDocument.ParseValue(ref reader);
+                        return document.RootElement.Clone();
+                    }
+
+                    private object ReadObject(System.Text.Json.JsonElement jsonElement)
+                    {
+                        System.Collections.Generic.IDictionary<string, object> expandoObject = new System.Dynamic.ExpandoObject();
+                        foreach (var obj in jsonElement.EnumerateObject())
+                        {
+                            var k = obj.Name;
+                            var value = ReadValue(obj.Value);
+                            expandoObject[k] = value;
+                        }
+                        return expandoObject;
+                    }
+                    private object? ReadValue(System.Text.Json.JsonElement jsonElement)
+                    {
+                        object? result = null;
+                        switch (jsonElement.ValueKind)
+                        {
+                            case System.Text.Json.JsonValueKind.Object:
+                                result = ReadObject(jsonElement);
+                                break;
+                            case System.Text.Json.JsonValueKind.Array:
+                                result = ReadList(jsonElement);
+                                break;
+                            case System.Text.Json.JsonValueKind.String:
+                                //TODO: Missing Datetime&Bytes Convert
+                                result = jsonElement.GetString();
+                                break;
+                            case System.Text.Json.JsonValueKind.Number:
+                                //TODO: more num type
+                                result = 0;
+                                if (jsonElement.TryGetInt64(out long l))
+                                {
+                                    result = l;
+                                }
+                                break;
+                            case System.Text.Json.JsonValueKind.True:
+                                result = true;
+                                break;
+                            case System.Text.Json.JsonValueKind.False:
+                                result = false;
+                                break;
+                            case System.Text.Json.JsonValueKind.Undefined:
+                            case System.Text.Json.JsonValueKind.Null:
+                                result = null;
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+                        return result;
+                    }
+
+                    private object? ReadList(System.Text.Json.JsonElement jsonElement)
+                    {
+                        System.Collections.Generic.IList<object?> list = new System.Collections.Generic.List<object?>();
+                        foreach (var item in jsonElement.EnumerateArray())
+                        {
+                            list.Add(ReadValue(item));
+                        }
+                        return list.Count == 0 ? null : list;
+                    }
+                    public override void Write(System.Text.Json.Utf8JsonWriter writer,
+                        object value,
+                        System.Text.Json.JsonSerializerOptions options)
+                    {
+                       // writer.WriteStringValue(value.ToString());
+                    }
+                }
             }
         }
 
