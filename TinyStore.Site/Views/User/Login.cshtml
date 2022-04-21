@@ -107,7 +107,7 @@
                     },true)
                     .then((response)=> {
                         if (response.data.code === 1){
-                            Store.Token(response.headers.token);
+                            Store.Token(response.headers.usertoken);
                             Store.User(response.data.data.user);
                             Store.UserExtend(response.data.data.userExtend);
                             Store.StoreList(response.data.data.storeList);

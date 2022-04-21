@@ -114,10 +114,10 @@ namespace TinyStore.Site
             else
             {
                 app.UseExceptionHandler("/Home/Error");
-                app.UseHsts();
+                //app.UseHsts();
             }
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             #region 开启并使用压缩规则
 

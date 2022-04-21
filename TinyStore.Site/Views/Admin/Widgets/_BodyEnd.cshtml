@@ -45,7 +45,7 @@
         return axios({
             'method': 'post',
             'headers': {
-                'Token': Store.Token()
+                'AdminToken': Store.Token()
             },
             'url': '/ApiAdmin/' + action,
             'data': data

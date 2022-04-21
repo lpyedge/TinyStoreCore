@@ -40,6 +40,7 @@ namespace TinyStore.Site
 
             BLL.BaseBLL.Init(DbType.Sqlite, Config.AppData + "Data.db");
 
+
             if (!File.Exists(Config.AppData + "Data.db"))
             {
                 
@@ -403,7 +404,7 @@ namespace TinyStore.Site
                 var ischarge = Global.Generator.Random.NextDouble() > 0.7;
                 var isplus = Global.Generator.Random.NextDouble() > 0.4;
                 var amount = Global.Generator.Random.Next(1, 30);
-                EBillType billType = billTypes[Global.Generator.Random.Next(0, 6)];
+                EBillType billType = billTypes[Global.Generator.Random.Next(0, 5)];
                 billList.Add(new BillModel
                 {
                     BillId = Global.Generator.DateId(2),

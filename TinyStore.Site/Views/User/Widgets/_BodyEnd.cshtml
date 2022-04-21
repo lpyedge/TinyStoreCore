@@ -45,7 +45,7 @@
         return axios({
             'method': 'post',
             'headers': {
-                'Token': Store.Token()
+                'UserToken': Store.Token()
             },
             'url': '/ApiUser/' + action,
             'data': data

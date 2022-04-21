@@ -69,7 +69,7 @@
                     },true)
                     .then((response)=> {
                         if (response.data.code === 1){
-                            Store.Token(response.headers.token);
+                            Store.Token(response.headers.admintoken);
                             Store.Admin(response.data.data);
                             location.href = '@Url.ActionLink("index", "admin")';
                         }

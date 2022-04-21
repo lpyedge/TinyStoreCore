@@ -11,6 +11,7 @@ namespace TinyStore.Site.Controllers
     [Route("{controller}/{action}")]
     public class AdminController : Controller
     {
+        [Route("/admin")]
         public IActionResult Index()
         {
             return View();

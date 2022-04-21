@@ -84,7 +84,9 @@ namespace TinyStore.BLL
         {
             using (var db = DBClient)
             {
-                var modelTypeList = Assembly.GetExecutingAssembly().GetTypes()
+                var modelTypeList = System.AppDomain.CurrentDomain.GetAssemblies()
+                    .FirstOrDefault(p => p.GetName().Name == $"{nameof(TinyStore)}.{nameof(TinyStore.Model)}")
+                    .GetTypes()
                     .Where(p =>
                     {
                         return p.IsClass && p.IsPublic 
