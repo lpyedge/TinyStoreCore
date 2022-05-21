@@ -134,8 +134,8 @@
 //                 try
 //                 {
 //                     var extend =
-//                         Utils.Json.Deserialize<PayExtend>(
-//                             Utils.Json.Serialize(extend_params));
+//                         Utils.JsonUtility.Deserialize<PayExtend>(
+//                             Utils.JsonUtility.Serialize(extend_params));
 //                     m_bankCode = BankDic[extend.Bank];
 //                 }
 //                 catch (Exception ex)

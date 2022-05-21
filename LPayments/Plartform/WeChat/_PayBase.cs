@@ -322,7 +322,7 @@ namespace LPayments.Plartform.WeChat
                         //var jsapiparamstr = jsApiParam.ToJson();
 
                         // pt.Extra = jsapiparamstr;
-                        // //pt.Extra = Utils.Json.Serialize(new { prepayid = result.GetValue("prepay_id").ToString() ,sign = signstr });
+                        // //pt.Extra = Utils.JsonUtility.Serialize(new { prepayid = result.GetValue("prepay_id").ToString() ,sign = signstr });
                         // pt.Message = result.ToJson();
 
                         return new PayTicket()
@@ -1202,7 +1202,7 @@ namespace LPayments.Plartform.WeChat
             */
             public string ToJson()
             {
-                var jsonStr = Utils.Json.Serialize(m_values);
+                var jsonStr = Utils.JsonUtility.Serialize(m_values);
                 return jsonStr;
             }
 

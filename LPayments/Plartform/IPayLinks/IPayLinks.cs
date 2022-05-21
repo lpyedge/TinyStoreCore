@@ -185,7 +185,7 @@ namespace LPayments.Plartform.IPayLinks
             {
                 Name = this.Name,
                 DataFormat = EPayDataFormat.Result,
-                DataContent = Utils.Json.Serialize(Notify(new Dictionary<string, string>(), new Dictionary<string, string>(),
+                DataContent = Utils.JsonUtility.Serialize(Notify(new Dictionary<string, string>(), new Dictionary<string, string>(),
                     new Dictionary<string, string>(), res, p_ClientIP.ToString())),
             };
         }

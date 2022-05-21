@@ -49,7 +49,7 @@ namespace LPayments
         /// </summary>
         public virtual string SettingsJson
         {
-            get { return Utils.Json.Serialize(Settings); }
+            get { return Utils.JsonUtility.Serialize(Settings); }
             set
             {
                 foreach (var setting in Settings)
@@ -58,7 +58,7 @@ namespace LPayments
                 }
 
                 if (!string.IsNullOrWhiteSpace(value))
-                    foreach (Setting s in Utils.Json.Deserialize<List<Setting>>(value))
+                    foreach (Setting s in Utils.JsonUtility.Deserialize<List<Setting>>(value))
                     {
                         var setting = Settings.FirstOrDefault(p =>
                             string.Equals(p.Name, s.Name, StringComparison.OrdinalIgnoreCase));

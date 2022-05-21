@@ -59,8 +59,8 @@ namespace LPayments.Plartform.KuaiQian
             try
             {
                 var extend =
-                    Utils.Json.Deserialize<PayExtend>(
-                        Utils.Json.Serialize(extend_params));
+                    Utils.JsonUtility.Deserialize<PayExtend>(
+                        Utils.JsonUtility.Serialize(extend_params));
                 if (!BankDic.ContainsKey(extend.Bank))
                     throw new ArgumentException("Bank : " + extend.Bank.ToString() + " dose not support");
                 m_bankId = BankDic[extend.Bank];
@@ -131,8 +131,8 @@ namespace LPayments.Plartform.KuaiQian
             try
             {
                 var extend =
-                    Utils.Json.Deserialize<PayExtend>(
-                        Utils.Json.Serialize(extend_params));
+                    Utils.JsonUtility.Deserialize<PayExtend>(
+                        Utils.JsonUtility.Serialize(extend_params));
                 if (!BankDic.ContainsKey(extend.Bank))
                     throw new ArgumentException("Bank : " + extend.Bank.ToString() + " dose not support");
                 m_bankId = BankDic[extend.Bank];
@@ -203,8 +203,8 @@ namespace LPayments.Plartform.KuaiQian
             try
             {
                 var extend =
-                    Utils.Json.Deserialize<PayExtend>(
-                        Utils.Json.Serialize(extend_params));
+                    Utils.JsonUtility.Deserialize<PayExtend>(
+                        Utils.JsonUtility.Serialize(extend_params));
                 if (!BankDic.ContainsKey(extend.Bank))
                     throw new ArgumentException("Bank : " + extend.Bank.ToString() + " dose not support");
                 m_bankId = BankDic[extend.Bank];

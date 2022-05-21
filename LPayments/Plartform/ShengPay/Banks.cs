@@ -115,7 +115,7 @@ namespace LPayments.Plartform.ShengPay
             if (extend_params == null) throw new ArgumentNullException("extend_params");
             try
             {
-                var extend = Utils.Json.Deserialize<PayExtend>(Utils.Json.Serialize(extend_params));
+                var extend = Utils.JsonUtility.Deserialize<PayExtend>(Utils.JsonUtility.Serialize(extend_params));
                 m_InstCode = BankDic[extend.Bank];
             }
             catch (Exception ex)
@@ -182,7 +182,7 @@ namespace LPayments.Plartform.ShengPay
             if (extend_params == null) throw new ArgumentNullException("extend_params");
             try
             {
-                var extend = Utils.Json.Deserialize<PayExtend>(Utils.Json.Serialize(extend_params));
+                var extend = Utils.JsonUtility.Deserialize<PayExtend>(Utils.JsonUtility.Serialize(extend_params));
                 m_InstCode = BankDic[extend.Bank];
             }
             catch (Exception ex)

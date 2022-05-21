@@ -115,7 +115,7 @@ namespace LPayments.Plartform.AliPay
 
             var datas = PublicDic(m_trade_type, p_NotifyUrl, p_ReturnUrl);
 
-            datas["biz_content"] = Utils.Json.Serialize(biz);
+            datas["biz_content"] = Utils.JsonUtility.Serialize(biz);
             datas["sign"] = Convert.ToBase64String(Utils.RSACrypto.SignData(m_AppPrivateProvider,
                 Utils.HASHCrypto.CryptoEnum.SHA256,
                 Encoding.GetEncoding(Charset).GetBytes(Utils.Core.LinkStr(datas))));
@@ -167,7 +167,7 @@ namespace LPayments.Plartform.AliPay
             }
             else if (m_trade_type == "alipay.trade.wap.pay" && extend_params != null)
             {
-                Pay_Wap.Extend extend = Utils.Json.Deserialize<Pay_Wap.Extend>(Utils.Json.Serialize(extend_params));
+                Pay_Wap.Extend extend = Utils.JsonUtility.Deserialize<Pay_Wap.Extend>(Utils.JsonUtility.Serialize(extend_params));
                 if (extend != null)
                 {
                     string res = _HWU.PostStringAsync(new Uri(GateWay + "?charset=utf-8"), Utils.Core.LinkStr(datas,encode:true)).Result;

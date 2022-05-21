@@ -134,7 +134,7 @@ namespace LPayments.Plartform.OrangeBank
             //var datasignstr = data.Aggregate("",(x, y) => string.IsNullOrWhiteSpace(y.Value) ? x + "" : x + y.Key + "=" + y.Value + "&").TrimEnd('&');
             //data["sign"] = Utils.Core.MD5(Utils.HASHCrypto.Generate(Utils.HASHCrypto.CryptoEnum.SHA1).Encrypt(datasignstr));
             //data.Remove("open_key");
-            var datastr = Utils.Json.Serialize(data);
+            var datastr = Utils.JsonUtility.Serialize(data);
 
             var aes = Utils.DESCrypto.Generate(this[SecretKey], "", Utils.DESCrypto.CryptoEnum.Rijndael,
                 System.Security.Cryptography.CipherMode.ECB, System.Security.Cryptography.PaddingMode.PKCS7, 128);
@@ -148,7 +148,7 @@ namespace LPayments.Plartform.OrangeBank
 
             var res = _HWU.PostStringAsync(uri, Utils.Core.LinkStr( dic,encode:true)).Result;
 
-            var resdic = Utils.Json.Deserialize<Dictionary<string, string>>(res);
+            var resdic = Utils.JsonUtility.Deserialize<Dictionary<string, string>>(res);
 
             if (resdic["errcode"] == "0")
             {
@@ -164,7 +164,7 @@ namespace LPayments.Plartform.OrangeBank
                 {
                     byte[] cryptobytes =Utils.HexCoding.Decode(resdic["data"]);
                     var resdatadic =
-                        Utils.Json.Deserialize<Dictionary<string, string>>(
+                        Utils.JsonUtility.Deserialize<Dictionary<string, string>>(
                             Utils.DESCrypto.Decrypt(aes,cryptobytes));
 
                     if (m_qrcode)

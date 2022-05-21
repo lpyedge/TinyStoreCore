@@ -107,7 +107,7 @@
 
 //            var dic = _Helper.PublicDic(this[APPID], "alipay.trade.wap.pay", p_NotifyUrl, p_ReturnUrl);
 
-//            dic[_Helper.PublicParams.biz_content.ToString()] = Utils.Json.Serialize(biz);
+//            dic[_Helper.PublicParams.biz_content.ToString()] = Utils.JsonUtility.Serialize(biz);
 //            dic[_Helper.PublicParams.sign.ToString()] = Convert.ToBase64String(m_PrivateProvider.SignData(Utils.HASHCrypto.CryptoEnum.SHA256, Encoding.GetEncoding(_Helper.Charset).GetBytes(dic.LinkStr())));
 
 //            var hwu = new HttpWebUtility();

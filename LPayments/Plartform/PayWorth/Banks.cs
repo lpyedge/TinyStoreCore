@@ -53,7 +53,7 @@
 //             {
 //                 try
 //                 {
-//                     var extend = Utils.Json.Deserialize<PayExtend>(Utils.Json.Serialize(extend_params));
+//                     var extend = Utils.JsonUtility.Deserialize<PayExtend>(Utils.JsonUtility.Serialize(extend_params));
 //                     m_defaultbank = BankDic[extend.Bank];
 //                     m_paymethod = "directPay";
 //                 }

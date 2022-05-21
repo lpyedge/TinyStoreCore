@@ -121,7 +121,7 @@ namespace LPayments.Plartform.AliPay
 
         public dynamic Transfer(dynamic extend)
         {
-            var payExtend = Utils.Json.Deserialize<PayExtend>(extend);
+            var payExtend = Utils.JsonUtility.Deserialize<PayExtend>(extend);
             foreach (var item in payExtend.Royaltys)
             {
                 var transferdetail = new TransferDetail()
@@ -147,7 +147,7 @@ namespace LPayments.Plartform.AliPay
 
                 var dic = PublicDic("alipay.fund.trans.toaccount.transfer");
 
-                dic["biz_content"] = Utils.Json.Serialize(biz);
+                dic["biz_content"] = Utils.JsonUtility.Serialize(biz);
                 dic["sign"] = Convert.ToBase64String(
                     Utils.RSACrypto.SignData(m_AppPrivateProvider, Utils.HASHCrypto.CryptoEnum.SHA256,
                         Encoding.GetEncoding(Charset).GetBytes(Utils.Core.LinkStr(dic,encode:true)))
