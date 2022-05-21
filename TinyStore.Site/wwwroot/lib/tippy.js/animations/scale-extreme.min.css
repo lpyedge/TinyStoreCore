@@ -1,5 +1,7 @@
 /**
  * Skipped minification because the original files appears to be already minified.
+ * Original file: /npm/tippy.js@6.3.7/animations/scale-extreme.css
+ *
  * Do NOT use SRI with dynamically generated files! More information: https://www.jsdelivr.com/using-sri-with-dynamic-files
  */
 .tippy-box[data-animation=scale-extreme][data-placement^=top]{transform-origin:bottom}.tippy-box[data-animation=scale-extreme][data-placement^=bottom]{transform-origin:top}.tippy-box[data-animation=scale-extreme][data-placement^=left]{transform-origin:right}.tippy-box[data-animation=scale-extreme][data-placement^=right]{transform-origin:left}.tippy-box[data-animation=scale-extreme][data-state=hidden]{transform:scale(0);opacity:.25}

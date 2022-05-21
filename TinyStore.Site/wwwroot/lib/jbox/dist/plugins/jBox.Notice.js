@@ -5,7 +5,7 @@
  *
  * License: MIT (https://opensource.org/licenses/MIT)
  *
- * Requires: jBox (https://gcore.jsdelivr.net/gh/StephanWagner/jBox@latest/dist/jBox.min.js)
+ * Requires: jBox (https://cdn.jsdelivr.net/gh/StephanWagner/jBox@latest/dist/jBox.min.js)
  */
 
 function jBoxNoticeWrapper(jBox, jQuery) {
