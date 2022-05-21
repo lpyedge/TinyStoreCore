@@ -61,13 +61,14 @@ namespace TinyStore.Site.Controllers
                                         "https://" + SiteContext.Config.SiteDomain + Url.ActionLink("Order","Home",new {orderid=order.OrderId}),
                                         "https://" + SiteContext.Config.SiteDomain + Url.ActionLink("PayNotify","ApiHome",new {payname=payment.Name}));
 
-                                    if (payticket.Action == EAction.UrlPost)
-                                    {
-                                        payticket.Action = EAction.UrlGet;
-                                        var uri = payticket.Uri.IndexOf('?') > -1 ? payticket.Uri +"&"+ Utils.HttpWebUtility.BuildQueryString(payticket.Datas) : payticket.Uri + "?" + Utils.HttpWebUtility.BuildQueryString(payticket.Datas) ;
-                                        payticket.Uri = uri;
-                                    }
-                                    payticket.Token = (pay as IPayChannel).Platform.ToString().ToLowerInvariant();
+                                   //todo 支付test
+                                    //  if (payticket.DataFormat == EPayDataFormat.Form)
+                                    //  {
+                                    //      payticket.DataFormat = EPayDataFormat.Url;
+                                    //      var uri = payticket.Uri.IndexOf('?') > -1 ? payticket.Uri +"&"+ Utils.HttpWebUtility.BuildQueryString(payticket.Datas) : payticket.Uri + "?" + Utils.HttpWebUtility.BuildQueryString(payticket.Datas) ;
+                                    //      payticket.Uri = uri;
+                                    //  }
+                                    // payticket.Token = (pay as IPayChannel).Platform.ToString().ToLowerInvariant();
                                     switch (payment.Name)
                                     {
                                         case "Alipay|AliPay|H5":
@@ -98,13 +99,10 @@ namespace TinyStore.Site.Controllers
                                         {
                                             payticket = new LPayments.PayTicket()
                                             {
-                                                PayType = EPayType.QRcode,
-                                                Action = EAction.QrCode,
-                                                Uri = payment.QRCode,
-                                                Datas = new Dictionary<string, string>(),
-                                                Success = true,
+                                                Name = "alipay",
+                                                DataFormat = EPayDataFormat.QrCode,
+                                                DataContent = payment.QRCode,
                                                 Message = "支付宝扫码转账",
-                                                Token = "alipay"
                                             };
                                     
                                             payTickets.Add(payticket);
@@ -114,13 +112,10 @@ namespace TinyStore.Site.Controllers
                                         { 
                                             payticket = new LPayments.PayTicket()
                                             {
-                                                PayType = EPayType.QRcode,
-                                                Action = EAction.QrCode,
-                                                Uri = payment.QRCode,
-                                                Datas = new Dictionary<string, string>(),
-                                                Success = true,
+                                                Name = "wechat",
+                                                DataFormat = EPayDataFormat.QrCode,
+                                                DataContent = payment.QRCode,
                                                 Message = "微信扫码转账",
-                                                Token = "wechat"
                                             };
                                     
                                             payTickets.Add(payticket);
@@ -135,13 +130,10 @@ namespace TinyStore.Site.Controllers
                                             //https://qr.95516.com/00010002/01012166439217005044479417630044
                                             payticket = new LPayments.PayTicket()
                                             {
-                                                PayType = EPayType.QRcode,
-                                                Action = EAction.QrCode,
-                                                Uri = payment.QRCode,
-                                                Datas = new Dictionary<string, string>(),
-                                                Success = true,
+                                                Name = "unionpay",
+                                                DataFormat = EPayDataFormat.QrCode,
+                                                DataContent = payment.QRCode,
                                                 Message = "银联扫码转账(云闪付,银行App)",
-                                                Token = "unionpay"
                                             };
                                     
                                             payTickets.Add(payticket);
@@ -156,13 +148,10 @@ namespace TinyStore.Site.Controllers
                                         {
                                             payticket = new LPayments.PayTicket()
                                             {
-                                                PayType = EPayType.QRcode,
-                                                Action = EAction.QrCode,
-                                                Uri = SiteContext.Payment.TransferToBank(payment, order.PayAmount),
-                                                Datas = new Dictionary<string, string>(),
-                                                Success = true,
+                                                Name = "alipay",
+                                                DataFormat = EPayDataFormat.QrCode,
+                                                DataContent = SiteContext.Payment.TransferToBank(payment, order.PayAmount),
                                                 Message = "支付宝扫码转账",
-                                                Token = "alipay"
                                             };
                                     
                                             payTickets.Add(payticket);
@@ -172,13 +161,10 @@ namespace TinyStore.Site.Controllers
                                         { 
                                             payticket = new LPayments.PayTicket()
                                             {
-                                                PayType = EPayType.QRcode,
-                                                Action = EAction.QrCode,
-                                                Uri = payment.QRCode,
-                                                Datas = new Dictionary<string, string>(),
-                                                Success = true,
+                                                Name = payment.Name,
+                                                DataFormat = EPayDataFormat.QrCode,
+                                                DataContent = payment.QRCode,
                                                 Message = payment.Memo,
-                                                Token = ""
                                             };
                                     
                                             payTickets.Add(payticket);

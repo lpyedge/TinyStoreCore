@@ -126,13 +126,13 @@ namespace LPayments.Plartform.Paynet
 #endif
 
             var head = new Dictionary<string, string>();
-            var dic = new Dictionary<string, string>
+            var dic = new Dictionary<string, dynamic>
             {
                 ["client_id"] = this[ClientID],
                 ["client_secret"] = this[Secret],
                 ["grant_type"] = "client_credentials"
             };
-            var authorizationres = _HWU.Response(authorizationUri, Utils.HttpWebUtility.HttpMethod.Post, dic, head);
+            var authorizationres = _HWU.ResponseAsync(authorizationUri, Utils.HttpWebUtility.HttpMethod.POST, dic, head).Result;
 
             if (authorizationres.Contains("access_token"))
             {
@@ -145,14 +145,14 @@ namespace LPayments.Plartform.Paynet
 #endif
                 head = new Dictionary<string, string>();
                 head["Authorization"] = string.Format("Bearer {0}", authorizationJson.access_token);
-                dic = new Dictionary<string, string>
+                dic = new Dictionary<string, dynamic>
                 {
                     ["sDescription"] = p_OrderId,
                     ["fAmount"] = p_Amount.ToString("0.##"),
                     ["sCurrencyIsoCode"] = p_Currency.ToString(),
                     ["sOrderExternalReference"] = this[ClientID]
                 };
-                var checkoutres = _HWU.Response(checkoutUri, Utils.HttpWebUtility.HttpMethod.Post, dic, head);
+                var checkoutres = _HWU.ResponseAsync(checkoutUri, Utils.HttpWebUtility.HttpMethod.POST, dic, head).Result;
                 if (checkoutres.Contains("success"))
                 {
                     var checkoutJson = Utils.DynamicJson.Parse(checkoutres);
@@ -167,29 +167,31 @@ namespace LPayments.Plartform.Paynet
 
                     var gatewayUri = new Uri(gateurl +
                                              string.Format("?success_url={0}&cancel_url={1}",
-                                                 Utils.HttpWebUtility.UriDataEncode(p_ReturnUrl),
-                                                 Utils.HttpWebUtility.UriDataEncode(p_CancelUrl)));
+                                                 Utils.Core.UriDataEncode(p_ReturnUrl),
+                                                 Utils.Core.UriDataEncode(p_CancelUrl)));
 
                     // pt.FormHtml = "<script>location.href='" + gatewayUri + "';</script>";
                     // pt.Uri = ;
                     return new PayTicket()
                     {
-                        PayType = PayChannnel.ePayType,
-                        Action = EAction.UrlGet,
-                        Uri = gatewayUri.ToString()
+                        Name = this.Name,
+                        DataFormat = EPayDataFormat.Url,
+                        DataContent = gatewayUri.ToString(),
                     };
                 }
 
-                return new PayTicket(false)
+                return new PayTicket()
                 {
-                    PayType = PayChannnel.ePayType,
+                    Name = this.Name,
+                    DataFormat = EPayDataFormat.Error,
                     Message = checkoutres
                 };
             }
 
-            return new PayTicket(false)
+            return new PayTicket()
             {
-                PayType = PayChannnel.ePayType,
+                Name = this.Name,
+                DataFormat = EPayDataFormat.Error,
                 Message = authorizationres
             };
         }

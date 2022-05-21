@@ -184,10 +184,9 @@ namespace LPayments.Plartform.CashRun
 
             return new PayTicket()
             {
-                PayType = PayChannnel.ePayType,
-                Action = EAction.UrlPost,
-                Uri = "https://www.directebanking.com/payment/start",
-                Datas = datas
+                Name = this.Name,
+                DataFormat = EPayDataFormat.Form,
+                DataContent = "https://www.directebanking.com/payment/start??" + Utils.Core.LinkStr(datas,encode:true),
             };
         }
     }

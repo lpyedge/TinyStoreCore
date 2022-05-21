@@ -177,10 +177,9 @@ namespace LPayments.Plartform.Skrill
 
             return new PayTicket()
             {
-                PayType = PayChannnel.ePayType,
-                Action = EAction.UrlPost,
-                Uri = "https://www.skrill.com/app/payment.pl",
-                Datas = datas
+                Name = this.Name,
+                DataFormat = EPayDataFormat.Form,
+                DataContent = "https://www.skrill.com/app/payment.pl??" + Utils.Core.LinkStr(datas,encode:true),
             };
         }
     }

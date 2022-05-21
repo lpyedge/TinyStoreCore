@@ -11,7 +11,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Web;
 using System.Xml;
-using LPayments.Utils;
 
 namespace LPayments.Plartform.WeChat
 {
@@ -192,17 +191,17 @@ namespace LPayments.Plartform.WeChat
 
                         return new PayTicket()
                         {
-                            PayType = PayChannnel.ePayType,
-                            Action = EAction.QrCode,
-                            Uri = url,
-                            Token = result.ToJson()
+                            Name = this.Name,
+                            DataFormat = EPayDataFormat.QrCode,
+                            DataContent = url,
                         };
                     }
                     catch (Exception ex)
                     {
-                        return new PayTicket(false)
+                        return new PayTicket()
                         {
-                            PayType = PayChannnel.ePayType,
+                            Name = this.Name,
+                            DataFormat = EPayDataFormat.Error,
                             Message = ex.Message + "\r\n\r\n" + result.ToJson()
                         };
                     }
@@ -230,7 +229,7 @@ namespace LPayments.Plartform.WeChat
                             //heads["WL-Proxy-Client-IP"] = p_ClientIP.ToString();
                             heads["CLIENT_IP"] = p_ClientIP.ToString();
 
-                            var source = _HWU.Response(new Uri(url), HttpWebUtility.HttpMethod.Get, null, heads);
+                            var source = _HWU.ResponseAsync(new Uri(url), Utils.HttpWebUtility.HttpMethod.GET, null, heads).Result;
 
                             var m = Regex.Match(source, @"weixin://wap/pay\?[\w%&=]+", RegexOptions.IgnoreCase);
                             if (m.Success)
@@ -239,15 +238,16 @@ namespace LPayments.Plartform.WeChat
                                 // pt.FormHtml = "<script>location.href='" + m.Value + "';</script>";
                                 return new PayTicket()
                                 {
-                                    PayType = PayChannnel.ePayType,
-                                    Action = EAction.UrlScheme,
-                                    Uri = m.Value,
+                                    Name = this.Name,
+                                    DataFormat = EPayDataFormat.Url,
+                                    DataContent = m.Value,
                                 };
                             }
 
-                            return new PayTicket(false)
+                            return new PayTicket()
                             {
-                                PayType = PayChannnel.ePayType,
+                                Name = this.Name,
+                                DataFormat = EPayDataFormat.Error,
                                 Message = source + "\r\n\r\n" + result.ToJson()
                             };
                         }
@@ -255,17 +255,18 @@ namespace LPayments.Plartform.WeChat
                         {
                             return new PayTicket()
                             {
-                                PayType = PayChannnel.ePayType,
-                                Action = EAction.UrlGet,
-                                Uri = url,
+                                Name = this.Name,
+                                DataFormat = EPayDataFormat.Url,
+                                DataContent = url,
                             };
                         }
                     }
                     catch (Exception ex)
                     {
-                        return new PayTicket(false)
+                        return new PayTicket()
                         {
-                            PayType = PayChannnel.ePayType,
+                            Name = this.Name,
+                            DataFormat = EPayDataFormat.Error,
                             Message = ex.Message + "\r\n\r\n" + result.ToJson()
                         };
                     }
@@ -290,17 +291,17 @@ namespace LPayments.Plartform.WeChat
 
                         return new PayTicket()
                         {
-                            PayType = PayChannnel.ePayType,
-                            Action = EAction.Token,
-                            Token = jsApiParam.ToJson(),
-                            Message = result.ToJson(),
+                            Name = this.Name,
+                            DataFormat = EPayDataFormat.Token,
+                            DataContent = jsApiParam.ToJson(),
                         };
                     }
                     catch (Exception ex)
                     {
-                        return new PayTicket(false)
+                        return new PayTicket()
                         {
-                            PayType = PayChannnel.ePayType,
+                            Name = this.Name,
+                            DataFormat = EPayDataFormat.Error,
                             Message = ex.Message + "\r\n\r\n" + result.ToJson()
                         };
                     }
@@ -326,26 +327,27 @@ namespace LPayments.Plartform.WeChat
 
                         return new PayTicket()
                         {
-                            PayType = PayChannnel.ePayType,
-                            Action = EAction.Token,
-                            Token = jsApiParam.ToJson(),
-                            Message = result.ToJson(),
+                            Name = this.Name,
+                            DataFormat = EPayDataFormat.Token,
+                            DataContent = jsApiParam.ToJson(),
                         };
                     }
                     catch (Exception ex)
                     {
-                        return new PayTicket(false)
+                        return new PayTicket()
                         {
-                            PayType = PayChannnel.ePayType,
+                            Name = this.Name,
+                            DataFormat = EPayDataFormat.Error,
                             Message = ex.Message + "\r\n\r\n" + result.ToJson()
                         };
                     }
                 }
             }
             
-            return new PayTicket(false)
+            return new PayTicket()
             {
-                PayType = PayChannnel.ePayType,
+                Name = this.Name,
+                DataFormat = EPayDataFormat.Error,
                 Message = result.ToJson()
             };
         }

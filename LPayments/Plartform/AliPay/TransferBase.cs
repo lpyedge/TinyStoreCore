@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using LPayments.Utils;
 
 namespace LPayments.Plartform.AliPay
 {
@@ -151,10 +150,10 @@ namespace LPayments.Plartform.AliPay
                 dic["biz_content"] = Utils.Json.Serialize(biz);
                 dic["sign"] = Convert.ToBase64String(
                     Utils.RSACrypto.SignData(m_AppPrivateProvider, Utils.HASHCrypto.CryptoEnum.SHA256,
-                        Encoding.GetEncoding(Charset).GetBytes(Utils.HttpWebUtility.BuildQueryString(dic)))
+                        Encoding.GetEncoding(Charset).GetBytes(Utils.Core.LinkStr(dic,encode:true)))
                 );
 
-                var res = _HWU.Response(new Uri(GateWay), HttpWebUtility.HttpMethod.Post, dic);
+                var res = _HWU.PostStringAsync(new Uri(GateWay), Utils.Core.LinkStr( dic,encode:true)).Result;
                 var json = Utils.DynamicJson.Parse(res);
 
                 if (res.Contains("\"sign\":") && res.Contains("\"alipay_fund_trans_toaccount_transfer_response\":"))

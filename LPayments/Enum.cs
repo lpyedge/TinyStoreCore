@@ -564,9 +564,6 @@ namespace LPayments
         //[Description("铂（盎司）")] XPT,
         //[Description("钯（盎司）")] XPD,
 
-        /// <summary>
-        /// //////////////////////////////////////////////
-        /// </summary>
 
         //[Description("阿联酋迪拉姆")] AED,
         //[Description("阿富汗尼")] AFN,
@@ -720,4 +717,19 @@ namespace LPayments
         //[Description("津巴布韦元")] ZWD
     }
     
+    /// <summary>
+    /// 
+    /// </summary>
+    public enum EPayDataFormat
+    {
+        Url = 1, //深链，http(直接请求的和生成二维码的)
+        Form = 2,
+        QrCode = 3,
+        Token = 4, //app  小程序
+
+        Result=10, //同步支付返回结果
+        
+        Error=99, //同步支付返回结果
+    }
+
 }

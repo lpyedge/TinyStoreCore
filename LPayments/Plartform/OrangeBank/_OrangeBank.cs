@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Web;
-using LPayments.Utils;
 
 namespace LPayments.Plartform.OrangeBank
 {
@@ -147,7 +146,7 @@ namespace LPayments.Plartform.OrangeBank
             dic["sign"] = Utils.Core.SHA1(signstr);
             dic.Remove("open_key");
 
-            var res = _HWU.Response(uri, HttpWebUtility.HttpMethod.Post, dic);
+            var res = _HWU.PostStringAsync(uri, Utils.Core.LinkStr( dic,encode:true)).Result;
 
             var resdic = Utils.Json.Deserialize<Dictionary<string, string>>(res);
 
@@ -156,35 +155,34 @@ namespace LPayments.Plartform.OrangeBank
                 var sign = resdic["sign"];
                 resdic.Remove("sign");
                 resdic["open_key"] = this[SecretKey];
-                var signtemp = Utils.Core.MD5(Utils.HASHCrypto.Generate(Utils.HASHCrypto.CryptoEnum.SHA1)
-                    .Encrypt(resdic.OrderBy(p => p.Key).Aggregate("",
+                var signtemp = Utils.Core.MD5(Utils.HASHCrypto.Encrypt(Utils.HASHCrypto.Generate(Utils.HASHCrypto.CryptoEnum.SHA1),
+                    resdic.OrderBy(p => p.Key).Aggregate("",
                             (x, y) => string.IsNullOrWhiteSpace(y.Value) ? x + "" : x + y.Key + "=" + y.Value + "&")
                         .TrimEnd('&')));
 
                 if (string.Equals(signtemp, sign, StringComparison.OrdinalIgnoreCase))
                 {
-                    byte[] cryptobytes = HexCoding.Decode(resdic["data"]);
+                    byte[] cryptobytes =Utils.HexCoding.Decode(resdic["data"]);
                     var resdatadic =
                         Utils.Json.Deserialize<Dictionary<string, string>>(
-                            aes.Decrypt(cryptobytes));
+                            Utils.DESCrypto.Decrypt(aes,cryptobytes));
 
                     if (m_qrcode)
                     {
                         return new PayTicket()
                         {
-                            PayType = PayChannnel.ePayType,
-                            Action = EAction.QrCode,
-                            Uri = resdatadic["trade_qrcode"]
+                            Name = this.Name,
+                            DataFormat = EPayDataFormat.QrCode,
+                            DataContent = resdatadic["trade_qrcode"]
                         };
                     }
                     else
                     {
                         return new PayTicket()
                         {
-                            PayType = PayChannnel.ePayType,
-                            Action = EAction.UrlPost,
-                            Uri = uri.ToString(),
-                            Datas = dic
+                            Name = this.Name,
+                            DataFormat = EPayDataFormat.Form,
+                            DataContent = uri.ToString()+"??" + Utils.Core.LinkStr(dic,encode:true),
                         };
                     }
                 }
@@ -192,7 +190,8 @@ namespace LPayments.Plartform.OrangeBank
                 {
                     return new PayTicket()
                     {
-                        PayType = PayChannnel.ePayType,
+                        Name = this.Name,
+                        DataFormat = EPayDataFormat.Error,
                         Message = "验签失败!"
                     };
                 }
@@ -201,7 +200,8 @@ namespace LPayments.Plartform.OrangeBank
             {
                 return new PayTicket()
                 {
-                    PayType = PayChannnel.ePayType,
+                    Name = this.Name,
+                    DataFormat = EPayDataFormat.Error,
                     Message = resdic["msg"]
                 };
             }

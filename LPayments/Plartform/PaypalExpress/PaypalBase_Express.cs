@@ -6,7 +6,6 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Web;
-using LPayments.Utils;
 
 namespace LPayments.Plartform.PaypalExpress
 {
@@ -40,7 +39,7 @@ namespace LPayments.Plartform.PaypalExpress
             {
             }
 
-            var dictionary = Core.UnLinkStr(body);
+            var dictionary = Utils.Core.UnLinkStr(body);
             if (dictionary["token"] != null)
             {
                 //21 GetExpressCheckoutDetails
@@ -289,22 +288,22 @@ namespace LPayments.Plartform.PaypalExpress
                 //加上useraction=commit则用户在paypal的付款界面不展示收货地址和继续按钮，展示点击付款按钮，更适合虚拟产品的支付
                 return new PayTicket()
                 {
-                    PayType = PayChannnel.ePayType,
-                    Action = EAction.UrlGet,
-
-                    Uri =
+                    Name = this.Name,
+                    DataFormat = EPayDataFormat.Url,
+                    DataContent = 
+                    
 #if DEBUG
                         $"https://www.sandbox.paypal.com/cgi-bin/webscr?cmd=_express-checkout&useraction=commit&token={token}",
 #else
                         $"https://www.paypal.com/cgi-bin/webscr?cmd=_express-checkout&useraction=commit&token={token}",
 #endif
-                    Token = pStresponsenvp
                 };
             }
 
-            return new PayTicket(false)
+            return new PayTicket()
             {
-                PayType = PayChannnel.ePayType,
+                Name = this.Name,
+                DataFormat = EPayDataFormat.Error,
                 Message = "ErrorCode=" + decoder["L_ERRORCODE0"] + "&" + "Desc=" + decoder["L_SHORTMESSAGE0"] + "&" +
                           "Desc2=" + decoder["L_LONGMESSAGE0"]
             };

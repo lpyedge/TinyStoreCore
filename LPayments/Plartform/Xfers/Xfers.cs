@@ -121,10 +121,9 @@ namespace LPayments.Plartform.Xfers
             
             return new PayTicket()
             {
-                PayType = PayChannnel.ePayType,
-                Action = EAction.UrlPost,
-                Uri = "https://www.xfers.io/api/v2/payments",
-                Datas = datas,
+                Name = this.Name,
+                DataFormat = EPayDataFormat.Form,
+                DataContent = "https://www.xfers.io/api/v2/payments??"+Utils.Core.LinkStr(datas,encode:true),
             };
         }
 

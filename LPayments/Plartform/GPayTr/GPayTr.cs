@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
-using LPayments.Utils;
 
 namespace LPayments.Plartform.GPayTr
 {
@@ -271,7 +270,7 @@ namespace LPayments.Plartform.GPayTr
 #endif
             );
 
-            var res = _HWU.Response(uri, HttpWebUtility.HttpMethod.Post, datas);
+            var res = _HWU.PostStringAsync(uri, Utils.Core.LinkStr( datas,encode:true)).Result;
 
             if (res.Contains("\"state\":1"))
             {
@@ -282,17 +281,17 @@ namespace LPayments.Plartform.GPayTr
                 
                 return new PayTicket()
                 {
-                    PayType = PayChannnel.ePayType,
-                    Action = EAction.UrlGet,
-                    Uri = (string) json.redirect_url,
-                    Token = json
+                    Name = this.Name,
+                    DataFormat = EPayDataFormat.Url,
+                    DataContent = (string) json.redirect_url,
                 };
             }
             else
             {
-                return new PayTicket(false)
+                return new PayTicket()
                 {
-                    PayType = PayChannnel.ePayType,
+                    Name = this.Name,
+                    DataFormat = EPayDataFormat.Error,
                     Message = res
                 };
             }

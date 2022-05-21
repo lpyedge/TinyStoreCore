@@ -49,6 +49,7 @@ namespace LPayments.Plartform.AliPay
                 Status = PayResult.EStatus.Pending,
                 Message = "success"
             };
+            
             var IsVlidate = false;
             if (form["app_id"] == this[APPID] &&
                 (form["trade_status"] == "TRADE_SUCCESS" || form["trade_status"] == "TRADE_FINISHED"))
@@ -122,8 +123,7 @@ namespace LPayments.Plartform.AliPay
 
             if (m_trade_type == "alipay.trade.precreate")
             {
-                var res = _HWU.Response(new Uri(GateWay + "?charset=utf-8"),
-                    Utils.HttpWebUtility.HttpMethod.Post, datas);
+                var res = _HWU.PostStringAsync(new Uri(GateWay + "?charset=utf-8"), Utils.Core.LinkStr(datas,encode:true)).Result;
 
                 var json = Utils.DynamicJson.Parse(res);
 
@@ -138,18 +138,19 @@ namespace LPayments.Plartform.AliPay
                     {
                         return new PayTicket()
                         {
-                            PayType = PayChannnel.ePayType,
-                            Action = EAction.QrCode,
-                            Uri = resdic["qr_code"]
+                            Name = this.Name,
+                            DataFormat = EPayDataFormat.QrCode,
+                            DataContent = resdic["qr_code"]
                         };
                     }
 
                     //string sign = json.sign.ToString();
                 }
 
-                return new PayTicket(false)
+                return new PayTicket()
                 {
-                    PayType = PayChannnel.ePayType,
+                    Name = this.Name,
+                    DataFormat = EPayDataFormat.Error,
                     Message = res
                 };
             }
@@ -157,9 +158,9 @@ namespace LPayments.Plartform.AliPay
             {
                 return new PayTicket()
                 {
-                    PayType = PayChannnel.ePayType,
-                    Action = EAction.Token,
-                    Token = Utils.Core.LinkStr(datas.Where(p => (p.Key != "method" && p.Key != "version"))
+                    Name = this.Name,
+                    DataFormat = EPayDataFormat.Token,
+                    DataContent = Utils.Core.LinkStr(datas.Where(p => (p.Key != "method" && p.Key != "version"))
                             .ToDictionary(p => p.Key, p => p.Value),
                         true, true)
                 };
@@ -169,8 +170,7 @@ namespace LPayments.Plartform.AliPay
                 Pay_Wap.Extend extend = Utils.Json.Deserialize<Pay_Wap.Extend>(Utils.Json.Serialize(extend_params));
                 if (extend != null)
                 {
-                    string res = _HWU.Response(new Uri(GateWay + "?charset=utf-8"),
-                        Utils.HttpWebUtility.HttpMethod.Post, datas);
+                    string res = _HWU.PostStringAsync(new Uri(GateWay + "?charset=utf-8"), Utils.Core.LinkStr(datas,encode:true)).Result;
                     var match = System.Text.RegularExpressions.Regex.Match(res,
                         @"\{""requestType"":""SafePay"",""fromAppUrlScheme"":""alipays"",""dataString"":""[""=&\w\\]+""\}");
                     if (match.Success)
@@ -179,9 +179,9 @@ namespace LPayments.Plartform.AliPay
                         {
                             return new PayTicket()
                             {
-                                PayType = PayChannnel.ePayType,
-                                Action = EAction.UrlScheme,
-                                Uri = "alipay://alipayclient/?" + Utils.HttpWebUtility.UriDataEncode(match.Value),
+                                Name = this.Name,
+                                DataFormat = EPayDataFormat.Url,
+                                DataContent = "alipay://alipayclient/?" + Utils.Core.UriDataEncode(match.Value),
                             };
                         }
                         else
@@ -189,25 +189,27 @@ namespace LPayments.Plartform.AliPay
                             var data = Utils.DynamicJson.Parse(match.Value);
                             return new PayTicket()
                             {
-                                PayType = PayChannnel.ePayType,
-                                Action = EAction.UrlScheme,
-                                Uri = string.Format(
+                                Name = this.Name,
+                                DataFormat = EPayDataFormat.Url,
+                                DataContent = string.Format(
                                     "alipays://platformapi/startApp?appId=20000125&orderSuffix={0}#Intent;scheme=alipays;package=com.eg.android.AlipayGphone;end",
-                                    Utils.HttpWebUtility.UriDataEncode(data.dataString.ToString())),
+                                    Utils.Core.UriDataEncode(data.dataString.ToString())),
                             };
                         }
                     }
 
-                    return new PayTicket(false)
+                    return new PayTicket()
                     {
-                        PayType = PayChannnel.ePayType,
+                        Name = this.Name,
+                        DataFormat = EPayDataFormat.Error,
                         Message = res
                     };
                 }
 
-                return new PayTicket(false)
+                return new PayTicket()
                 {
-                    PayType = PayChannnel.ePayType,
+                    Name = this.Name,
+                    DataFormat = EPayDataFormat.Error,
                     Message = "extend is not support !"
                 };
             }
@@ -215,10 +217,9 @@ namespace LPayments.Plartform.AliPay
             {
                 return new PayTicket()
                 {
-                    PayType = PayChannnel.ePayType,
-                    Action = EAction.UrlPost,
-                    Uri = GateWay + "?charset=" + Charset,
-                    Datas = datas,
+                    Name = this.Name,
+                    DataFormat = EPayDataFormat.Form,
+                    DataContent =  GateWay + "?charset=" + Charset + "??" + Utils.Core.LinkStr(datas, encode: true),
                 };
             }
         }

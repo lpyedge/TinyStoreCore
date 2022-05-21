@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text;
 using System.Web;
-using LPayments.Utils;
 
 namespace LPayments.Plartform.G2APay
 {
@@ -139,21 +138,19 @@ namespace LPayments.Plartform.G2APay
             dic.Add("items",
                 $"[{{\"id\":\"{p_OrderId}\",\"name\":\"{p_OrderName}\",\"sku\":\"{new Random().Next(0, 1000000).ToString("000000")}\",\"price\":{p_Amount.ToString("0.00")},\"qty\":\"{"1"}\",\"amount\":\"{p_Amount.ToString("0.00")}\",\"url\":\"{dic["url_ok"]}\"}}]");
 
-            dic.Add("hash",
-                Utils.HASHCrypto.Generate(Utils.HASHCrypto.CryptoEnum.SHA256)
-                    .Encrypt(p_OrderId + p_Amount.ToString("0.00") + p_Currency + this[APISecret]));
+            dic.Add("hash", Utils.HASHCrypto.Encrypt(Utils.HASHCrypto.Generate(Utils.HASHCrypto.CryptoEnum.SHA256),p_OrderId + p_Amount.ToString("0.00") + p_Currency + this[APISecret]));
 
             dic.Add("notify_url", p_NotifyUrl);
 
-            var res = _HWU.Response(new Uri("https://checkout.pay.g2a.com/index/createQuote"),
-                HttpWebUtility.HttpMethod.Post, dic);
+            var res = _HWU.PostStringAsync(new Uri("https://checkout.pay.g2a.com/index/createQuote"),Utils.Core.LinkStr(dic,encode:true)).Result;
 
 
             if (!res.Contains("\"ok\""))
             {
-                return new PayTicket(false)
+                return new PayTicket()
                 {
-                    PayType = PayChannnel.ePayType,
+                    Name = this.Name,
+                    DataFormat =  EPayDataFormat.Error,
                     Message = res
                 };
             }
@@ -176,10 +173,9 @@ namespace LPayments.Plartform.G2APay
 
             return new PayTicket()
             {
-                PayType = PayChannnel.ePayType,
-                Action = EAction.UrlGet,
-                Uri = "https://checkout.pay.g2a.com/index/gateway?" + HttpWebUtility.BuildQueryString(datas),
-                Datas = datas
+                Name = this.Name,
+                DataFormat = EPayDataFormat.Url,
+                DataContent = "https://checkout.pay.g2a.com/index/gateway?" + Utils.Core.LinkStr(datas,encode:true),
             };
         }
 
@@ -189,7 +185,7 @@ namespace LPayments.Plartform.G2APay
             var authHash = Utils.Core.SHA256(this[APIHash] + email + this[APISecret]);
             headlist.Add("Authorization", this[APIHash] + ";" + authHash);
 
-            var paramlist = new Dictionary<string, string>();
+            var paramlist = new Dictionary<string, dynamic>();
             var hash = Utils.Core.SHA256(transactionId + userOrderId + amount.ToString("0.00") + this[APISecret]);
             paramlist.Add("action", "refund");
             paramlist.Add("amount", refundedAmount.ToString("0.00"));
@@ -203,7 +199,7 @@ namespace LPayments.Plartform.G2APay
 #endif
                 , transactionId));
 
-            var res = _HWU.Response(uri, HttpWebUtility.HttpMethod.Put, paramlist, headlist);
+            var res = _HWU.ResponseAsync(uri, Utils.HttpWebUtility.HttpMethod.PUT, paramlist, headlist).Result;
 
             if (res.Contains("\"ok\""))
                 return true;

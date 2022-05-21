@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text;
 using System.Web;
-using LPayments.Utils;
 
 namespace LPayments.Plartform.AliPayO
 {
@@ -67,7 +66,7 @@ namespace LPayments.Plartform.AliPayO
 #endif
                         dictionary["id"], this[UserId], this[Password], this[EntityId]));
 
-            var res = _HWU.Response(uri);
+            var res = _HWU.GetStringAsync(uri).Result;
             if (res.Contains("code\":\"000"))
             {
                 var json = Utils.DynamicJson.Parse(res);
@@ -109,7 +108,7 @@ namespace LPayments.Plartform.AliPayO
             //https://alipay-seller.docs.oppwa.com/parameters
 
             var checkoutId = string.Empty;
-            var data = new Dictionary<string, string>
+            var datas = new Dictionary<string, string>
             {
                 {"authentication.userId", this[UserId]},
                 {"authentication.password", this[Password]},
@@ -135,26 +134,26 @@ namespace LPayments.Plartform.AliPayO
             {
                 if (!string.IsNullOrWhiteSpace(pe.Email))
                 {
-                    data.Add("customParameters[ALIRISK_billToEmail]", pe.Email);
-                    data.Add("customParameters[ALIRISK_buyerEmail]", pe.Email);
+                    datas.Add("customParameters[ALIRISK_billToEmail]", pe.Email);
+                    datas.Add("customParameters[ALIRISK_buyerEmail]", pe.Email);
                 }
 
                 if (!string.IsNullOrWhiteSpace(pe.Phone))
                 {
-                    data.Add("customParameters[ALIRISK_billToPhoneNumber]", pe.Phone);
-                    data.Add("customParameters[ALIRISK_buyerMobile]", pe.Phone);
+                    datas.Add("customParameters[ALIRISK_billToPhoneNumber]", pe.Phone);
+                    datas.Add("customParameters[ALIRISK_buyerMobile]", pe.Phone);
                 }
 
                 if (!string.IsNullOrWhiteSpace(pe.Firstname) && !string.IsNullOrWhiteSpace(pe.Lastname))
-                    data.Add("customParameters[ALIRISK_buyerRealName]", pe.Firstname + " " + pe.Lastname);
+                    datas.Add("customParameters[ALIRISK_buyerRealName]", pe.Firstname + " " + pe.Lastname);
                 if (!string.IsNullOrWhiteSpace(pe.GameName))
-                    data.Add("customParameters[ALIRISK_extendProperties_gameName]", pe.GameName);
+                    datas.Add("customParameters[ALIRISK_extendProperties_gameName]", pe.GameName);
                 if (!string.IsNullOrWhiteSpace(pe.ServerName))
-                    data.Add("customParameters[ALIRISK_extendProperties_gameServer]", pe.ServerName);
+                    datas.Add("customParameters[ALIRISK_extendProperties_gameServer]", pe.ServerName);
                 if (!string.IsNullOrWhiteSpace(pe.GameTeam))
-                    data.Add("customParameters[ALIRISK_extendProperties_gameTeam]", pe.GameTeam);
+                    datas.Add("customParameters[ALIRISK_extendProperties_gameTeam]", pe.GameTeam);
                 if (!string.IsNullOrWhiteSpace(pe.Character))
-                    data.Add("customParameters[ALIRISK_extendProperties_gamePlayer]", pe.Character);
+                    datas.Add("customParameters[ALIRISK_extendProperties_gamePlayer]", pe.Character);
             }
 
 #if DEBUG
@@ -163,16 +162,16 @@ namespace LPayments.Plartform.AliPayO
             var uri = new Uri("https://oppwa.com/v1/checkouts");
 #endif
 
-            var res = _HWU.Response(uri, HttpWebUtility.HttpMethod.Post, data);
+            var res = _HWU.PostStringAsync(uri, Utils.Core.LinkStr(datas,encode:true)).Result;
             var json = Utils.DynamicJson.Parse(res);
             if (res.Contains("code\":\"000"))
                 checkoutId = json.id;
 
             return new PayTicket()
             {
-                PayType = PayChannnel.ePayType,
-                Action = EAction.Token,
-                Token = checkoutId,
+                Name = this.Name,
+                DataFormat = EPayDataFormat.Token,
+                DataContent = checkoutId
                 //Uri = "https://oppwa.com/v1/paymentWidgets.js?checkoutId="
             };
 

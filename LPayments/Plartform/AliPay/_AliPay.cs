@@ -4,9 +4,6 @@ using System.Dynamic;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
-using System.Text;
-using System.Web;
-using LPayments.Utils;
 
 namespace LPayments.Plartform.AliPay
 {

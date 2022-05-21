@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Xml;
-using LPayments.Utils;
 
 namespace LPayments.Plartform.IPayLinks
 {
@@ -173,23 +172,21 @@ namespace LPayments.Plartform.IPayLinks
             dic.Add("signMsg", Utils.Core.MD5(signPreStr));
             var res = "";
 
-            res = _HWU.Response(new Uri(
+            res = _HWU.PostStringAsync(new Uri(
 #if DEBUG
-                    "http://api.test.ipaylinks.com/webgate/crosspay.htm"
+                "http://api.test.ipaylinks.com/webgate/crosspay.htm"
 #else
                 "https://api.ipaylinks.com/webgate/crosspay.htm"
 #endif
-                ),
-                HttpWebUtility.HttpMethod.Post, dic.ToDictionary(p => p.Key, p => p.Value));
+                ),Utils.Core.LinkStr( dic,encode:true)).Result;
 
             //var rl = Notify(null, null, null , res);
             return new PayTicket()
             {
-                PayType = PayChannnel.ePayType,
-                Uri = p_ReturnUrl,
-                Token = Notify(new Dictionary<string, string>(), new Dictionary<string, string>(),
-                    new Dictionary<string, string>(), res, p_ClientIP.ToString()),
-                Sync = false
+                Name = this.Name,
+                DataFormat = EPayDataFormat.Result,
+                DataContent = Utils.Json.Serialize(Notify(new Dictionary<string, string>(), new Dictionary<string, string>(),
+                    new Dictionary<string, string>(), res, p_ClientIP.ToString())),
             };
         }
 

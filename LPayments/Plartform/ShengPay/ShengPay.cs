@@ -184,10 +184,9 @@ namespace LPayments.Plartform.ShengPay
 
             return new PayTicket()
             {
-                PayType = PayChannnel.ePayType,
-                Action = EAction.UrlPost,
-                Uri = GATEWAY + "?_input_charset=utf-8",
-                Datas = datas
+                Name = this.Name,
+                DataFormat = EPayDataFormat.Form,
+                DataContent = GATEWAY + "?_input_charset=utf-8??" + Utils.Core.LinkStr(datas,encode:true),
             };
         }
 

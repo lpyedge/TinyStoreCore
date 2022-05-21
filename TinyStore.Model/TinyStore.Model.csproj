@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="sqlSugarCore" Version="5.0.2.8" />
+    <PackageReference Include="sqlSugarCore" Version="5.0.8.1" />
     <PackageReference Include="TinyMapper" Version="3.0.3" />
   </ItemGroup>
 

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Web;
-using LPayments.Utils;
 
 namespace LPayments.Plartform.Payssion
 {
@@ -85,19 +84,19 @@ namespace LPayments.Plartform.Payssion
                 var url =
                     string.Format(
                         "https://www.payssion.com/checkout/{0}?order_id={1}&logo={2}&description={3}&amount={4}&currency={5}&payer_email={6}&redirect_url={7}&notify_url={8}&api_sig={9}",
-                        this[ApiKey], Utils.HttpWebUtility.UriDataEncode(p_OrderId), "",
-                        Utils.HttpWebUtility.UriDataEncode(p_OrderName),
-                        p_Amount.ToString("0.00"), p_Currency, "", Utils.HttpWebUtility.UriDataEncode(p_ReturnUrl),
-                        Utils.HttpWebUtility.UriDataEncode(p_NotifyUrl),
+                        this[ApiKey], Utils.Core.UriDataEncode(p_OrderId), "",
+                        Utils.Core.UriDataEncode(p_OrderName),
+                        p_Amount.ToString("0.00"), p_Currency, "", Utils.Core.UriDataEncode(p_ReturnUrl),
+                        Utils.Core.UriDataEncode(p_NotifyUrl),
                         Utils.Core.MD5(string.Join("|", this[ApiKey], p_Amount.ToString("0.00"), p_Currency, p_OrderId,
                             this[SecretKey])));
                 // pt.Uri = url;
                 // pt.FormHtml = "<script>location.href='" + url + "';</script>";
                 return new PayTicket()
                 {
-                    PayType = PayChannnel.ePayType,
-                    Action = EAction.UrlGet,
-                    Uri = url
+                    Name = this.Name,
+                    DataFormat = EPayDataFormat.Url,
+                    DataContent = url,
                 };
             }
             else
@@ -129,7 +128,7 @@ namespace LPayments.Plartform.Payssion
 #endif
                 );
 
-                var res = _HWU.Response(uri, HttpWebUtility.HttpMethod.Post, dic);
+                var res = _HWU.PostStringAsync(uri, Utils.Core.LinkStr( dic,encode:true)).Result;
 
                 if (res.Contains("\"result_code\":200"))
                 {
@@ -138,15 +137,16 @@ namespace LPayments.Plartform.Payssion
                     // pt.FormHtml = "<script>location.href='" + (string) json.redirect_url + "';</script>";
                     return new PayTicket()
                     {
-                        PayType = PayChannnel.ePayType,
-                        Action = EAction.UrlGet,
-                        Uri = (string) json.redirect_url
+                        Name = this.Name,
+                        DataFormat = EPayDataFormat.Url,
+                        DataContent = (string) json.redirect_url,
                     };
                 }
 
-                return new PayTicket(false)
+                return new PayTicket()
                 {
-                    PayType = PayChannnel.ePayType,
+                    Name = this.Name,
+                    DataFormat = EPayDataFormat.Error,
                     Message = res
                 };
             }
