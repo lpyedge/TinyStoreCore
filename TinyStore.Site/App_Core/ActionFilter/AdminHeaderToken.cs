@@ -9,7 +9,7 @@ namespace TinyStore.Site;
 
 public sealed class AdminHeaderToken : HeaderToken
 {
-    public const string HeaderKey = "AdminToken";
+    public const string TokenKey = "AdminToken";
 
     public const string ItemKey = "Admin";
 
@@ -17,7 +17,7 @@ public sealed class AdminHeaderToken : HeaderToken
     ///     可以传参传入要忽略的Action名称,传入的Action不会执行判断
     /// </summary>
     /// <param name="ignoreactions"></param>
-    public AdminHeaderToken(params string[] ignoreactions) : base(HeaderKey, ItemKey, ignoreactions)
+    public AdminHeaderToken(params string[] ignoreactions) : base(TokenKey, ItemKey, ignoreactions)
     {
     }
 

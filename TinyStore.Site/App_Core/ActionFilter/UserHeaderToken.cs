@@ -8,7 +8,7 @@ namespace TinyStore.Site;
 
 public sealed class UserHeaderToken : HeaderToken
 {
-    public const string HeaderKey = "UserToken";
+    public const string TokenKey = "UserToken";
 
     public const string ItemKey = "User";
 
@@ -16,7 +16,7 @@ public sealed class UserHeaderToken : HeaderToken
     ///     可以传参传入要忽略的Action名称,传入的Action不会执行判断
     /// </summary>
     /// <param name="ignoreactions"></param>
-    public UserHeaderToken(params string[] ignoreactions) : base(HeaderKey, ItemKey, ignoreactions)
+    public UserHeaderToken(params string[] ignoreactions) : base(TokenKey, ItemKey, ignoreactions)
     {
     }
 
