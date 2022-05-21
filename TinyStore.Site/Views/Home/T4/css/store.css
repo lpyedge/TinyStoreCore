@@ -7,7 +7,6 @@
 .store-header .store-name {font-size: 0.6rem}/*商城头部游戏名称大小*/
 .store-header .store-memo {font-size: 0.3rem; color: rgba(255,255,255,.6); -webkit-line-clamp: 3}/*商城头部游戏介绍大小，颜色，行数*/
 .store-header .bottom-nav {width: 100%; background: #f5f5f5; left: 0}/*商城头部下方定位背景色*/
-.store-header .product-icon > .iconfont {font-size:0.8rem}/*右上角按钮图标大小*/
 .store-header .home-icon {display: none}/*返回首页按钮隐藏*/
 
 /*商品购买*/

@@ -29,6 +29,10 @@
     <Content Include="Views\Home\T1\css\store.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Remove="App_Data\EmailTemplate\DeliveryEmail_Stock.htm" />
+    <Content Include="App_Data\EmailTemplate\DeliveryEmail_Stock.htm">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>

@@ -126,7 +126,7 @@ namespace TinyStore.Site
                         Memo = "支付宝shoukuan"
                     }
                 },
-                UniqueId = "test",
+                UniqueId = "tests",
                 StoreId = storeId
             });
             BLL.StoreBLL.InsertAsync(new StoreModel
@@ -137,8 +137,8 @@ namespace TinyStore.Site
                 Initial = Global.Initial("大网店"),
                 Logo = "#",
                 Memo = "自家供货，自家销售",
-                Template = EStoreTemplate.模板一,
-                IsSingle = true,
+                Template = EStoreTemplate.模板四,
+                IsSingle = false,
                 PaymentList = new List<Model.PaymentView>(Payment.SystemPaymentList())
                 {
                     new()
@@ -153,7 +153,7 @@ namespace TinyStore.Site
                         Memo = "微信 收款"
                     }
                 },
-                UniqueId = "test",
+                UniqueId = "testb",
                 StoreId = storeId + "1"
             });
             var supplyList = new List<SupplyModel>();

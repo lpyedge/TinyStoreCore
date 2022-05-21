@@ -9,9 +9,10 @@
 
     $(function () {
         if (!store.isSingle) {
-            $(".store-header").addClass("store-header-withhome");
+            $(".store-header").addClass("withhome");
         }
-            $.qqservice(store.qq);
+        
+        $.qqservice(store.qq);
 
         RenderStoreInfo();
         
