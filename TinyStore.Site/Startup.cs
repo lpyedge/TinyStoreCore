@@ -34,7 +34,7 @@ namespace TinyStore.Site
                 // })
                 .AddJsonOptions(options =>
                 {
-                    Global.Json.Settings.JsonSerializerSettingsAction(options.JsonSerializerOptions);
+                    Utils.JsonUtility.Settings.JsonSerializerSettingsAction(options.JsonSerializerOptions);
                     //首字母小写驼峰式命名
                     options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
                 })

@@ -428,7 +428,7 @@ namespace TinyStore.Site.Controllers
         {
             UserModel user = UserCurrent();
 
-            var stockIdList = Global.Json.Deserialize<List<string>>(stockIds);
+            var stockIdList = Utils.JsonUtility.Deserialize<List<string>>(stockIds);
 
             if (stockIdList != null && stockIdList.Count > 0)
                 switch (action)
@@ -766,7 +766,7 @@ namespace TinyStore.Site.Controllers
             if (store == null)
                 return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
 
-            var orderIdList = Global.Json.Deserialize<List<string>>(orderIds);
+            var orderIdList = Utils.JsonUtility.Deserialize<List<string>>(orderIds);
 
             if (orderIdList != null && orderIdList.Count > 0)
                 switch (action)
@@ -885,7 +885,7 @@ namespace TinyStore.Site.Controllers
 
             if (string.IsNullOrWhiteSpace(orderIds))
                 return ApiResult.RCode(ApiResult.ECode.DataFormatError);
-            var orderIdList = Global.Json.Deserialize<List<string>>(orderIds);
+            var orderIdList = Utils.JsonUtility.Deserialize<List<string>>(orderIds);
             if (orderIdList == null || orderIdList.Count == 0)
                 return ApiResult.RCode(ApiResult.ECode.DataFormatError);
 

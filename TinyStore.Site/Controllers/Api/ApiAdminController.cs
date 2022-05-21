@@ -461,7 +461,7 @@ namespace TinyStore.Site.Controllers.Api
         {
             var admin = AdminCurrent();
 
-            var stockIdList = Global.Json.Deserialize<List<string>>(stockIds);
+            var stockIdList = Utils.JsonUtility.Deserialize<List<string>>(stockIds);
 
             if (stockIdList != null && stockIdList.Count > 0)
                 switch (action)
@@ -731,7 +731,7 @@ namespace TinyStore.Site.Controllers.Api
         {
             var admin = AdminCurrent();
 
-            var orderIdList = Global.Json.Deserialize<List<string>>(orderIds);
+            var orderIdList = Utils.JsonUtility.Deserialize<List<string>>(orderIds);
 
             if (orderIdList != null && orderIdList.Count > 0)
                 switch (action)

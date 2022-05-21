@@ -122,7 +122,7 @@ namespace TinyStore
                     {
                         var josnconfig = File.ReadAllText(fileinfo.FullName);
                         configDic.Add(instance.Key,
-                            Global.Json.Deserialize<C>(josnconfig));
+                            System.Text.Json.JsonSerializer.Deserialize<C>(josnconfig));
                     }
                 }
             }
@@ -142,7 +142,7 @@ namespace TinyStore
                     StaticInit.Invoke();
 
                 File.WriteAllText(ConfigPath + key.ToString() + ".json",
-                    Global.Json.Serialize(config));
+                    System.Text.Json.JsonSerializer.Serialize(config));
             }
         }
 
@@ -248,7 +248,7 @@ namespace TinyStore
                 if (fileinfo.Exists)
                 {
                     var josnconfig = File.ReadAllText(fileinfo.FullName);
-                    setting = Global.Json.Deserialize<S>(josnconfig);
+                    setting = System.Text.Json.JsonSerializer.Deserialize<S>(josnconfig);
                 }
             }
             return setting;
@@ -258,7 +258,7 @@ namespace TinyStore
         {
             Setting = setting;
 
-            File.WriteAllText(SettingPath + SettingFileName, Global.Json.Serialize(setting));
+            File.WriteAllText(SettingPath + SettingFileName, System.Text.Json.JsonSerializer.Serialize(setting));
         }
 
         #endregion

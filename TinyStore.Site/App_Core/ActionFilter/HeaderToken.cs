@@ -69,7 +69,7 @@ namespace TinyStore.Site
             {
                 var buff = Convert.FromBase64String(token);
                 var str = Encoding.UTF8.GetString(buff);
-                return Global.Json.Deserialize<TokenData>(str);
+                return Utils.JsonUtility.Deserialize<TokenData>(str);
             }
 
             return null;
@@ -79,7 +79,7 @@ namespace TinyStore.Site
         {
             if (tokendata != null)
             {
-                var str = Global.Json.Serialize(tokendata);
+                var str = Utils.JsonUtility.Serialize(tokendata);
                 var buff = Encoding.UTF8.GetBytes(str);
                 return Convert.ToBase64String(buff);
             }

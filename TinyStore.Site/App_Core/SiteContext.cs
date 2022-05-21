@@ -22,7 +22,7 @@ namespace TinyStore.Site
 
         public static void ConfigSave()
         {
-            var configJson = Global.Json.SerializePretty(new {Config});
+            var configJson = Utils.JsonUtility.SerializePretty(new {Config});
             File.WriteAllText(Config.AppData + "Config.json", configJson);
         }
 
@@ -689,7 +689,7 @@ namespace TinyStore.Site
                     {
                         var file = new FileInfo(filePath);
                         var fileContent = File.ReadAllText(file.FullName);
-                        var data = Global.Json.Deserialize<Utils.EmailContext.EmailTemplate>(fileContent);
+                        var data = Utils.JsonUtility.Deserialize<Utils.EmailContext.EmailTemplate>(fileContent);
                         Utils.EmailContext.EmailTemplate.Instances[data.Key] = data;
                     }
                     catch (Exception e)
