@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 
-namespace TinyStore.Model.Extend
+namespace TinyStore.Model
 {
     [Serializable]
-    public class UserStore
+    public class UserStoreView
     {
         public int UserId { get; set; }
         public string Account { get; set; }

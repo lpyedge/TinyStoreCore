@@ -112,7 +112,7 @@ namespace TinyStore.Site
                 Memo = "自家供货，自家销售",
                 Template = EStoreTemplate.模板一,
                 IsSingle = true,
-                PaymentList = new List<Model.Extend.Payment>(Payment.SystemPaymentList())
+                PaymentList = new List<Model.PaymentView>(Payment.SystemPaymentList())
                 {
                     new()
                     {
@@ -139,7 +139,7 @@ namespace TinyStore.Site
                 Memo = "自家供货，自家销售",
                 Template = EStoreTemplate.模板一,
                 IsSingle = true,
-                PaymentList = new List<Model.Extend.Payment>(Payment.SystemPaymentList())
+                PaymentList = new List<Model.PaymentView>(Payment.SystemPaymentList())
                 {
                     new()
                     {
@@ -330,7 +330,7 @@ namespace TinyStore.Site
 
                 IsDelivery = false,
                 DeliveryDate = DateTime.Now,
-                StockList = new List<Model.Extend.StockOrder>(),
+                StockList = new List<Model.StockOrderView>(),
 
 
                 IsSettle = false,
@@ -382,7 +382,7 @@ namespace TinyStore.Site
 
                         IsDelivery = true,
                         DeliveryDate = DateTime.Now.AddDays(-i),
-                        StockList = new List<Model.Extend.StockOrder>(),
+                        StockList = new List<Model.StockOrderView>(),
 
                         RefundAmount = isrefund ? productModel.Cost * 0.3 : 0,
                         RefundDate = isrefund ? DateTime.Now.AddDays(-i) : null,
@@ -729,17 +729,17 @@ namespace TinyStore.Site
         {
             private static readonly object _Locker = new();
 
-            private static List<Model.Extend.Payment> _SystemPaymentList;
+            private static List<Model.PaymentView> _SystemPaymentList;
 
-            public static List<Model.Extend.Payment> SystemPaymentList()
+            public static List<Model.PaymentView> SystemPaymentList()
             {
                 if (_SystemPaymentList == null)
                     lock (_Locker)
                     {
                         if (_SystemPaymentList == null)
                         {
-                            _SystemPaymentList = new List<Model.Extend.Payment>();
-                            _SystemPaymentList.Add(new Model.Extend.Payment
+                            _SystemPaymentList = new List<Model.PaymentView>();
+                            _SystemPaymentList.Add(new Model.PaymentView
                             {
                                 BankType = EBankType.支付宝,
                                 Subject = "支付宝H5",
@@ -750,7 +750,7 @@ namespace TinyStore.Site
                                 IsSystem = true,
                                 IsEnable = false
                             });
-                            _SystemPaymentList.Add(new Model.Extend.Payment
+                            _SystemPaymentList.Add(new Model.PaymentView
                             {
                                 BankType = EBankType.支付宝,
                                 Subject = "支付宝扫码",
@@ -761,7 +761,7 @@ namespace TinyStore.Site
                                 IsSystem = true,
                                 IsEnable = false
                             });
-                            _SystemPaymentList.Add(new Model.Extend.Payment
+                            _SystemPaymentList.Add(new Model.PaymentView
                             {
                                 BankType = EBankType.支付宝,
                                 Subject = "支付宝网关",
@@ -772,7 +772,7 @@ namespace TinyStore.Site
                                 IsSystem = true,
                                 IsEnable = false
                             });
-                            _SystemPaymentList.Add(new Model.Extend.Payment
+                            _SystemPaymentList.Add(new Model.PaymentView
                             {
                                 BankType = EBankType.微信,
                                 Subject = "微信H5",
@@ -783,7 +783,7 @@ namespace TinyStore.Site
                                 IsSystem = true,
                                 IsEnable = false
                             });
-                            _SystemPaymentList.Add(new Model.Extend.Payment
+                            _SystemPaymentList.Add(new Model.PaymentView
                             {
                                 BankType = EBankType.微信,
                                 Subject = "微信扫码",
@@ -800,7 +800,7 @@ namespace TinyStore.Site
                 return _SystemPaymentList;
             }
 
-            public static string TransferToBank(Model.Extend.Payment payment, double amount = 0)
+            public static string TransferToBank(Model.PaymentView payment, double amount = 0)
             {
                 if ((int) payment.BankType >= 10)
                 {
@@ -1058,7 +1058,7 @@ namespace TinyStore.Site
                     {
                         ProductModel product =
                             BLL.ProductBLL.QueryModelByProductId(order.ProductId);
-                        var liststock = new List<Model.Extend.StockOrder>();
+                        var liststock = new List<Model.StockOrderView>();
                         if (product != null)
                         {
                             #region 卡密
@@ -1078,7 +1078,7 @@ namespace TinyStore.Site
 
                                     BLL.StockBLL.UpdateRange(stocklist.Where(p => p.IsDelivery).ToList());
                                     foreach (StockModel item in stocklist.Where(p => p.IsDelivery))
-                                        liststock.Add(new Model.Extend.StockOrder
+                                        liststock.Add(new Model.StockOrderView
                                         {
                                             StockId = item.StockId,
                                             Name = item.Name
@@ -1171,7 +1171,7 @@ namespace TinyStore.Site
                     {
                         var emailadd = string.Empty;
                         var index = 1;
-                        foreach (Model.Extend.StockOrder item in order.StockList)
+                        foreach (Model.StockOrderView item in order.StockList)
                         {
                             emailadd = Email.EmailTemplates["DeliveryEmail_Stock"].Content;
 
@@ -1238,7 +1238,7 @@ namespace TinyStore.Site
 
             //人工发货
             // public static ApiResult DeliveryByHand(string storeid, string orderid, string code,
-            //     List<Model.Extend.StockOrder> list)
+            //     List<Model.View.StockOrder> list)
             // {
             //     var order = BLL.BLL.OrderBLL.QueryModelByOrderIdAndStoreId(orderid, storeid);
             //     var store = order == null ? null : BLL.BLL.StoreBLL.QueryModelByStoreId(order.StoreId);

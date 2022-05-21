@@ -1,9 +1,9 @@
 using System;
 
-namespace TinyStore.Model.Extend
+namespace TinyStore.Model
 {
     [Serializable]
-    public class ProductStat
+    public class ProductStatView
     {
         public string Name { get; set; }
         

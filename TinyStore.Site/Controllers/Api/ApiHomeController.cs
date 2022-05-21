@@ -9,7 +9,6 @@ using Marvin.Cache.Headers;
 using Microsoft.AspNetCore.Mvc;
 using TinyStore.BLL;
 using TinyStore.Model;
-using TinyStore.Model.Extend;
 using TinyStore.Utils;
 
 namespace TinyStore.Site.Controllers.Api
@@ -220,7 +219,7 @@ namespace TinyStore.Site.Controllers.Api
             OrderModel order = OrderBLL.QueryModelById(orderId);
             if (order == null)
                 return ApiResult.RCode("订单不存在");
-            order.StockList = new List<StockOrder>();
+            order.StockList = new List<Model.StockOrderView>();
             StoreModel store = StoreBLL.QueryModelByStoreId(order.StoreId);
             order.StoreUniqueId = store?.UniqueId;
             order.StoreName = store?.Name;

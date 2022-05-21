@@ -82,7 +82,7 @@ namespace TinyStore.Model
         /// 店铺自定义收款方式
         /// </summary>
         [SqlSugar.SugarColumn(IsJson = true,ColumnDataType = "text")]
-        public List<Model.Extend.Payment> PaymentList { get; set; }
+        public List<Model.PaymentView> PaymentList { get; set; }
 
         /// <summary>
         /// 店铺标识

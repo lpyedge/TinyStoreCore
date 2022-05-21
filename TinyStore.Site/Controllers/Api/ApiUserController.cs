@@ -309,11 +309,11 @@ namespace TinyStore.Site.Controllers
                 return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
 
             var systemPaymentList = SiteContext.Payment.SystemPaymentList();
-            foreach (Model.Extend.Payment item in store.PaymentList.Where(p => p.IsSystem))
+            foreach (Model.PaymentView item in store.PaymentList.Where(p => p.IsSystem))
                 // ReSharper disable once PossibleNullReferenceException
                 systemPaymentList.FirstOrDefault(p => p.Name == item.Name).IsEnable = item.IsEnable;
 
-            var paymentList = new List<Model.Extend.Payment>(systemPaymentList);
+            var paymentList = new List<Model.PaymentView>(systemPaymentList);
             paymentList.AddRange(store.PaymentList.Where(p => !p.IsSystem));
             storeOrigin.PaymentList = paymentList;
 
@@ -698,7 +698,7 @@ namespace TinyStore.Site.Controllers
             if (order.IsDelivery)
             {
                 order.DeliveryDate = order.DeliveryDate != null ? order.DeliveryDate : DateTime.Now;
-                order.StockList = order.StockList != null ? order.StockList : new List<Model.Extend.StockOrder>();
+                order.StockList = order.StockList != null ? order.StockList : new List<Model.StockOrderView>();
             }
 
             if (string.IsNullOrWhiteSpace(order.OrderId))
@@ -825,7 +825,7 @@ namespace TinyStore.Site.Controllers
                     var orderProductIdList = productIdGroup.Select(p => p.Key).ToList();
                     var productList = BLL.ProductBLL.QueryListByStoreId(store.StoreId)
                         .Where(p => orderProductIdList.Contains(p.ProductId)).ToList();
-                    var productStatList = new List<Model.Extend.ProductStat>();
+                    var productStatList = new List<Model.ProductStatView>();
                     foreach (var item in productIdGroup)
                     {
                         var productId = item.Key;
@@ -846,7 +846,7 @@ namespace TinyStore.Site.Controllers
                             var orderDate = dateFrom.AddDays(i);
                             var orderInDayList = orderProductList
                                 .Where(p => p.CreateDate >= orderDate && p.CreateDate <= orderDate.AddDays(1)).ToList();
-                            var productStat = new Model.Extend.ProductStat()
+                            var productStat = new Model.ProductStatView()
                             {
                                 Name = productName,
                                 Amount = orderInDayList.Sum(p => p.PayAmount),

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using SqlSugar;
 using TinyStore.Model;
-using TinyStore.Model.Extend;
 
 namespace TinyStore.BLL
 {
@@ -25,11 +24,11 @@ namespace TinyStore.BLL
             return QueryModel(p => p.UserId == userid);
         }
 
-        public static PageList<Model.Extend.UserStore> QueryPageListBySearch(string keyname, int pageindex, int pagesize)
+        public static PageList<Model.UserStoreView> QueryPageListBySearch(string keyname, int pageindex, int pagesize)
         {
             using (var db = DBClient)
             {
-                List<UserStore> data = new List<UserStore>();
+                List<Model.UserStoreView> data = new List<Model.UserStoreView>();
                 int total = 0;
                 if (string.IsNullOrWhiteSpace(keyname))
                 {
@@ -38,7 +37,7 @@ namespace TinyStore.BLL
                     data = db.Queryable<Model.UserModel, Model.UserExtendModel>(
                             (u,ue) => new JoinQueryInfos(JoinType.Inner,u.UserId == ue.UserId))
                         .OrderBy((u,ue)  => u.UserId,OrderByType.Desc)
-                        .Select((u,ue)=> new Model.Extend.UserStore()
+                        .Select((u,ue)=> new Model.UserStoreView()
                         {
                             UserId = u.UserId,
                             Account = u.Account,
@@ -54,7 +53,7 @@ namespace TinyStore.BLL
                             .LeftJoin<Model.StoreModel>((x,y) => 
                                 x.UserId == y.UserId && (x.Account.Contains(keyname) ||  y.Name.Contains(keyname) && x.UserId == u.UserId)).Any())
                         .OrderBy((u,ue)  => u.UserId,OrderByType.Desc)
-                        .Select((u,ue)=> new Model.Extend.UserStore()
+                        .Select((u,ue)=> new Model.UserStoreView()
                         {
                             UserId = u.UserId,
                             Account = u.Account,
@@ -77,7 +76,7 @@ namespace TinyStore.BLL
                     item.Stores = stores.Where(p => p.UserId == item.UserId).ToList();
                 }
                     
-                return new PageList<Model.Extend.UserStore>(data,total);
+                return new PageList<Model.UserStoreView>(data,total);
             }
         }
     }

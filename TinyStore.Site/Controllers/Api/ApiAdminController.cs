@@ -168,7 +168,7 @@ namespace TinyStore.Site.Controllers.Api
         }
         
         [HttpPost]
-        public IActionResult UserSave(Model.Extend.UserStore userStore)
+        public IActionResult UserSave(Model.UserStoreView userStore)
         {
             var admin = AdminCurrent();
             

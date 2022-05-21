@@ -1,9 +1,9 @@
 ﻿using System;
 
-namespace TinyStore.Model.Extend
+namespace TinyStore.Model
 {
     [Serializable]
-    public class StockOrder
+    public class StockOrderView
     {
         public string StockId { get; set; }
         

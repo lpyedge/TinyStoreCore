@@ -171,7 +171,7 @@ namespace TinyStore.Model
         /// 卡密列表
         /// </summary>
         [SqlSugar.SugarColumn(IsJson = true, ColumnDataType = "text")]
-        public List<Model.Extend.StockOrder> StockList { get; set; } = new List<Model.Extend.StockOrder>();
+        public List<Model.StockOrderView> StockList { get; set; } = new List<Model.StockOrderView>();
         
 
         /// <summary>

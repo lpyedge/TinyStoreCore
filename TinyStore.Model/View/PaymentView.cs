@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace TinyStore.Model.Extend
+namespace TinyStore.Model
 {
     [Serializable]
-    public class Payment
+    public class PaymentView
     {
         /// <summary>
         /// 是否系统支付方式

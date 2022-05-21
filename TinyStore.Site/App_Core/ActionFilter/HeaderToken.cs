@@ -7,115 +7,96 @@ using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Controllers;
 
-namespace TinyStore.Site
+namespace TinyStore.Site;
+
+
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
+public abstract class HeaderToken : ActionFilterAttribute
 {
-    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
-    public abstract class HeaderToken : ActionFilterAttribute
+    /// <summary>
+    ///     可以传参传入要忽略的Action名称,传入的Action不会执行判断
+    /// </summary>
+    /// <param name="tokenKey"></param>
+    /// <param name="itemKey"></param>
+    /// <param name="ignoreactions"></param>
+    public HeaderToken(string tokenKey, string itemKey, params string[] ignoreactions)
     {
-          //public T ModelGet<T>(IDictionary<object, object> items, string itemkey) where T : class, new()
-        //{
-        //    if (string.IsNullOrWhiteSpace(itemkey) && items.ContainsKey(itemkey))
-        //    {
-        //        return (items[itemkey] as T);
-        //    }
-        //    return default(T);
-        //}
+        TokenKey = tokenKey;
+        ItemKey = itemKey;
+        _Ignoreactions = ignoreactions.Select(p => p.ToLowerInvariant()).ToArray();
+    }
 
-        //public void ModelSet<T>(IDictionary<object, object> items, string itemkey,dynamic model) where T : class, new()
-        //{
-        //    if (string.IsNullOrWhiteSpace(itemkey) )
-        //    {
-        //        items[itemkey] = model;
-        //    }
-        //}
+    public string[] _Ignoreactions { get; protected set; }
 
+    private string TokenKey { get; }
+    private string ItemKey { get; }
 
-        public string[] _Ignoreactions
+    internal abstract void OnTokenGet(ActionExecutingContext context, TokenData tokendata);
+
+    internal static TokenData FromHeaderToken(string token)
+    {
+        if (!string.IsNullOrWhiteSpace(token))
         {
-            get;
-            protected set;
+            var buff = Convert.FromBase64String(token);
+            var str = Encoding.UTF8.GetString(buff);
+            return Utils.JsonUtility.Deserialize<TokenData>(str);
         }
 
-        /// <summary>
-        ///     可以传参传入要忽略的Action名称,传入的Action不会执行判断
-        /// </summary>
-        /// <param name="headerTokenKey"></param>
-        /// <param name="itemKey"></param>
-        /// <param name="ignoreactions"></param>
-        public HeaderToken(string headerTokenKey, string itemKey, params string[] ignoreactions)
+        return null;
+    }
+
+    internal static string ToHeaderToken(TokenData tokendata)
+    {
+        if (tokendata != null)
         {
-            HeaderTokenKey = headerTokenKey;
-            ItemKey = itemKey;
-            _Ignoreactions = ignoreactions.Select(p => p.ToLowerInvariant()).ToArray();
+            var str = Utils.JsonUtility.Serialize(tokendata);
+            var buff = Encoding.UTF8.GetBytes(str);
+            return Convert.ToBase64String(buff);
         }
 
-        private string HeaderTokenKey { get; }
-        private string ItemKey { get; }
+        return "";
+    }
 
-        internal abstract void OnTokenGet(ActionExecutingContext context, TokenData tokendata);
+    public override void OnActionExecuting(ActionExecutingContext context)
+    {
+        base.OnActionExecuting(context);
 
-        internal class TokenData
+        var actionname = ((ControllerActionDescriptor) context.ActionDescriptor).ActionName.ToLowerInvariant();
+        if (!_Ignoreactions.Contains(actionname))
         {
-            public string Id { get; set; }
-
-            public string Key { get; set; }
-            
-            public string Extra { get; set; }
+            //从header中取token字符串
+            var headerTokenStr = context.HttpContext.Request.Headers[TokenKey];
+            //从cookies中取token字符串
+            var cookiesTokenStr = context.HttpContext.Request.Cookies[TokenKey];
+            TokenData tokendata = null;
+            if (!string.IsNullOrWhiteSpace(headerTokenStr)) 
+                tokendata = FromHeaderToken(headerTokenStr);
+            else if(!string.IsNullOrWhiteSpace(cookiesTokenStr))
+                tokendata = FromHeaderToken(cookiesTokenStr);
+            OnTokenGet(context, tokendata);
         }
+    }
 
-        internal static TokenData FromHeaderToken(string token)
-        {
-            if (!string.IsNullOrWhiteSpace(token))
-            {
-                var buff = Convert.FromBase64String(token);
-                var str = Encoding.UTF8.GetString(buff);
-                return Utils.JsonUtility.Deserialize<TokenData>(str);
-            }
+    public override void OnActionExecuted(ActionExecutedContext context)
+    {
+        base.OnActionExecuted(context);
+        if (!context.HttpContext.Response.Headers.ContainsKey("Access-Control-Allow-Headers"))
+            context.HttpContext.Response.Headers["Access-Control-Allow-Headers"] = TokenKey;
+        else if (!context.HttpContext.Response.Headers["Access-Control-Allow-Headers"].Contains(TokenKey))
+            context.HttpContext.Response.Headers["Access-Control-Allow-Headers"] += "," + TokenKey;
 
-            return null;
-        }
+        if (!context.HttpContext.Response.Headers.ContainsKey("Access-Control-Expose-Headers"))
+            context.HttpContext.Response.Headers["Access-Control-Expose-Headers"] = TokenKey;
+        else if (!context.HttpContext.Response.Headers["Access-Control-Expose-Headers"].Contains(TokenKey))
+            context.HttpContext.Response.Headers["Access-Control-Expose-Headers"] += "," + TokenKey;
+    }
 
-        internal static string ToHeaderToken(TokenData tokendata)
-        {
-            if (tokendata != null)
-            {
-                var str = Utils.JsonUtility.Serialize(tokendata);
-                var buff = Encoding.UTF8.GetBytes(str);
-                return Convert.ToBase64String(buff);
-            }
+    public class TokenData
+    {
+        public string Id { get; set; }
 
-            return "";
-        }
-        
-        public override void OnActionExecuting(ActionExecutingContext context)
-        {
-            base.OnActionExecuting(context);
+        public string Key { get; set; }
 
-            var actionname = ((ControllerActionDescriptor) context.ActionDescriptor).ActionName.ToLowerInvariant();
-            if (!_Ignoreactions.Contains(actionname))
-            {
-                var headerTokenStr = context.HttpContext.Request.Headers[HeaderTokenKey];
-                TokenData tokendata = null;
-                if (!string.IsNullOrWhiteSpace(headerTokenStr))
-                {
-                    tokendata = FromHeaderToken(headerTokenStr);
-                }
-                OnTokenGet(context, tokendata);
-            }
-        }
-
-        public override void OnActionExecuted(ActionExecutedContext context)
-        {
-            base.OnActionExecuted(context);
-            if (!context.HttpContext.Response.Headers.ContainsKey("Access-Control-Allow-Headers"))
-                context.HttpContext.Response.Headers["Access-Control-Allow-Headers"] = HeaderTokenKey;
-            else if(!context.HttpContext.Response.Headers["Access-Control-Allow-Headers"].Contains(HeaderTokenKey))
-                context.HttpContext.Response.Headers["Access-Control-Allow-Headers"] += "," + HeaderTokenKey;
-
-            if (!context.HttpContext.Response.Headers.ContainsKey("Access-Control-Expose-Headers"))
-                context.HttpContext.Response.Headers["Access-Control-Expose-Headers"] = HeaderTokenKey;
-            else if(!context.HttpContext.Response.Headers["Access-Control-Expose-Headers"].Contains(HeaderTokenKey))
-                context.HttpContext.Response.Headers["Access-Control-Expose-Headers"] += "," + HeaderTokenKey;
-        }
+        public string Extra { get; set; }
     }
 }
