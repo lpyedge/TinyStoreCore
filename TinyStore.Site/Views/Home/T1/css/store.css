@@ -15,8 +15,6 @@
 /*商品界面*/
 .store-main .product-box .inventory {color: #999}/*库存文字颜色*/
 
-
-
 /*电子信箱*/
 .order-email input {border: 0.0285rem solid #eee; background: #fff}/*电子信箱input边框颜色及背景颜色*/
 
@@ -26,13 +24,6 @@
 /*店铺页脚*/
 .store-footer > input {background-image: linear-gradient(#ee2e3d, #b8111e); color: #fff}/*店铺页脚按钮背景色及文字色*/
 
-/*侧面栏商品列表*/
-.sideBar {background: #fff}/*侧面栏背景颜色*/
-.sideBar > .title {background: #f7f7f7; border-bottom: 0.028rem solid #f0f0f0}/*侧面栏标题背景色及分界线*/
-.sideBar > .content .list > .soft-title {background: #f7f7f7}/*侧面栏分类背景色*/
-.sideBar > .content .list > .product-box {border-bottom: 0.0285rem solid #f2f2f2}/*侧面栏每个商品的分界线*/
-.sideBar > .content .list > .product-box .info {color: #999}/*侧面栏每个商品的介绍文字颜色*/
-.sideBar > .content .list > .current::before {background: #ef0000}/*侧面栏当前选中的商品标识-左上角红色圆圈*/
 
 /*---------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
@@ -49,3 +40,13 @@
 .order-info .btn {background-image: linear-gradient(#ee2e3d, #b8111e); color: #fff}/*订单信息按钮背景色和字色*/
 .order-info .cd-key {background: rgba(238,46,61,.03); color: #ee2e3d}/*订单信息兑换码背景色和字色*/
 .product-memo {color: #999}/*商品信息的字色*/
+
+/*---------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+/*商品列表(侧面栏)*/
+.sideBar {background: #fff}/*侧面栏背景颜色*/
+.sideBar > .title {border-bottom: 0.028rem solid #eeeeee}/*侧面栏标题背景色及分界线*/
+.sideBar > .content .list > .product-category {background: white}/*侧面栏分类背景色*/
+.sideBar > .content .list > .product-box {border-bottom: 0.0285rem solid #f2f2f2}/*侧面栏每个商品的分界线*/
+.sideBar > .content .list > .product-box .info {color: #999}/*侧面栏每个商品的介绍文字颜色*/
+.sideBar > .content .list > .current::before {background: #ef0000}/*侧面栏当前选中的商品标识-左上角红色圆圈*/

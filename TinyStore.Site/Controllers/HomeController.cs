@@ -72,18 +72,23 @@ namespace TinyStore.Site.Controllers
                                     switch (payment.Name)
                                     {
                                         case "Alipay|AliPay|H5":
+                                            payticket.Name = payticket.Name.ToLowerInvariant();
                                             payticket.Message = "支付宝支付" ;
                                             break;
                                         case "Alipay|AliPay|QRcode":
+                                            payticket.Name = payticket.Name.ToLowerInvariant();
                                             payticket.Message = "支付宝二维码" ;
                                             break;
                                         case "Alipay|AliPay|PC":
+                                            payticket.Name = payticket.Name.ToLowerInvariant();
                                             payticket.Message = "支付宝支付" ;
                                             break;
                                         case "WeChat|WeChat|H5":
+                                            payticket.Name = payticket.Name.ToLowerInvariant();
                                             payticket.Message = "微信支付" ;
                                             break;
                                         case "WeChat|WeChat|QRcode":
+                                            payticket.Name = payticket.Name.ToLowerInvariant();
                                             payticket.Message = "微信二维码" ;
                                             break;
                                         default:
@@ -161,7 +166,7 @@ namespace TinyStore.Site.Controllers
                                         { 
                                             payticket = new LPayments.PayTicket()
                                             {
-                                                Name = payment.Name,
+                                                Name = payment.Name.ToLowerInvariant(),
                                                 DataFormat = EPayDataFormat.QrCode,
                                                 DataContent = payment.QRCode,
                                                 Message = payment.Memo,
@@ -171,7 +176,6 @@ namespace TinyStore.Site.Controllers
                                         }
                                             break;
                                     }
-                                    
                                 }
 
                                 index++;
@@ -245,30 +249,6 @@ namespace TinyStore.Site.Controllers
                     else
                     {
                         return View("T1/Store");
-                    }
-                }
-            }
-            return new RedirectResult("/");
-        }
-        
-        
-        [HttpGet("/pay/{orderId:required}")]
-        public IActionResult Pay(string orderId)
-        {
-            if (!string.IsNullOrWhiteSpace(orderId))
-            {
-                var order = BLL.OrderBLL.QueryModelById(orderId);
-                if(order != null)
-                {
-                    var store = BLL.StoreBLL.QueryModelByStoreId(order.StoreId);
-                    if (store != null)
-                    {
-                        
-                        
-                        ViewBag.Store = store;
-                        ViewBag.Order = order;
-                        
-                        return View();
                     }
                 }
             }

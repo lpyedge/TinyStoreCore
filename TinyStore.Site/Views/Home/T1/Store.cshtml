@@ -146,7 +146,9 @@
                 var categorydatas = _.groupBy(productlist, 'category');
                 for (var category in categorydatas) {
                     var datas = categorydatas[category];
-                    listdiv += '<div class="soft-title">' + category + '</div>';
+                    if (category){
+                        listdiv += '<div class="product-category">' + category + '</div>';
+                    }
                     _.forEach(datas, function (data) {
                         var storenum = data.stockNumber;
                         if (storenum == -1) {

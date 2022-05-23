@@ -68,7 +68,7 @@
                     },
                     function (response) {
                         if (response.code === 1) {
-                            location.href = '/Pay/'+response.data.orderId;
+                            location.href = '/o/'+response.data.orderId;
                         }
                         else if (response.code === 0) {
                             $.toast("请检查您的下单数量是否满足购买条件");

@@ -120,7 +120,10 @@
                     <q-separator class="q-my-sm"></q-separator>
 
                     <q-item-label header class="text-weight-bold text-uppercase" v-if="storeList.length > 0">
-                        店铺<q-badge class="on-right cursor-pointer">{{storeCurrent.name}}</q-badge>
+                        店铺
+                        <q-badge class="on-right cursor-pointer" @@click="window.open('/s/'+storeCurrent.uniqueId)">
+                            <q-icon name="fas fa-link" color="white" ></q-icon> {{storeCurrent.name}}
+                        </q-badge>
                     </q-item-label>
 
                     <q-item v-ripple clickable v-for="link in storelinks" :key="link.text" @@click="Goto(link.url)"  v-if="storeList.length > 0">

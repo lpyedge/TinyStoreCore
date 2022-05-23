@@ -120,10 +120,17 @@ namespace LPayments.Plartform.AliPay
                 Utils.HASHCrypto.CryptoEnum.SHA256,
                 Encoding.GetEncoding(Charset).GetBytes(Utils.Core.LinkStr(datas))));
 
+            var datas_new = new Dictionary<string, dynamic>();
+            foreach (var data in datas)
+            {
+                datas_new[data.Key] = data.Value;
+            }
 
             if (m_trade_type == "alipay.trade.precreate")
             {
-                var res = _HWU.PostStringAsync(new Uri(GateWay + "?charset=utf-8"), Utils.Core.LinkStr(datas,encode:true)).Result;
+                //alipay支付返回数据是GBK格式，HttpResponseMessage不支持直接读取GBK内容
+                //var res = _HWU.PostStringAsync(new Uri(GateWay + "?charset=utf-8"), Utils.Core.LinkStr(datas,encode:true)).Result;
+                var res = _HWU.ResponseAsync(new Uri(GateWay + "?charset=utf-8"), Utils.HttpWebUtility.HttpMethod.POST, datas_new).Result;
 
                 var json = Utils.DynamicJson.Parse(res);
 
@@ -170,7 +177,9 @@ namespace LPayments.Plartform.AliPay
                 Pay_Wap.Extend extend = Utils.JsonUtility.Deserialize<Pay_Wap.Extend>(Utils.JsonUtility.Serialize(extend_params));
                 if (extend != null)
                 {
-                    string res = _HWU.PostStringAsync(new Uri(GateWay + "?charset=utf-8"), Utils.Core.LinkStr(datas,encode:true)).Result;
+                    //string res = _HWU.PostStringAsync(new Uri(GateWay + "?charset=utf-8"), Utils.Core.LinkStr(datas,encode:true)).Result;
+                    var res = _HWU.ResponseAsync(new Uri(GateWay + "?charset=utf-8"), Utils.HttpWebUtility.HttpMethod.POST, datas_new).Result;
+                    
                     var match = System.Text.RegularExpressions.Regex.Match(res,
                         @"\{""requestType"":""SafePay"",""fromAppUrlScheme"":""alipays"",""dataString"":""[""=&\w\\]+""\}");
                     if (match.Success)
@@ -215,11 +224,18 @@ namespace LPayments.Plartform.AliPay
             }
             else
             {
+                // return new PayTicket()
+                // {
+                //     Name = this.Name,
+                //     DataFormat = EPayDataFormat.Form,
+                //     DataContent =  GateWay + "?charset=" + Charset + "??" + Utils.Core.LinkStr(datas, encode: true),
+                // };
+                //支付宝支持直接把form内容作为query采用get请求发起支付
                 return new PayTicket()
                 {
                     Name = this.Name,
-                    DataFormat = EPayDataFormat.Form,
-                    DataContent =  GateWay + "?charset=" + Charset + "??" + Utils.Core.LinkStr(datas, encode: true),
+                    DataFormat = EPayDataFormat.Url,
+                    DataContent =  GateWay + "?charset=" + Charset + "&" + Utils.Core.LinkStr(datas, encode: true),
                 };
             }
         }

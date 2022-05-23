@@ -518,7 +518,6 @@
              this.$refs.storeCurrent_uniqueId.validate();
               if (!this.$refs.storeCurrent_name.hasError && !this.$refs.storeCurrent_uniqueId.hasError){
                   this.storeCurrent.userId = this.userData[this.userIndex].userId;
-                  console.log(this.storeCurrent);
                   AdminApi("StoreSave", this.storeCurrent)
                         .then((response)=> {
                             if (response.data.code === 1){ 

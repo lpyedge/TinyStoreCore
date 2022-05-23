@@ -185,7 +185,6 @@
                     return qr.createDataURL();
                 },
                 qrcodeRead() {
-                        console.log(arguments);
                     if (arguments.length === 1 && arguments[0].target && arguments[0].target.files && arguments[0].target.files.length === 1) {
                         var file = arguments[0].target.files[0];
                         var img = new Image();
@@ -198,7 +197,6 @@
                             context.drawImage(img, 0, 0);
                             var myData = context.getImageData(0, 0, img.width, img.height);
                             var qrcode = jsQR(myData.data, img.width, img.height);
-                            console.log("qrcode",qrcode);
                             if (qrcode) {
                                 this.paymentCurrent.qrCode = qrcode.data;
                                 

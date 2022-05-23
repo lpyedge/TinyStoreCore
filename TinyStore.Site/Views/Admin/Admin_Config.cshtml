@@ -254,7 +254,6 @@
            configUserRatesSave(){
               this.btnSaveLoading = true;
               this.configOrgin.userRates = this.config.userRates;
-              console.log(this.config.userRates);
               AdminApi("ConfigSave",this.configOrgin)
                  .then((response)=> {
                      if (response.data.code === 1){                

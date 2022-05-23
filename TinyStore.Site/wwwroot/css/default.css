@@ -291,7 +291,7 @@ body,input,select,textarea,a {font-size: 0.4rem; }
 .sideBar > .content {width: 100%; height: 100%; padding: 0.43rem; overflow: scroll}
 .sideBar > .content .list {width: 100%; height: auto; padding-bottom: 0.86rem}
 .sideBar > .content .list > div:last-child {border-bottom: 0}
-.sideBar > .content .list > .soft-title {width: 100%; height: 1.14rem; line-height: 1.14rem; border-radius: 0.114rem; margin-bottom: 0.457rem; padding: 0 0.285rem;}
+.sideBar > .content .list > .product-category {width: 100%; height: 1.14rem; line-height: 1.14rem; border-radius: 0.114rem; margin-bottom: 0.457rem;}
 .sideBar > .content .list > .product-box {padding-bottom: 0.43rem}
 .sideBar > .content .list > .product-box .product-icon {width: 1.714rem; height: 1.714rem; margin-right: 0.14rem}
 .sideBar > .content .list > .product-box .product-icon img {width: 100%; height: 100%;}
@@ -311,7 +311,7 @@ body,input,select,textarea,a {font-size: 0.4rem; }
 .dialog-box {width: 100%; height: 100%; position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; justify-content: flex-end; z-index: 1000; transition: all .3s}
 .dialog-wrapper {width: 100%; height: 100%; display: flex; justify-content: center; align-items: center}
 .dialog {width: calc(100% - 0.86rem); max-height: calc(100% - 0.86rem); overflow: hidden; background: #fff; border-radius: 0.086rem 0.086rem 0 0; box-shadow: 0.0285rem 0.0285rem 0.086rem rgba(0,0,0,.3); position: relative}
-.dialog > .title {width: 100%; height: 1.43rem; line-height: 1.43rem; background: #f7f7f7; border-bottom: 0.0285rem solid #f0f0f0; text-align: center; font-size: 0.6rem;font-weight: bold;}
+.dialog > .title {width: 100%; height: 1.43rem; line-height: 1.43rem; border-bottom: 0.0285rem solid #eeeeee; text-align: center; font-size: 0.6rem;font-weight: bold;}
 .dialog > .content {width: 100%; height: 100%; font-size: 0.46rem; line-height: 0.685rem; color: #666; padding: 0.43rem; }
 .dialog > .content > p {text-indent: 0.914rem}
 .dialog > .close {width: 0.55rem; height: 0.55rem; position: absolute; top: 0.45rem; right: 0.4rem; display: block; cursor: pointer}
