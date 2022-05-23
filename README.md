@@ -23,14 +23,3 @@
 [![](https://badgen.net/badge/2881099/NPinyin/?icon=github)](https://github.com/2881099/NPinyin)
 
 [![](https://badgen.net/badge/bcgit/bc-csharp/?icon=github)](https://github.com/bcgit/bc-csharp)
-
-
-
-### 运行
-
-```
-docker run -d \
-  --name=js.189.cn-speedup \
-  --restart unless-stopped \
-  lpyedge/js.189.cn-speedup
-```
