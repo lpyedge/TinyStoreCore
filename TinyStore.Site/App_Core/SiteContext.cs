@@ -43,7 +43,6 @@ namespace TinyStore.Site
 
             if (!File.Exists(Config.AppData + "Data.db"))
             {
-                
                 BLL.BaseBLL.InitDataBase();
                 BLL.BaseBLL.InitDataTables();
 
@@ -449,15 +448,38 @@ namespace TinyStore.Site
             BLL.WithDrawBLL.InsertRangeAsync(withDrawList);
         }
 
-        public static string IP2Region(string ip)
+        public class IP2Region
         {
-            //ip = "49.82.194.75";
-            using (var searcher = new DbSearcher(Config.AppData + "ip2region.db"))
+            private string[] dblist = new[]
             {
-                return searcher.BtreeSearch(ip).Region;
+                "https://github.com/lionsoul2014/ip2region/raw/master/data/ip2region.db",
+                "https://raw.githubusercontent.com/lionsoul2014/ip2region/master/data/ip2region.db",
+                "https://hub.fastgit.xyz/lionsoul2014/ip2region/raw/master/data/ip2region.db",
+                "https://ghproxy.com/https://raw.githubusercontent.com/lionsoul2014/ip2region/master/data/ip2region.db",
+                "https://hub.fastgit.xyz/lionsoul2014/ip2region/raw/master/data/ip2region.db",
+                "https://raw.githubusercontent.com/lionsoul2014/ip2region/master/data/ip2region.db"
+            };
+            
+            public static string Version()
+            {
+                FileInfo dbFileInfo = new FileInfo(Config.AppData + "ip2region.db");
+                if (dbFileInfo.Exists)
+                {
+                    return dbFileInfo.LastWriteTimeUtc.ToLongDateString();
+                }
+
+                return "数据文件不存在";
+            }
+            
+            public static string Search(string ip)
+            {
+                //ip = "49.82.194.75";
+                using (var searcher = new DbSearcher(Config.AppData + "ip2region.db"))
+                {
+                    return searcher.BtreeSearch(ip).Region;
+                }
             }
         }
-
 
         public class ConfigModel
         {
@@ -721,7 +743,7 @@ namespace TinyStore.Site
             {
                 Utils.EmailContext.EmailServer emailserver = Utils.EmailContext.EmailServer.Instances["default"];
 
-                Utils.EmailContext.SendMailAsync(emailserver,p_MailMessage);
+                Utils.EmailContext.SendMailAsync(emailserver, p_MailMessage);
             }
         }
 
@@ -889,9 +911,9 @@ namespace TinyStore.Site
                             if (order != null)
                             {
                                 var user = BLL.BaseBLL<UserExtendModel>.QueryModelById(order.UserId);
-                                if (user!= null && !order.IsPay && string.Equals(
-                                    order.PayAmount.ToString("f2"), res.Amount.ToString("f2"),
-                                    StringComparison.OrdinalIgnoreCase))
+                                if (user != null && !order.IsPay && string.Equals(
+                                        order.PayAmount.ToString("f2"), res.Amount.ToString("f2"),
+                                        StringComparison.OrdinalIgnoreCase))
                                 {
                                     order.TranId = res.TxnID;
                                     order.IsPay = true;
@@ -901,7 +923,7 @@ namespace TinyStore.Site
                                     BLL.OrderBLL.Update(order);
 
                                     var income = res.Amount - order.PaymentFee;
-                                    
+
                                     BLL.BillBLL.Insert(new BillModel
                                     {
                                         BillId = Global.Generator.DateId(1),
@@ -913,12 +935,11 @@ namespace TinyStore.Site
                                     });
 
                                     BLL.UserExtendBLL.Update(p => p.UserId == order.UserId,
-                                        p => new UserExtendModel() { Amount = p.Amount + income});
-                                    
-                                    if (!order.IsDelivery) 
+                                        p => new UserExtendModel() {Amount = p.Amount + income});
+
+                                    if (!order.IsDelivery)
                                         OrderHelper.Delivery(order);
                                 }
-
                             }
                         }
                         else
@@ -1028,7 +1049,6 @@ namespace TinyStore.Site
                 {
                     Utils.MemoryCacher.Set(orderid, orderid, Utils.MemoryCacher.CacheItemPriority.Normal, null,
                         TimeSpan.FromMinutes(1));
-                    
                 }
             }
 
@@ -1041,16 +1061,16 @@ namespace TinyStore.Site
                         ? null
                         : BLL.SupplyBLL.QueryModelById(order.SupplyId);
 
-                    
+
                     //货源是否为系统货源
                     var supplyUserIdSys = (supply != null && supply.UserId == Config.SupplyUserIdSys);
                     //货源成本是否可以支付
                     var supplyCostVilidate = true;
                     UserExtendModel user = BLL.BaseBLL<UserExtendModel>.QueryModelById(order.UserId);
-                    
+
                     if (supplyUserIdSys)
                     {
-                        if (user.Amount + user.AmountCharge < order.Cost * order.Quantity) 
+                        if (user.Amount + user.AmountCharge < order.Cost * order.Quantity)
                             supplyCostVilidate = false;
                     }
 
@@ -1094,7 +1114,7 @@ namespace TinyStore.Site
 
                                     if (supplyUserIdSys)
                                     {
-                                        double amountChange = 0,amountChargeChange = 0;
+                                        double amountChange = 0, amountChargeChange = 0;
                                         if (user.AmountCharge >= order.Cost * order.Quantity)
                                         {
                                             amountChargeChange = order.Cost * order.Quantity;
@@ -1142,7 +1162,7 @@ namespace TinyStore.Site
                             }
 
                             #endregion
-                            
+
                             DeliveryEmail(order);
                         }
                     }

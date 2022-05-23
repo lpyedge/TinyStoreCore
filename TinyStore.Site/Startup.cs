@@ -70,22 +70,7 @@ namespace TinyStore.Site
 
             #region 添加缓存规则
 
-            services.AddHttpCacheHeaders(
-                //过期规则(内存缓存)
-                expires =>
-                {
-                    //内存缓存时间(秒数)
-                    expires.MaxAge = 180;
-                    //允许哪些位置可以内存缓存 Public=所有(代理服务器,cdn加速服务器,客户端浏览器) Private=客户端浏览器
-                    expires.CacheLocation = Marvin.Cache.Headers.CacheLocation.Public;
-                },
-                //验证规则(标签比较判断)
-                validation =>
-                {
-                    //响应过期 重启验证(下发header带last-modified和etag标签,用以后期判断是否过期)
-                    validation.MustRevalidate = true;
-                }
-            );
+            services.AddResponseCaching();
 
             #endregion
 
@@ -128,7 +113,7 @@ namespace TinyStore.Site
             #region 开启并使用http缓存
 
             //在 app.UseRouting();app.UseAuthorization();之前
-            app.UseHttpCacheHeaders();
+            app.UseResponseCaching();
 
             #endregion
 

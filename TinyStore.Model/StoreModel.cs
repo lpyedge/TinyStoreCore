@@ -82,13 +82,20 @@ namespace TinyStore.Model
         /// 店铺自定义收款方式
         /// </summary>
         [SqlSugar.SugarColumn(IsJson = true,ColumnDataType = "text")]
-        public List<Model.PaymentView> PaymentList { get; set; }
+        public List<Model.PaymentView> PaymentList { get; set; } = new ();
+
+
+        /// <summary>
+        /// 店铺自定义屏蔽地区列表
+        /// </summary>
+        [SqlSugar.SugarColumn(IsJson = true, ColumnDataType = "text")]
+        public List<string> BlockList { get; set; } = new ();
 
         /// <summary>
         /// 店铺标识
         /// </summary>
-        [SqlSugar.SugarColumn(Length = 25,IndexGroupNameList = new []{nameof(StoreModel)})]
-        public string UniqueId { get; set; }
+        [SqlSugar.SugarColumn(Length = 25, IndexGroupNameList = new[] {nameof(StoreModel)})]
+        public string UniqueId { get; set; } = "";
 
 
         /// <summary>

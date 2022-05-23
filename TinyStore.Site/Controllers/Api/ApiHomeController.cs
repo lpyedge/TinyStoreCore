@@ -4,12 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using LPayments;
-using Marvin.Cache.Headers;
 using Microsoft.AspNetCore.Mvc;
 using TinyStore.BLL;
 using TinyStore.Model;
-using TinyStore.Utils;
 
 namespace TinyStore.Site.Controllers.Api
 {
@@ -68,7 +65,7 @@ namespace TinyStore.Site.Controllers.Api
 
                     Memo = "",
                     Message = message,
-                    ClientIP = RequestInfo._ClientIP(Request).ToString(),
+                    ClientIP = Utils.RequestInfo._ClientIP(Request).ToString(),
                     UserAgent = Request.Headers["User-Agent"].ToString(),
                     AcceptLanguage = Request.Headers["Accept-Language"].ToString(),
 
@@ -252,8 +249,7 @@ namespace TinyStore.Site.Controllers.Api
         }
 
         //[Marvin.Cache.Headers.HttpCacheExpiration(CacheLocation = Marvin.Cache.Headers.CacheLocation.Public,MaxAge = 60)]
-        [HttpCacheExpiration(CacheLocation = CacheLocation.Public, MaxAge = 600)]
-        [HttpCacheValidation(MustRevalidate = true)]
+        [ResponseCache(Location =ResponseCacheLocation.Any,Duration = 600)]
         [HttpGet("/" + SiteContext.Resource.ResourcePrefix + "/{Model}/{Id}/{Name}")]
         public dynamic Resouce(string model, string id, string name)
         {
@@ -262,7 +258,7 @@ namespace TinyStore.Site.Controllers.Api
             return new NotFoundResult();
         }
 
-        [HttpCacheExpiration(NoStore = true)]
+        [ResponseCache(NoStore = true,Location = ResponseCacheLocation.None)]
         [HttpGet("/" + SiteContext.Resource.ResourcePrefix + "_" + SiteContext.Resource.Temp + "/{Model}/{Id}/{Name}")]
         public dynamic ResouceTemp(string model, string id, string name)
         {
