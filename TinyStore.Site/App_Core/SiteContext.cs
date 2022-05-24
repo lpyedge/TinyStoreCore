@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.Mail;
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 using IP2Region;
 using LPayments;
 using Microsoft.AspNetCore.Mvc;
@@ -66,6 +67,8 @@ namespace TinyStore.Site
 #endif
                     Salt = "012345"
                 });
+            
+            SiteContext.OrderHelper.DeliveryEmail(BLL.OrderBLL.QueryModelById("2215CYG0XWYQW9"));
         }
 
         private static void InitDevData()
@@ -99,14 +102,13 @@ namespace TinyStore.Site
                 QQ = "",
                 TelPhone = ""
             });
-            var storeId = Global.Generator.DateId(2);
-            storeId = "StoreId";
+            var storeId = "StoreId";
             BLL.StoreBLL.InsertAsync(new StoreModel
             {
                 UserId = 1,
                 Email = "test@test.com",
-                Name = "小网店",
-                Initial = Global.Initial("小网店"),
+                Name = "测试网店",
+                Initial = Global.Initial("测试网店"),
                 Logo = "#",
                 Memo = "自家供货，自家销售",
                 Template = EStoreTemplate.模板一,
@@ -125,15 +127,96 @@ namespace TinyStore.Site
                         Memo = "支付宝shoukuan"
                     }
                 },
-                UniqueId = "tests",
+                UniqueId = "store0",
                 StoreId = storeId
             });
             BLL.StoreBLL.InsertAsync(new StoreModel
             {
                 UserId = 1,
                 Email = "test@test.com",
-                Name = "大网店",
-                Initial = Global.Initial("大网店"),
+                Name = "一号网店",
+                Initial = Global.Initial("一号网店"),
+                Logo = "#",
+                Memo = "自家供货，自家销售",
+                Template = EStoreTemplate.模板一,
+                IsSingle = true,
+                PaymentList = new List<Model.PaymentView>(Payment.SystemPaymentList())
+                {
+                    new()
+                    {
+                        Subject = "支付宝",
+                        Name = "A先生",
+                        Account = "13101010101",
+                        IsEnable = true,
+                        IsSystem = false,
+                        Rate = 0,
+                        QRCode = "alipay://xxxxx",
+                        Memo = "支付宝shoukuan"
+                    }
+                },
+                UniqueId = "store1",
+                StoreId = storeId+"1"
+            });
+            BLL.StoreBLL.InsertAsync(new StoreModel
+            {
+                UserId = 1,
+                Email = "test@test.com",
+                Name = "二号网店",
+                Initial = Global.Initial("二号网店"),
+                Logo = "#",
+                Memo = "自家供货，自家销售",
+                Template = EStoreTemplate.模板二,
+                IsSingle = false,
+                PaymentList = new List<Model.PaymentView>(Payment.SystemPaymentList())
+                {
+                    new()
+                    {
+                        Subject = "微信",
+                        Name = "B先生",
+                        Account = "13101010101",
+                        IsEnable = true,
+                        IsSystem = false,
+                        Rate = 0,
+                        QRCode = "wechat://xxxxx",
+                        Memo = "微信 收款"
+                    }
+                },
+                UniqueId = "store2",
+                StoreId = storeId + "2"
+            });
+            BLL.StoreBLL.InsertAsync(new StoreModel
+            {
+                UserId = 1,
+                Email = "test@test.com",
+                Name = "三号网店",
+                Initial = Global.Initial("三号网店"),
+                Logo = "#",
+                Memo = "自家供货，自家销售",
+                Template = EStoreTemplate.模板三,
+                IsSingle = false,
+                PaymentList = new List<Model.PaymentView>(Payment.SystemPaymentList())
+                {
+                    new()
+                    {
+                        Subject = "微信",
+                        Name = "B先生",
+                        Account = "13101010101",
+                        IsEnable = true,
+                        IsSystem = false,
+                        Rate = 0,
+                        QRCode = "wechat://xxxxx",
+                        Memo = "微信 收款"
+                    }
+                },
+                UniqueId = "store3",
+                StoreId = storeId + "3"
+            });
+            BLL.StoreBLL.InsertAsync(new StoreModel
+            {
+                UserId = 1,
+                Email = "test@test.com",
+                Name = "四号网店",
+                Initial = Global.Initial("四号网店"),
                 Logo = "#",
                 Memo = "自家供货，自家销售",
                 Template = EStoreTemplate.模板四,
@@ -152,8 +235,35 @@ namespace TinyStore.Site
                         Memo = "微信 收款"
                     }
                 },
-                UniqueId = "testb",
-                StoreId = storeId + "1"
+                UniqueId = "store4",
+                StoreId = storeId + "4"
+            });
+            BLL.StoreBLL.InsertAsync(new StoreModel
+            {
+                UserId = 1,
+                Email = "test@test.com",
+                Name = "五号网店",
+                Initial = Global.Initial("五号网店"),
+                Logo = "#",
+                Memo = "自家供货，自家销售",
+                Template = EStoreTemplate.模板五,
+                IsSingle = false,
+                PaymentList = new List<Model.PaymentView>(Payment.SystemPaymentList())
+                {
+                    new()
+                    {
+                        Subject = "微信",
+                        Name = "B先生",
+                        Account = "13101010101",
+                        IsEnable = true,
+                        IsSystem = false,
+                        Rate = 0,
+                        QRCode = "wechat://xxxxx",
+                        Memo = "微信 收款"
+                    }
+                },
+                UniqueId = "store5",
+                StoreId = storeId + "5"
             });
             var supplyList = new List<SupplyModel>();
             supplyList.Add(new SupplyModel
@@ -707,29 +817,33 @@ namespace TinyStore.Site
 
         public static class Email
         {
+            private static RazorEngineCore.IRazorEngine _razorEngine = new RazorEngineCore.RazorEngine();
+            private static ConcurrentDictionary<string, RazorEngineCore.IRazorEngineCompiledTemplate> _emailTemplates = new ();
+            
             static Email()
             {
                 Utils.EmailContext.EmailServer.Instances["default"] = Config.EmailServer;
 
-                Utils.EmailContext.EmailTemplate.Instances =
-                    new ConcurrentDictionary<string, Utils.EmailContext.EmailTemplate>();
-                foreach (var filePath in Directory.GetFiles(Config.AppData + "EmailTemplate/"))
+                foreach (var filePath in Directory.GetFiles(Config.AppData + "EmailTemplate/","*.html"))
                     try
                     {
                         var file = new FileInfo(filePath);
-                        var fileContent = File.ReadAllText(file.FullName);
-                        var data = Utils.JsonUtility.Deserialize<Utils.EmailContext.EmailTemplate>(fileContent);
-                        Utils.EmailContext.EmailTemplate.Instances[data.Key] = data;
+                        _emailTemplates[file.Name.Substring(0,file.Name.LastIndexOf('.'))] = _razorEngine.Compile(File.ReadAllText(file.FullName));
                     }
                     catch (Exception e)
                     {
                     }
             }
 
-            public static Dictionary<string, Utils.EmailContext.EmailTemplate> EmailTemplates =>
-                Utils.EmailContext.EmailTemplate.Instances
-                    .ToDictionary(p => p.Key, p => p.Value);
+            public static string TemplateRender(string templateName, dynamic model)
+            {
+                if (_emailTemplates.ContainsKey(templateName))
+                {
+                    return _emailTemplates[templateName].Run(model);
+                }
 
+                return null;
+            }
 
             public static void Send(string email, string subject, string content, bool isContentHtml = true)
             {
@@ -1181,69 +1295,31 @@ namespace TinyStore.Site
                 StoreModel store = BLL.StoreBLL.QueryModelByStoreId(order.StoreId);
                 if (store != null)
                 {
-                    //var msg_email = SiteContext.Email.TemplateGet("DeliveryEmail");
-                    //todo
-                    var msg_email = Email.EmailTemplates["DeliveryEmail"].Content;
-
-                    msg_email = msg_email.Replace("{SiteName}", store.Name);
-                    msg_email = msg_email.Replace("{DeliveryDate}", order.DeliveryDate?.ToString("yyyy年MM月dd日"));
-                    msg_email = msg_email.Replace("{Name}", order.Name);
-                    msg_email = msg_email.Replace("{OrderUrl}", "//" + Config.SiteDomain + "/o/" + order.OrderId);
-                    msg_email = msg_email.Replace("{OrderId}", order.OrderId);
-                    msg_email = msg_email.Replace("{Amount}", (order.Amount * order.Quantity).ToString("f2"));
-                    msg_email = msg_email.Replace("{Reduction}", (order.Reduction).ToString("f2"));
-                    msg_email = msg_email.Replace("{StoreQQ}", store.QQ);
-                    var addtemplate = string.Empty;
-                    if (order.StockList.Count > 0)
+                    var model = new
                     {
-                        var emailadd = string.Empty;
-                        var index = 1;
-                        foreach (Model.StockOrderView item in order.StockList)
-                        {
-                            emailadd = Email.EmailTemplates["DeliveryEmail_Stock"].Content;
+                        StoreName = store.Name,
+                        StoreUrl = "http://" + Config.SiteDomain + "/s/" + store.UniqueId,
+                        StoreLogo = "http://" + Config.SiteDomain + store.Logo,
+                        QQ = store.QQ,
 
-                            emailadd = emailadd.Replace("{Index}", index.ToString());
-                            emailadd = emailadd.Replace("{CardName}", item.Name);
-                            addtemplate += emailadd;
-                            index++;
-                        }
-                    }
-                    else
-                    {
-                        addtemplate = File.ReadAllText(Config.AppData + "emails/DeliveryEmail_NoStock.htm");
-                    }
+                        OrderId = order.OrderId,
+                        ProductName = order.Name,
+                        OrderUrl = "http://" + Config.SiteDomain + "/o/" + order.OrderId,
+                        CreateDate = order.CreateDate.ToString("yyyy年MM月dd日 HH时mm分"),
 
-                    msg_email = msg_email.Replace("{AddTemplate}", addtemplate);
+                        Quantity = order.Quantity,
+                        Amount = order.Amount,
+                        Reduction = order.Reduction, //.ToString("f2"),
 
-                    // var product = BLL.BLL.ProductBLL.QueryModelByProductIdAndStoreId(order.ProductId, order.StoreId);
-                    // if (order.Contact.Contains("@"))
-                    // {
-                    //     SiteContext.Email.Send(order.Contact,
-                    //         store.Name + " 已收到你的订单（" + order.OrderId + "），欢迎您再次购买！", msg_email);
-                    // }
-                    //
-                    // msg_email = "订单号:" + order.OrderId + "<br/><br/>";
-                    // msg_email += "订单状态:" + order.State.ToString() + "<br/><br/>";
-                    // msg_email += "商品名称:" + order.Name + "<br/><br/>";
-                    // if (product != null)
-                    //     msg_email += "商品单价:￥" + product.Amount.ToString("f2") + "<br/><br/>";
-                    // if (order.Quantity > 0)
-                    //     msg_email += "售出份数:" + order.Quantity + "<br/><br/>";
-                    // msg_email += "销售金额:￥" + order.Amount.ToString("f2") + "<br/><br/>";
-                    // msg_email += "买家" + (order.Contact.Contains("@") ? "邮箱" : "手机号") + ":" +
-                    //              order.Contact + "<br/><br/>";
-                    // msg_email += "买家联系方式:" + order.Contact + "<br/><br/>";
-                    // if (order.StockList.Count > 0)
-                    // {
-                    //     msg_email += "买家购买的卡号及卡密如下：<br/><br/>";
-                    //     var index = 1;
-                    //     foreach (var item in order.StockList)
-                    //     {
-                    //         msg_email += $"卡密{index}：{item.Name}<br/>";
-                    //     }
-                    // }
+                        StockList = order.StockList,
+                    };
 
-                    Email.Send(store.Email, "您有一笔付款通知（" + order.OrderId + "），请尽快处理", msg_email);
+                    model.StockList.Add(new StockOrderView(){Name = "你好1"});
+                    model.StockList.Add(new StockOrderView(){Name = "你好2"});
+                    model.StockList.Add(new StockOrderView(){Name = "你好3"});
+                    model.StockList.Add(new StockOrderView(){Name = "你好4"});
+                    var mailContent = Email.TemplateRender("DeliveryEmail", model);
+                    Email.Send(store.Email, "您有一笔付款通知（" + order.OrderId + "），请尽快处理", mailContent);
                 }
             }
 

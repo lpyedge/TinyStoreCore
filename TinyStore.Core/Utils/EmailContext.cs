@@ -10,6 +10,12 @@ namespace TinyStore.Utils
 {
     public static class EmailContext
     {
+        //邮件模版
+        //https://www.campaignmonitor.com/email-templates/
+        //emoji
+        //https://emojixd.com/
+        
+        
         public class EmailServer
         {
             public string PosterAddress { get; set; }

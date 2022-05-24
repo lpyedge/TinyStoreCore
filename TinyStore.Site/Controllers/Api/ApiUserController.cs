@@ -724,6 +724,13 @@ namespace TinyStore.Site.Controllers
                 order.CreateDate = DateTime.Now;
                 order.LastUpdateDate = DateTime.Now;
 
+                if (order.IsDelivery)
+                {
+                    //todo 手动订单新增 手动发货 发送卡密数据到客户邮箱
+                    
+                }
+                
+                
                 BLL.OrderBLL.Insert(order);
 
                 return ApiResult.RCode();
@@ -746,6 +753,9 @@ namespace TinyStore.Site.Controllers
                     data.IsDelivery = order.IsDelivery;
                     data.DeliveryDate = order.DeliveryDate;
                     data.StockList = order.StockList;
+
+                    //todo 客户订单 手动发货 发送卡密数据到客户邮箱
+                    
                 }
 
                 if (data.RefundAmount == 0 && order.RefundAmount > 0)
@@ -865,9 +875,7 @@ namespace TinyStore.Site.Controllers
                     }
 
                     return ApiResult.RData(productStatList);
-
                 }
-                    break;
             }
 
             return ApiResult.RCode(ApiResult.ECode.DataFormatError);

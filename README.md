@@ -17,8 +17,10 @@
 [![](https://badgen.net/badge/donet5/SqlSugar/?icon=github)](https://github.com/donet5/SqlSugar) ![](https://badgen.net/github/license/donet5/SqlSugar?color=grey)  
 [![](https://badgen.net/badge/TinyMapper/TinyMapper/?icon=github)](https://github.com/TinyMapper/TinyMapper) ![](https://badgen.net/github/license/TinyMapper/TinyMapper?color=grey)  
 [![](https://badgen.net/badge/lionsoul2014/ip2region/?icon=github)](https://github.com/lionsoul2014/ip2region) ![](https://badgen.net/github/license/lionsoul2014/ip2region?color=grey)  
+[![](https://badgen.net/badge/adoconnection/RazorEngineCore/?icon=github)](https://github.com/adoconnection/RazorEngineCore) ![](https://badgen.net/github/license/adoconnection/RazorEngineCore/?color=grey)  
 [![](https://badgen.net/badge/2881099/NPinyin/?icon=github)](https://github.com/2881099/NPinyin) ![](https://badgen.net/badge/license/unknow/?color=grey)  
 [![](https://badgen.net/badge/bcgit/bc-csharp/?icon=github)](https://github.com/bcgit/bc-csharp) ![](https://badgen.net/badge/license/unknow/?color=grey)  
+
 ### 使用的前端项目
 [![](https://badgen.net/badge/fontawesome/v5free/?icon=npm)](https://fontawesome.com/)  [![](https://badgen.net/badge/license/fontawesome/?color=grey)](https://fontawesome.com/license)  
 [![](https://badgen.net/badge/quasarframework/quasar/?icon=github)](https://github.com/quasarframework/quasar)  ![](https://badgen.net/github/license/quasarframework/quasar?color=grey)  
