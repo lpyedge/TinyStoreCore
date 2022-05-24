@@ -16,10 +16,6 @@ namespace LPayments.Plartform.AliPay
         public const string APPPRIVATEKEY = "APPPRIVATEKEY";
         public const string AliPayPublicKey = "AliPayPublicKey";
 
-        //"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAs4/QwZtO8EJU+SjPZn4B3jxD8NmOXk63j8995FkbSTtGP2rN1XRcU6dQ8pRS9qgY0RRc1t/mTHWZwCtJIwxGKQm1v2hyKFoJW+edCKd9LP60e39xQup7hjGrRUrUfpMKlxk7c2lh1IfhEjmaySSR+wwgDZGP9cD05NfjUCVxtgAbmN4aIxlxRoWpX3ykRp7F11SB6bsuedAfz4u0jdU3iIZ08Dyg4V5ik/9h3zaNlD2M5l11gmolqSeJNN9/TlJzu+1bp3soCRnNLhoJ81+7kNOJYs9T4xe58y4ihxkqahDS7amrDgLohkfo2vDgR0okCetTRQ6YdnQyFiRkioRAVwIDAQAB";
-        //protected const string PublicKey = "<RSAKeyValue><Modulus>s4/QwZtO8EJU+SjPZn4B3jxD8NmOXk63j8995FkbSTtGP2rN1XRcU6dQ8pRS9qgY0RRc1t/mTHWZwCtJIwxGKQm1v2hyKFoJW+edCKd9LP60e39xQup7hjGrRUrUfpMKlxk7c2lh1IfhEjmaySSR+wwgDZGP9cD05NfjUCVxtgAbmN4aIxlxRoWpX3ykRp7F11SB6bsuedAfz4u0jdU3iIZ08Dyg4V5ik/9h3zaNlD2M5l11gmolqSeJNN9/TlJzu+1bp3soCRnNLhoJ81+7kNOJYs9T4xe58y4ihxkqahDS7amrDgLohkfo2vDgR0okCetTRQ6YdnQyFiRkioRAVw==</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>";
-
-
         protected RSACryptoServiceProvider m_AppPrivateProvider => this[APPPRIVATEKEY].StartsWith("<RSAKeyValue>")
             ? Utils.RSACrypto.FromXmlKey(this[APPPRIVATEKEY])
             : Utils.RSACrypto.FromPEM(this[APPPRIVATEKEY]);

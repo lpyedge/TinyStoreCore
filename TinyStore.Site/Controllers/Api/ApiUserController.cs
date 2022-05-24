@@ -262,9 +262,9 @@ namespace TinyStore.Site.Controllers
             if (storeOrigin == null)
                 return ApiResult.RCode(ApiResult.ECode.TargetNotExist);
 
-            // if (string.Equals("admin", store.UniqueId, StringComparison.OrdinalIgnoreCase) ||
-            //     string.Equals("user", store.UniqueId, StringComparison.OrdinalIgnoreCase))
-            //     return ApiResult.RCode(store.UniqueId + "是系统关键词，不能使用");
+            if (string.Equals("admin", store.UniqueId, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals("user", store.UniqueId, StringComparison.OrdinalIgnoreCase))
+                return ApiResult.RCode(store.UniqueId + "是系统关键词，不能使用");
 
             if (store.Name.Length >= 10)
                 return ApiResult.RCode(ApiResult.ECode.DataFormatError);
@@ -290,6 +290,10 @@ namespace TinyStore.Site.Controllers
             storeOrigin.Email = store.Email;
             storeOrigin.TelPhone = store.TelPhone;
             storeOrigin.QQ = store.QQ;
+            storeOrigin.BlockList = store.BlockList
+                .Where(p=>!string.IsNullOrWhiteSpace(p))
+                .Select(p=>p.Trim())
+                .ToList();
 
             BLL.StoreBLL.Update(storeOrigin);
 

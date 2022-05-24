@@ -26,7 +26,7 @@
                    @@click="orderSettleDateReset(null)"></q-btn>
             <q-btn :loading="loading" class="on-right" color="accent" label="重设提醒"
                    :disable="orderSettleSelected.length === 0" >
-                <q-popup-proxy transition-show="scale" transition-hide="scale">
+                <q-popup-proxy transition-show="scale" transition-hide="scale" :breakpoint="1000">
                     <q-date v-model="notifyDate">
                         <div class="row items-center justify-end">
                             <q-btn v-close-popup :label="$q.lang.label.set" color="primary" flat

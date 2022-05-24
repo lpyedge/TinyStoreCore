@@ -50,30 +50,30 @@
     <div class="row q-gutter-xs q-my-sm">
         <q-input outlined dense stack-label bg-color="white" style="min-width: 230px;"
                  readonly
-                 class="col-xs-12 col-md-auto"
+                 class="col-xs-12 col-md-auto cursor-pointer"
                  label="账目日期"
                  :value="billFilter.dateRange ? (Object.prototype.toString.call(billFilter.dateRange) === '[object String]' ? billFilter.dateRange + ' 至 ' + billFilter.dateRange : billFilter.dateRange.from + ' 至 ' + billFilter.dateRange.to) : '' "
                  @@clear="v=>billFilter.dateRange = null">
             <template v-slot:append>
-                <q-icon name="event" color="primary" class="cursor-pointer">
-                    <q-popup-proxy transition-show="scale" transition-hide="scale">
-                        <q-date range mask="YYYY-MM-DD"
-                                v-model="billFilter.dateRange"
-                                :options="dateRangeOptionsFn">
-                            <div class="row items-center justify-between">
-                                <div class="col-auto">
-                                    <q-btn v-close-popup label="上月" color="accent" @@click="billFilter.dateRange = {from:Quasar.date.formatDate(Quasar.date.subtractFromDate(Quasar.date.adjustDate(Date.now(),{date:1}),{month:1}),'YYYY-MM-DD'),to:Quasar.date.formatDate(Quasar.date.subtractFromDate(Quasar.date.adjustDate(Date.now(),{date:1}),{days:1}),'YYYY-MM-DD')}" class="col-shrink self-start"></q-btn>
-                                    <q-btn v-close-popup label="本月" color="accent" @@click="billFilter.dateRange = {from:Quasar.date.formatDate(Quasar.date.adjustDate(Date.now(),{date:1}),'YYYY-MM-DD'),to:Quasar.date.formatDate(Date.now(),'YYYY-MM-DD')}" class="col-shrink self-start"></q-btn>
-                                </div>
-                                <div class="col-auto">
-                                    <q-btn v-close-popup :label="$q.lang.label.clear" color="warning" flat @@click="billFilter.dateRange = null"></q-btn>
-                                    <q-btn v-close-popup :label="$q.lang.label.ok" color="primary" flat ></q-btn>
-                                </div>
-                            </div>
-                        </q-date>
-                    </q-popup-proxy>
+                <q-icon name="event" color="primary">
                 </q-icon>
             </template>
+            <q-popup-proxy transition-show="scale" transition-hide="scale" :breakpoint="1000">
+                <q-date range mask="YYYY-MM-DD"
+                        v-model="billFilter.dateRange"
+                        :options="dateRangeOptionsFn">
+                    <div class="row items-center justify-between">
+                        <div class="col-auto">
+                            <q-btn v-close-popup label="上月" color="accent" @@click="billFilter.dateRange = {from:Quasar.date.formatDate(Quasar.date.subtractFromDate(Quasar.date.adjustDate(Date.now(),{date:1}),{month:1}),'YYYY-MM-DD'),to:Quasar.date.formatDate(Quasar.date.subtractFromDate(Quasar.date.adjustDate(Date.now(),{date:1}),{days:1}),'YYYY-MM-DD')}" class="col-shrink self-start"></q-btn>
+                            <q-btn v-close-popup label="本月" color="accent" @@click="billFilter.dateRange = {from:Quasar.date.formatDate(Quasar.date.adjustDate(Date.now(),{date:1}),'YYYY-MM-DD'),to:Quasar.date.formatDate(Date.now(),'YYYY-MM-DD')}" class="col-shrink self-start"></q-btn>
+                        </div>
+                        <div class="col-auto">
+                            <q-btn v-close-popup :label="$q.lang.label.clear" color="warning" flat @@click="billFilter.dateRange = null"></q-btn>
+                            <q-btn v-close-popup :label="$q.lang.label.ok" color="primary" flat ></q-btn>
+                        </div>
+                    </div>
+                </q-date>
+            </q-popup-proxy>
         </q-input>
         <q-select outlined dense options-dense stack-label bg-color="white" style="min-width: 140px"
               class="col-xs-5 col-md-auto"

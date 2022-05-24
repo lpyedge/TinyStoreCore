@@ -19,7 +19,7 @@
                          class="col"
                          label="店铺标识"
                          v-model.trim="storeCurrent.uniqueId"
-                         hint="设置后不要轻易修改，会影响客户打开时的网址"
+                         hint="设置改变店铺网址链接"
                          ref="store_uniqueId"
                          :rules="[val => !!val || '必须输入店铺标识',val => val.length > 5 || '店铺标识长度必须大于5']">
                 </q-input>
@@ -80,9 +80,23 @@
                   placeholder="店铺介绍" 
                   :toolbar="editorToolbar"
                   :fonts="editorFonts"
-                  >
+        >
         </q-editor>
-        <q-btn :loading="btnSaveLoading" class="float-right" color="primary" icon="save" label="保存" @@click="storeSave"></q-btn>
+        <div class="block">
+            <q-btn class="float-left" color="warning" icon="fas fa-ban" :label="'屏蔽地区('+storeCurrent.blockList.length+')'">
+                <q-popup-proxy :breakpoint="1024" >
+                    <div class="bg-white q-pa-md">
+                        <q-input outlined stack-label bg-color="white"
+                                 label="屏蔽地区"
+                                 autogrow input-style="max-height:17rem"
+                                 v-model.trim="storeCurrent_blockListStr"
+                                 hint="每行输入一个屏蔽地区">
+                        </q-input>
+                    </div>
+                </q-popup-proxy>
+            </q-btn>
+            <q-btn :loading="btnSaveLoading" class="float-right" color="primary" icon="save" label="保存" @@click="storeSave"></q-btn>
+        </div>
     </q-form>
 </q-page>
 
@@ -95,6 +109,16 @@
        },
        beforeMount(){
            
+       },
+       computed: {
+         storeCurrent_blockListStr: {
+             get:function () {
+                return this.storeCurrent.blockList.join('\n');
+             },
+             set:function (val){
+                 this.storeCurrent.blockList = val.split('\n');
+             }
+         }
        },
        methods: {
            storeSave(){

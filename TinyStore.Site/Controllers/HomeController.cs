@@ -211,7 +211,7 @@ namespace TinyStore.Site.Controllers
                     }
                 }
             }
-            return new RedirectResult("/");
+            return new EmptyResult();
         }
 
         [HttpGet("/s/{uniqueId:required}")]
@@ -221,9 +221,16 @@ namespace TinyStore.Site.Controllers
             {
                 var store = BLL.StoreBLL.QueryModelByUniqueId(uniqueId);
                 if (store != null)                {
-                    
+                    if (store.BlockList.Count > 0)
+                    {
+                        var region = SiteContext.IP2Region.Search(Utils.RequestInfo._ClientIP(Request).ToString());
+                        if (store.BlockList.Any(p => region.Contains(p, StringComparison.OrdinalIgnoreCase)))
+                        {
+                            return new NotFoundResult();
+                        }
+                    }
                     ViewBag.Store = store;
-                     var productlist = BLL.ProductBLL.QueryListByStoreShow(store.StoreId);
+                    var productlist = BLL.ProductBLL.QueryListByStoreShow(store.StoreId);
                     ViewBag.ProductList = productlist;
                     
                     if (store.Template == EStoreTemplate.模板一)
@@ -252,7 +259,7 @@ namespace TinyStore.Site.Controllers
                     }
                 }
             }
-            return new RedirectResult("/");
+            return new EmptyResult();
         }
     }
 }

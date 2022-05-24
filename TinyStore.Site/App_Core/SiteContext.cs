@@ -473,10 +473,17 @@ namespace TinyStore.Site
             
             public static string Search(string ip)
             {
-                //ip = "49.82.194.75";
-                using (var searcher = new DbSearcher(Config.AppData + "ip2region.db"))
+                try
                 {
-                    return searcher.BtreeSearch(ip).Region;
+                    //ip = "49.82.194.75";
+                    using (var searcher = new DbSearcher(Config.AppData + "ip2region.db"))
+                    {
+                        return searcher.BtreeSearch(ip).Region;
+                    }
+                }
+                catch (Exception e)
+                {
+                    return "";
                 }
             }
         }

@@ -258,7 +258,7 @@
                              class="col"
                              label="店铺标识"
                              v-model.trim="storeCurrent.uniqueId"
-                             hint="设置后不要轻易修改，会影响客户打开时的网址"
+                             hint="设置改变店铺网址链接"
                              ref="storeCurrent_uniqueId"
                              :rules="[val => !!val || '必须输入店铺标识',val => val.length > 5 || '店铺标识长度必须大于5']">
                     </q-input>
@@ -317,7 +317,19 @@
         <q-card-section class="row justify-between">
             <q-btn color="negative" icon="delete_forever" label="移除" @@click="storeDialogRemove" v-if="storeIndex >= 0"></q-btn>
             <q-space></q-space>
-            <q-btn color="warning" :icon="storeIndex >= 0 ? 'edit' : 'add'" :label="storeIndex >= 0 ? '修改' : '新增'" @@click="storeDialogEdit"></q-btn>
+            <q-btn color="warning" icon="fas fa-ban" :label="'屏蔽地区('+storeCurrent.blockList.length+')'" >
+                <q-popup-proxy :breakpoint="1024" >
+                    <div class="bg-white q-pa-md">
+                        <q-input outlined stack-label bg-color="white"
+                                 label="屏蔽地区"
+                                 autogrow input-style="max-height:17rem"
+                                 v-model.trim="storeCurrent_blockListStr"
+                                 hint="每行输入一个屏蔽地区">
+                        </q-input>
+                    </div>
+                </q-popup-proxy>
+            </q-btn>
+            <q-btn color="primary" :icon="storeIndex >= 0 ? 'edit' : 'add'" :label="storeIndex >= 0 ? '修改' : '新增'" @@click="storeDialogEdit"></q-btn>
         </q-card-section>
     </q-card>
 </q-dialog>
@@ -368,12 +380,22 @@
            userAmountChange:10,       
            
            storeTemplates: @Json.Serialize(Global.EnumsOptions<EStoreTemplate>()),           
-           storeCurrent:{},
+           storeCurrent:{blockList:[]},
            storeDialog:false,
            storeIndex:2,//默认 -2 新增 -1 其他 索引值
        },
        beforeMount(){
            this.loadUserStoreData();
+       },
+       computed: {
+         storeCurrent_blockListStr: {
+             get:function () {
+                return this.storeCurrent.blockList.join('\n');
+             },
+             set:function (val){
+                 this.storeCurrent.blockList = val.split('\n');
+             }
+         }
        },
        methods: {
            loadUserStoreData(){
@@ -387,6 +409,7 @@
                           this.userData = response.data.data.rows;
                           this.userFilter.pagination.rowsNumber = response.data.data.total;   
                           this.userSelected = [];
+                          this.storeCurrent={blockList:[]};
                       } else{
                           Notify.Warning('商户数据加载失败');
                       }
@@ -505,7 +528,7 @@
                       this.storeCurrent= JSON.parse(JSON.stringify(this.userData[i].stores[j]));                       
                    }
                    else{
-                      this.storeCurrent = { template:1,memo:'' };
+                      this.storeCurrent = { template:1,memo:'',blockList:[] };
                    }
                }
           },

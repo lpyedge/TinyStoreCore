@@ -7,9 +7,6 @@ namespace LPayments.Plartform.WeChat
 
     public abstract class _WeChat : IPayChannel
     {
-        //wxa173f208a85f859b
-        //5627da0ed6d72e23f0bae320a3827e69
-
         public const string MchId = "MchId";
         public const string Key = "Key";
         public const string AppId = "AppId";

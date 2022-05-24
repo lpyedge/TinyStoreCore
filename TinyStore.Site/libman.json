@@ -28,7 +28,7 @@
         },
         {
             "provider": "jsdelivr",
-            "library": "quasar@1.19.0",
+            "library": "quasar@1.19.1",
             "destination": "wwwroot/lib/quasar/",
             "files": [
                 "dist/quasar.min.css",

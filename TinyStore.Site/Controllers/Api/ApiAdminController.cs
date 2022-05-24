@@ -348,6 +348,10 @@ namespace TinyStore.Site.Controllers.Api
                 storeOrigin.Email = storeModel.Email;
                 storeOrigin.TelPhone = storeModel.TelPhone;
                 storeOrigin.QQ = storeModel.QQ;
+                storeOrigin.BlockList = storeModel.BlockList
+                    .Where(p=>!string.IsNullOrWhiteSpace(p))
+                    .Select(p=>p.Trim())
+                    .ToList();
 
                 BLL.StoreBLL.Update(storeOrigin);
                 
