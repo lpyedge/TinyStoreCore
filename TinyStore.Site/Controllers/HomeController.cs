@@ -71,23 +71,23 @@ namespace TinyStore.Site.Controllers
                                     // payticket.Token = (pay as IPayChannel).Platform.ToString().ToLowerInvariant();
                                     switch (payment.Name)
                                     {
-                                        case "Alipay|AliPay|H5":
+                                        case "LPayments.Plartform.AliPay.Pay_Wap":
                                             payticket.Name = payticket.Name.ToLowerInvariant();
                                             payticket.Message = "支付宝支付" ;
                                             break;
-                                        case "Alipay|AliPay|QRcode":
+                                        case "LPayments.Plartform.AliPay.Pay_QR":
                                             payticket.Name = payticket.Name.ToLowerInvariant();
                                             payticket.Message = "支付宝二维码" ;
                                             break;
-                                        case "Alipay|AliPay|PC":
+                                        case "LPayments.Plartform.AliPay.Pay_PC":
                                             payticket.Name = payticket.Name.ToLowerInvariant();
                                             payticket.Message = "支付宝支付" ;
                                             break;
-                                        case "WeChat|WeChat|H5":
+                                        case "LPayments.Plartform.WeChat.Pay_H5":
                                             payticket.Name = payticket.Name.ToLowerInvariant();
                                             payticket.Message = "微信支付" ;
                                             break;
-                                        case "WeChat|WeChat|QRcode":
+                                        case "LPayments.Plartform.WeChat.Pay_QR":
                                             payticket.Name = payticket.Name.ToLowerInvariant();
                                             payticket.Message = "微信二维码" ;
                                             break;

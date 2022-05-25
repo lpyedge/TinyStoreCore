@@ -268,30 +268,66 @@ namespace LPayments.Utils
         //    return formhtml.ToString();
         //}
 
-        private static Dictionary<string, string> DescriptionDic = new Dictionary<string, string>();
-        private static object lockobj = new object();
-
-        public static string Description(Enum obj)
+        // private static Dictionary<string, string> DescriptionDic = new Dictionary<string, string>();
+        // private static object lockobj = new object();
+        //
+        // public static string Description(Enum obj)
+        // {
+        //     var key = obj.GetType().FullName + obj.ToString();
+        //     if (!DescriptionDic.ContainsKey(key))
+        //     {
+        //         lock (lockobj)
+        //         {
+        //             if (!DescriptionDic.ContainsKey(key))
+        //             {
+        //                 var fild = obj.GetType().GetField(obj.ToString());
+        //                 if (fild.IsDefined(typeof(DescriptionAttribute), false))
+        //                 {
+        //                     DescriptionAttribute dec = (DescriptionAttribute) fild
+        //                         .GetCustomAttributes(typeof(DescriptionAttribute), false).FirstOrDefault();
+        //                     DescriptionDic[key] = dec?.Description ?? "";
+        //                 }
+        //             }
+        //         }
+        //     }
+        //
+        //     return DescriptionDic[key];
+        // }
+        
+        private static Dictionary<string, dynamic> EnumAttributeDic = new();
+        private static object lockobj = new();
+        
+        public static T EnumAttribute<T>(Enum obj) where T : Attribute
         {
             var key = obj.GetType().FullName + obj.ToString();
-            if (!DescriptionDic.ContainsKey(key))
+          
+            if (!EnumAttributeDic.ContainsKey(key))
             {
                 lock (lockobj)
                 {
-                    if (!DescriptionDic.ContainsKey(key))
+                    if (!EnumAttributeDic.ContainsKey(key))
                     {
                         var fild = obj.GetType().GetField(obj.ToString());
-                        if (fild.IsDefined(typeof(DescriptionAttribute), false))
+                        if (fild.IsDefined(typeof(T), false))
                         {
-                            DescriptionAttribute dec = (DescriptionAttribute) fild
-                                .GetCustomAttributes(typeof(DescriptionAttribute), false).FirstOrDefault();
-                            DescriptionDic[key] = dec?.Description ?? "";
+                            T attrbute = (T) fild
+                                .GetCustomAttributes(typeof(T), false).FirstOrDefault();
+                            EnumAttributeDic[key] = attrbute;
+                        }
+                        else
+                        {
+                            EnumAttributeDic[key] = default(T);
                         }
                     }
                 }
             }
 
-            return DescriptionDic[key];
+            return EnumAttributeDic[key];
+        }
+        
+        public static List<T> TypeAttribute<T>(this Type p_Type) where T : Attribute
+        {
+            return  p_Type.GetCustomAttributes( typeof(T),true).Select(p=> (T)p).ToList();
         }
     }
 }

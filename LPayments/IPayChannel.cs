@@ -13,7 +13,7 @@ namespace LPayments
     {
         protected IPayChannel()
         {
-            PayChannnel = GetType().Type2ChannelAttribute();
+            PayChannnel = GetType().TypeChannelAttribute();
 
             Name = this.GetType().FullName;
 
@@ -33,7 +33,7 @@ namespace LPayments
         /// <summary>
         ///     支付接口注释
         /// </summary>
-        public virtual string Memo { get; protected set; }
+        public virtual string Memo => Utils.Core.EnumAttribute<PlatformAttribute>(this.Platform).Name + "_" + PayChannnel.Channel + "_" + PayChannnel.PayType;
 
         /// <summary>
         ///     支付接口设置方法

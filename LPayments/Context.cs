@@ -29,24 +29,32 @@ namespace LPayments
             PayList = new HashSet<IPayChannel>();
             foreach (var item in extAssembly.GetTypes().Where(p=>p.IsClass && p.IsPublic ))
             {
-                if (item.Type2ChannelAttribute() != null)
+                if (item.TypeChannelAttribute() != null)
                 {
                     PayList.Add(Utils.Core.CreateInstance(item));
                 }
             }
         }
 
-        public static PayChannelAttribute Type2ChannelAttribute(this Type p_Type)
+        public static PayChannelAttribute TypeChannelAttribute(this Type p_Type)
         {
-            var cas = Type2Attribute<PayChannelAttribute>(p_Type) as PayChannelAttribute[];
-            return cas?.Length == 1 ? cas[0] : null;
-        }
-        
-        public static IEnumerable<T> Type2Attribute<T>(this Type p_Type) where T : Attribute
-        {
-            return p_Type.GetCustomAttributes<T>(true);
+            var cas = Utils.Core.TypeAttribute<PayChannelAttribute>(p_Type);
+            return cas?.Count == 1 ? cas[0] : null;
         }
 
+
+        public static IPayChannel Get(string name, string p_SettingJson = "")
+        {
+            var data = PayList.FirstOrDefault(p => p.Name ==name);
+            if (data != null)
+            {
+                data.SettingsJson = p_SettingJson;
+
+                return data;
+            }
+
+            return null;
+        }
 
         public static IPayChannel Get(EPlatform platform, EChannel p_EChannel, EPayType p_EPayType = EPayType.PC,
             string p_SettingJson = "")

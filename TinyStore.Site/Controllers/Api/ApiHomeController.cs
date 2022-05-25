@@ -96,7 +96,7 @@ namespace TinyStore.Site.Controllers.Api
             return ApiResult.RCode("");
         }
 
-        [Route("/paynotify/{payname}")]
+        [Route("/paynotify/{payname:required}")]
         public async Task<IActionResult> PayNotify(string payname)
         {
             using (Stream stream = Request.Body)

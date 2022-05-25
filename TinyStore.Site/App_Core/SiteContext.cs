@@ -3,16 +3,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Mail;
 using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using IP2Region;
-using LPayments;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using SqlSugar;
 using TinyStore.Model;
 
 namespace TinyStore.Site
@@ -30,16 +22,16 @@ namespace TinyStore.Site
         /// <summary>
         ///     初始化
         /// </summary>
-        public static void Inited(ServiceProvider services, IConfiguration configuration)
+        public static void Inited(Microsoft.Extensions.DependencyInjection.ServiceProvider services, Microsoft.Extensions.Configuration.IConfiguration configuration)
         {
             // var ConnStr1 = configuration.GetSection("Config:ConnStr").Value;
             // var ConnStr2 = configuration.GetSection("Config:ConnStr").Get<string>();
             // configuration.GetSection("Config").Get<ConfigModel>();
             //Global.AppService.Configuration.GetSection("Config").Bind(Config);
 
-            Config = configuration.GetSection("Config").Get<ConfigModel>();
+            Config = Microsoft.Extensions.Configuration.ConfigurationBinder.Get<ConfigModel>(configuration.GetSection("Config"));
 
-            BLL.BaseBLL.Init(DbType.Sqlite, Config.AppData + "Data.db");
+            BLL.BaseBLL.Init(SqlSugar.DbType.Sqlite, Config.AppData + "Data.db");
 
 
             if (!File.Exists(Config.AppData + "Data.db"))
@@ -68,7 +60,7 @@ namespace TinyStore.Site
                     Salt = "012345"
                 });
             
-            SiteContext.OrderHelper.DeliveryEmail(BLL.OrderBLL.QueryModelById("2215CYG0XWYQW9"));
+            //SiteContext.OrderHelper.DeliveryEmail(BLL.OrderBLL.QueryModelById("2215CYG0XWYQW9"));
         }
 
         private static void InitDevData()
@@ -566,8 +558,6 @@ namespace TinyStore.Site
                 "https://raw.githubusercontent.com/lionsoul2014/ip2region/master/data/ip2region.db",
                 "https://hub.fastgit.xyz/lionsoul2014/ip2region/raw/master/data/ip2region.db",
                 "https://ghproxy.com/https://raw.githubusercontent.com/lionsoul2014/ip2region/master/data/ip2region.db",
-                "https://hub.fastgit.xyz/lionsoul2014/ip2region/raw/master/data/ip2region.db",
-                "https://raw.githubusercontent.com/lionsoul2014/ip2region/master/data/ip2region.db"
             };
             
             public static string Version()
@@ -600,17 +590,17 @@ namespace TinyStore.Site
 
         public class ConfigModel
         {
-            [JsonIgnore] public int SupplyUserIdSys => 0;
+            [System.Text.Json.Serialization.JsonIgnore] public int SupplyUserIdSys => 0;
 
-            [JsonIgnore] public double SysPaymentRate => 0.006;
+            [System.Text.Json.Serialization.JsonIgnore] public double SysPaymentRate => 0.006;
 
-            [JsonIgnore] public string FormatDate => "yyyy-MM-dd";
+            [System.Text.Json.Serialization.JsonIgnore] public string FormatDate => "yyyy-MM-dd";
 
-            [JsonIgnore] public string FormatDateTime => "yyyy-MM-dd HH:mm";
+            [System.Text.Json.Serialization.JsonIgnore] public string FormatDateTime => "yyyy-MM-dd HH:mm";
 
-            [JsonIgnore] public string AppData => AppDomain.CurrentDomain.BaseDirectory + "App_Data/";
+            [System.Text.Json.Serialization.JsonIgnore] public string AppData => AppDomain.CurrentDomain.BaseDirectory + "App_Data/";
 
-            [JsonIgnore] public string UserData => AppDomain.CurrentDomain.BaseDirectory + "User_Data/";
+            [System.Text.Json.Serialization.JsonIgnore] public string UserData => AppDomain.CurrentDomain.BaseDirectory + "User_Data/";
 
 
             /// <summary>
@@ -725,7 +715,7 @@ namespace TinyStore.Site
                 if (!string.IsNullOrWhiteSpace(tempuripath) && !string.IsNullOrWhiteSpace(contenttype) &&
                     buffer.Length > 0)
                 {
-                    var result = new FileContentResult(buffer, contenttype)
+                    var result = new Microsoft.AspNetCore.Mvc.FileContentResult(buffer, contenttype)
                         {EnableRangeProcessing = true};
                     Utils.MemoryCacher.Set(tempuripath, result, Utils.MemoryCacher.CacheItemPriority.Normal,
                         DateTime.Now.AddMinutes(5));
@@ -775,7 +765,7 @@ namespace TinyStore.Site
                 return tempuripath;
             }
 
-            public static ActionResult Result(string Model, string Id, string Name,
+            public static Microsoft.AspNetCore.Mvc.ActionResult Result(string Model, string Id, string Name,
                 bool istemp)
             {
                 if (!string.IsNullOrWhiteSpace(Model) && !string.IsNullOrWhiteSpace(Id) &&
@@ -788,7 +778,7 @@ namespace TinyStore.Site
                         ? $"/{StoreDirectory}/{Temp}/{Model}/{Id}/{Name}{FileSuffix}"
                         : $"/{StoreDirectory}/{Model}/{Id}/{Name}{FileSuffix}";
 
-                    FileContentResult result = null;
+                    Microsoft.AspNetCore.Mvc.FileContentResult result = null;
                     if (!Utils.MemoryCacher.TryGet(uripath, out result))
                     {
                         var file = new FileInfo(AppDomain.CurrentDomain.BaseDirectory + filepath);
@@ -801,7 +791,7 @@ namespace TinyStore.Site
                                 var content = base64str.Split(",")[1];
                                 var contentbytes = Convert.FromBase64String(content);
                                 var contenttype = Global.Regex.FileContentType.Match(base64str).Groups[1].Value;
-                                result = new FileContentResult(contentbytes, contenttype)
+                                result = new Microsoft.AspNetCore.Mvc.FileContentResult(contentbytes, contenttype)
                                     {LastModified = file.LastWriteTime, EnableRangeProcessing = true};
                                 Utils.MemoryCacher.Set(uripath, result, Utils.MemoryCacher.CacheItemPriority.Normal,
                                     DateTime.Now.AddMinutes(5));
@@ -811,7 +801,7 @@ namespace TinyStore.Site
                     if (result != null) return result;
                 }
 
-                return new NotFoundResult();
+                return new Microsoft.AspNetCore.Mvc.NotFoundResult();
             }
         }
 
@@ -847,20 +837,20 @@ namespace TinyStore.Site
 
             public static void Send(string email, string subject, string content, bool isContentHtml = true)
             {
-                var mailMessage = new MailMessage
+                var mailMessage = new System.Net.Mail.MailMessage
                 {
                     Subject = subject,
                     Body = content,
                     IsBodyHtml = isContentHtml,
                     BodyEncoding = Encoding.UTF8,
                     SubjectEncoding = Encoding.UTF8,
-                    DeliveryNotificationOptions = DeliveryNotificationOptions.OnSuccess
+                    DeliveryNotificationOptions = System.Net.Mail.DeliveryNotificationOptions.OnSuccess
                 };
                 mailMessage.To.Add(email);
                 Send(mailMessage);
             }
 
-            public static void Send(MailMessage p_MailMessage)
+            public static void Send(System.Net.Mail.MailMessage p_MailMessage)
             {
                 Utils.EmailContext.EmailServer emailserver = Utils.EmailContext.EmailServer.Instances["default"];
 
@@ -886,7 +876,7 @@ namespace TinyStore.Site
                             {
                                 BankType = EBankType.支付宝,
                                 Subject = "支付宝H5",
-                                Name = EPlatform.Alipay + "|" + EChannel.AliPay + "|" + EPayType.H5,
+                                Name = typeof(LPayments.Plartform.AliPay.Pay_Wap).FullName,
                                 Account = "",
                                 Memo = "手机端调用",
                                 Rate = Config.SysPaymentRate,
@@ -897,7 +887,7 @@ namespace TinyStore.Site
                             {
                                 BankType = EBankType.支付宝,
                                 Subject = "支付宝扫码",
-                                Name = EPlatform.Alipay + "|" + EChannel.AliPay + "|" + EPayType.QRcode,
+                                Name = typeof(LPayments.Plartform.AliPay.Pay_QR).FullName,
                                 Account = "",
                                 Memo = "电脑端调用",
                                 Rate = Config.SysPaymentRate,
@@ -908,7 +898,7 @@ namespace TinyStore.Site
                             {
                                 BankType = EBankType.支付宝,
                                 Subject = "支付宝网关",
-                                Name = EPlatform.Alipay + "|" + EChannel.AliPay + "|" + EPayType.PC,
+                                Name = typeof(LPayments.Plartform.AliPay.Pay_PC).FullName,
                                 Account = "",
                                 Memo = "电脑端调用",
                                 Rate = Config.SysPaymentRate,
@@ -919,7 +909,7 @@ namespace TinyStore.Site
                             {
                                 BankType = EBankType.微信,
                                 Subject = "微信H5",
-                                Name = EPlatform.WeChat + "|" + EChannel.WeChat + "|" + EPayType.H5,
+                                Name = typeof(LPayments.Plartform.WeChat.Pay_H5).FullName ,
                                 Account = "",
                                 Memo = "手机端调用",
                                 Rate = Config.SysPaymentRate,
@@ -930,7 +920,7 @@ namespace TinyStore.Site
                             {
                                 BankType = EBankType.微信,
                                 Subject = "微信扫码",
-                                Name = EPlatform.WeChat + "|" + EChannel.WeChat + "|" + EPayType.QRcode,
+                                Name = typeof(LPayments.Plartform.WeChat.Pay_QR).FullName ,
                                 Account = "",
                                 Memo = "电脑端调用",
                                 Rate = Config.SysPaymentRate,
@@ -955,39 +945,12 @@ namespace TinyStore.Site
                 return null;
             }
 
-            private static string PayEnum2Name(EPlatform platform, EChannel channel, EPayType payType)
+
+          
+            public static LPayments.IPay GetPayment(string name)
             {
-                return platform + "|" + channel + "|" + payType;
-            }
-
-            private static void PayName2Enum(string name, out EPlatform platform, out EChannel channel,
-                out EPayType payType)
-            {
-                platform = 0;
-                channel = EChannel.AliPay;
-                payType = EPayType.PC;
-
-                if (name.Contains('|'))
-                {
-                    var strs = name.Split('|');
-                    if (strs.Length == 3)
-                        try
-                        {
-                            platform = Enum.GetValues<EPlatform>().First(p => p.ToString() == strs[0]);
-                            channel = Enum.GetValues<EChannel>().First(p => p.ToString() == strs[1]);
-                            payType = Enum.GetValues<EPayType>().First(p => p.ToString() == strs[2]);
-                        }
-                        catch
-                        {
-                        }
-                }
-            }
-
-
-            public static IPay GetPayment(string name)
-            {
-                PayName2Enum(name, out EPlatform platform, out EChannel channel, out EPayType payType);
-                IPayChannel pay = Context.Get(platform, channel, payType);
+                //PayName2Enum(name, out EPlatform platform, out EChannel channel, out EPayType payType);
+                LPayments.IPayChannel pay = LPayments.Context.Get(name);
 
                 if (pay.Platform.ToString().StartsWith("alipay", StringComparison.OrdinalIgnoreCase))
                 {
@@ -995,7 +958,7 @@ namespace TinyStore.Site
                     {
                         foreach (var set in Config.AliPaySettings) pay[set.Key] = set.Value;
 
-                        return pay as IPay;
+                        return pay as LPayments.IPay;
                     }
                 }
                 else if (pay.Platform.ToString().StartsWith("wechat", StringComparison.OrdinalIgnoreCase))
@@ -1004,7 +967,7 @@ namespace TinyStore.Site
                     {
                         foreach (var set in Config.WechatPaySettings) pay[set.Key] = set.Value;
 
-                        return pay as IPay;
+                        return pay as LPayments.IPay;
                     }
                 }
 
@@ -1017,14 +980,14 @@ namespace TinyStore.Site
                 var msg = "";
                 try
                 {
-                    IPay payment = GetPayment(payname);
+                    LPayments.IPay payment = GetPayment(payname);
 
                     if (payment != null)
                     {
-                        PayResult res = payment.Notify(form, query, header,
+                        LPayments.PayResult res = payment.Notify(form, query, header,
                             body, notifyIp);
 
-                        if (res.Status == PayResult.EStatus.Completed)
+                        if (res.Status == LPayments.PayResult.EStatus.Completed)
                         {
                             //发起请求payOrderId会生成 _xx 后缀，防止同一支付平台不允许订单重复
                             var payOrderId = res.OrderID.Split("_")[0];
@@ -1041,6 +1004,7 @@ namespace TinyStore.Site
                                     order.PaymentDate = DateTime.Now;
                                     order.PaymentFee = res.Amount * Config.SysPaymentRate;
                                     order.LastUpdateDate = DateTime.Now;
+                                    
                                     BLL.OrderBLL.Update(order);
 
                                     var income = res.Amount - order.PaymentFee;
@@ -1059,12 +1023,14 @@ namespace TinyStore.Site
                                         p => new UserExtendModel() {Amount = p.Amount + income});
 
                                     if (!order.IsDelivery)
+                                    {
                                         OrderHelper.Delivery(order);
+                                    }
                                 }
                             }
                         }
                         else
-                            Global.FileSave(Config.AppData + "SignError/" +
+                            Global.FileSave(Config.AppData + "Error/Sign/" +
                                             DateTime.Now.ToString("yyMMddHHmmssfff") + ".log", "OrderName:" +
                                 res.OrderName + "; Amount=" + res.Amount
                                 + "&Currency=" + res.Currency
@@ -1076,10 +1042,10 @@ namespace TinyStore.Site
                         msg = res.Message;
                     }
                 }
-                catch
+                catch(Exception ex)
                 {
-                    Global.FileSave(Config.AppData + "NotifyBodyError/" +
-                                    DateTime.Now.ToString("yyMMddHHmmssfff") + ".log", "Body:" + body, false);
+                    Global.FileSave(Config.AppData + "Error/Notify/" +
+                                    DateTime.Now.ToString("yyMMddHHmmssfff") + ".log", ex.Message, false);
                 }
 
                 return msg;
@@ -1264,11 +1230,14 @@ namespace TinyStore.Site
                                         });
                                     }
                                 }
-
-                                //else
-                                //{
-                                //    order.DeliveryMessage = "十分抱歉，你购买的卡密暂时无货，请联系商家解决！";
-                                //}
+                                else
+                                {
+                                    //卡密方式 支付成功且货源卡密不足时自动发邮件给商户
+                                    Email_OrderStoreNotify(order);
+                                }
+                                
+                                //卡密方式 支付成功时自动发邮件给客户
+                                Email_OrderDelivery(order);
                             }
 
                             #endregion
@@ -1277,20 +1246,22 @@ namespace TinyStore.Site
 
                             else if (product.DeliveryType == EDeliveryType.接口)
                             {
+                                //todo ? 未实现
                             }
                             else if (product.DeliveryType == EDeliveryType.人工)
                             {
+                                //人工方式 支付成功时自动发邮件给商户
+                                Email_OrderStoreNotify(order);
                             }
 
                             #endregion
 
-                            DeliveryEmail(order);
                         }
                     }
                 }
             }
 
-            public static void DeliveryEmail(OrderModel order)
+            public static void Email_OrderDelivery(OrderModel order)
             {
                 StoreModel store = BLL.StoreBLL.QueryModelByStoreId(order.StoreId);
                 if (store != null)
@@ -1301,6 +1272,8 @@ namespace TinyStore.Site
                         StoreUrl = "http://" + Config.SiteDomain + "/s/" + store.UniqueId,
                         StoreLogo = "http://" + Config.SiteDomain + store.Logo,
                         QQ = store.QQ,
+                        
+                        UserUrl = "http://" + Config.SiteDomain + "/user/",
 
                         OrderId = order.OrderId,
                         ProductName = order.Name,
@@ -1314,16 +1287,47 @@ namespace TinyStore.Site
                         StockList = order.StockList,
                     };
 
-                    model.StockList.Add(new StockOrderView(){Name = "你好1"});
-                    model.StockList.Add(new StockOrderView(){Name = "你好2"});
-                    model.StockList.Add(new StockOrderView(){Name = "你好3"});
-                    model.StockList.Add(new StockOrderView(){Name = "你好4"});
-                    var mailContent = Email.TemplateRender("DeliveryEmail", model);
-                    Email.Send(store.Email, "您有一笔付款通知（" + order.OrderId + "），请尽快处理", mailContent);
+                    // model.StockList.Add(new StockOrderView(){Name = "你好1"});
+                    // model.StockList.Add(new StockOrderView(){Name = "你好2"});
+                    // model.StockList.Add(new StockOrderView(){Name = "你好3"});
+                    // model.StockList.Add(new StockOrderView(){Name = "你好4"});
+                    var mailContent = Email.TemplateRender("OrderDelivery", model);
+                    Email.Send(order.Contact, $"您购买了商品[{order.Name}] - {store.Name}", mailContent);
                 }
             }
 
 
+            public static void Email_OrderStoreNotify(OrderModel order)
+            {
+                StoreModel store = BLL.StoreBLL.QueryModelByStoreId(order.StoreId);
+                if (store != null)
+                {
+                    var model = new
+                    {
+                        StoreName = store.Name,
+                        StoreUrl = "http://" + Config.SiteDomain + "/s/" + store.UniqueId,
+                        StoreLogo = "http://" + Config.SiteDomain + store.Logo,
+                        QQ = store.QQ,
+                        
+                        UserUrl = "http://" + Config.SiteDomain + "/user/",
+
+                        OrderId = order.OrderId,
+                        ProductName = order.Name,
+                        OrderUrl = "http://" + Config.SiteDomain + "/o/" + order.OrderId,
+                        CreateDate = order.CreateDate.ToString("yyyy年MM月dd日 HH时mm分"),
+
+                        Quantity = order.Quantity,
+                        Amount = order.Amount,
+                        Reduction = order.Reduction, //.ToString("f2"),
+
+                        StockList = new List<StockOrderView>(),
+                    };
+
+                    var mailContent = Email.TemplateRender("OrderStoreNotify", model);
+                    Email.Send(store.Email, $"您售出了商品[{order.Name}] - {store.Name}", mailContent);
+                }
+            }
+            
             private class PayNotify
             {
                 public Dictionary<string, string> Form { get; set; }

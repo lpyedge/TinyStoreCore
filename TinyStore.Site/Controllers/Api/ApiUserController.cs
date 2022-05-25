@@ -726,11 +726,10 @@ namespace TinyStore.Site.Controllers
 
                 if (order.IsDelivery)
                 {
-                    //todo 手动订单新增 手动发货 发送卡密数据到客户邮箱
-                    
+                    //手动订单新增 手动发货 发送卡密数据到客户邮箱
+                    SiteContext.OrderHelper.Email_OrderDelivery(order);
                 }
-                
-                
+
                 BLL.OrderBLL.Insert(order);
 
                 return ApiResult.RCode();

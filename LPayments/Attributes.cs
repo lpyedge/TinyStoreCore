@@ -37,14 +37,13 @@ namespace LPayments
             eChannel = p_EChannel;
             ePayType = EPayType.PC;
         }
-
-        // public EPlartform ePlartform { get; set; }
+        
         public EChannel eChannel { get; set; }
         public EPayType ePayType { get; set; }
 
+        public string Channel => Utils.Core.EnumAttribute<DescriptionAttribute>(eChannel).Description;
 
-        public string Channel => Utils.Core.Description(eChannel);
+        public string PayType => Utils.Core.EnumAttribute<DescriptionAttribute>(ePayType).Description;
 
-        public string PayType => Utils.Core.Description(ePayType);
     }
 }
