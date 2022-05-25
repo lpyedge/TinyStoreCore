@@ -295,7 +295,7 @@ namespace LPayments.Utils
         // }
         
         private static Dictionary<string, dynamic> EnumAttributeDic = new();
-        private static object lockobj = new();
+        private static object lockObjEnum = new();
         
         public static T EnumAttribute<T>(Enum obj) where T : Attribute
         {
@@ -303,7 +303,7 @@ namespace LPayments.Utils
           
             if (!EnumAttributeDic.ContainsKey(key))
             {
-                lock (lockobj)
+                lock (lockObjEnum)
                 {
                     if (!EnumAttributeDic.ContainsKey(key))
                     {
@@ -325,9 +325,23 @@ namespace LPayments.Utils
             return EnumAttributeDic[key];
         }
         
+        private static Dictionary<string, dynamic> TypeAttributeDic = new();
+        private static object lockObjType = new();
         public static List<T> TypeAttribute<T>(this Type p_Type) where T : Attribute
         {
-            return  p_Type.GetCustomAttributes( typeof(T),true).Select(p=> (T)p).ToList();
+            var key = p_Type.FullName;
+            if (!TypeAttributeDic.ContainsKey(key))
+            {
+                lock (lockObjType)
+                {
+                    if (!TypeAttributeDic.ContainsKey(key))
+                    {
+                        TypeAttributeDic[key] = p_Type.GetCustomAttributes( typeof(T),true).Select(p=> (T)p).ToList();
+                    }
+                }
+            }
+
+            return TypeAttributeDic[key];
         }
     }
 }
