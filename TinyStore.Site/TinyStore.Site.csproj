@@ -11,6 +11,12 @@
     <None Include="App_Data\EmailTemplate\OrderDelivery.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="App_Data\EmailTemplate\OrderStoreNotify.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="App_Data\ip2region.db">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <Content Include="Views\Home\T5\css\store.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -26,10 +32,6 @@
     <Content Include="Views\Home\T1\css\store.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <None Remove="App_Data\EmailTemplate\DeliveryEmail_Stock.htm" />
-    <None Update="App_Data\EmailTemplate\OrderStoreNotify.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
   <ItemGroup>
@@ -43,54 +45,6 @@
     <ProjectReference Include="..\TinyStore.BLL\TinyStore.BLL.csproj" />
     <ProjectReference Include="..\TinyStore.Core\TinyStore.Core.csproj" />
     <ProjectReference Include="..\TinyStore.Model\TinyStore.Model.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <_ContentIncludedByDefault Remove="Views\Store\basicinfo.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Store\benifit.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Store\Index.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Store\Login.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Store\Order.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Store\Ordercloserecord.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Store\Product.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Store\pwdmodify.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Store\Register.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Store\Stock.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Store\stockrecycle.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Store\Store.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Store\Supplier.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Store\Userlog.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Store\Widgets\_Header.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Store\Widgets\_Plugin_Store.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Store\Widgets\_Plugin_Toast.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Store\Withdraw.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Store\_Layout.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Store\_ViewStart.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Admin\Index.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Admin\Pay.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Admin\Stores.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Admin\T1\Order.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Admin\T1\Store.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Admin\T2\Order.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Admin\T2\Store.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Admin\T3\Order.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Admin\T3\Store.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Admin\T4\Order.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Admin\T4\Store.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Admin\T5\Order.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Admin\T5\Store.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Admin\Widgets\_Header.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Admin\Widgets\_Plugin_Payment.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Admin\Widgets\_Plugin_Toast.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Admin\Widgets\_Script_Order.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Admin\Widgets\_Script_Store.cshtml" />
-    <_ContentIncludedByDefault Remove="Views\Admin\_ViewStart.cshtml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="App_Data\ip2region.db">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 </Project>

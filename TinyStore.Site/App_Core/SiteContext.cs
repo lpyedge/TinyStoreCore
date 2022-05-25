@@ -31,6 +31,12 @@ namespace TinyStore.Site
 
             Config = Microsoft.Extensions.Configuration.ConfigurationBinder.Get<ConfigModel>(configuration.GetSection("Config"));
 
+            if (Config == null)
+            {
+                Config = new ConfigModel();
+                ConfigSave();
+            }
+
             BLL.BaseBLL.Init(SqlSugar.DbType.Sqlite, Config.AppData + "Data.db");
 
 
@@ -59,8 +65,6 @@ namespace TinyStore.Site
 #endif
                     Salt = "012345"
                 });
-            
-            //SiteContext.OrderHelper.DeliveryEmail(BLL.OrderBLL.QueryModelById("2215CYG0XWYQW9"));
         }
 
         private static void InitDevData()

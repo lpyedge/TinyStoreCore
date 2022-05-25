@@ -23,7 +23,7 @@ namespace TinyStore.Site
                 {
                     config.SetBasePath(AppDomain.CurrentDomain.BaseDirectory);
                     //注意相对路径用/分隔
-                    config.AddJsonFile("App_Data/Config.json", optional: false, reloadOnChange: true);
+                    config.AddJsonFile("App_Data/Config.json", optional: true, reloadOnChange: true);
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
