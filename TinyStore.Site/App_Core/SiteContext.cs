@@ -880,7 +880,7 @@ namespace TinyStore.Site
                             {
                                 BankType = EBankType.支付宝,
                                 Subject = "支付宝H5",
-                                Name = typeof(LPayments.Plartform.AliPay.Pay_Wap).FullName,
+                                Name = Payments.EPlatform.Alipay +"_"+Payments.EChannel.AliPay+"_"+Payments.EPayType.H5,
                                 Account = "",
                                 Memo = "手机端调用",
                                 Rate = Config.SysPaymentRate,
@@ -891,7 +891,7 @@ namespace TinyStore.Site
                             {
                                 BankType = EBankType.支付宝,
                                 Subject = "支付宝扫码",
-                                Name = typeof(LPayments.Plartform.AliPay.Pay_QR).FullName,
+                                Name = Payments.EPlatform.Alipay +"_"+Payments.EChannel.AliPay+"_"+Payments.EPayType.QRcode,
                                 Account = "",
                                 Memo = "电脑端调用",
                                 Rate = Config.SysPaymentRate,
@@ -902,7 +902,7 @@ namespace TinyStore.Site
                             {
                                 BankType = EBankType.支付宝,
                                 Subject = "支付宝网关",
-                                Name = typeof(LPayments.Plartform.AliPay.Pay_PC).FullName,
+                                Name = Payments.EPlatform.Alipay +"_"+Payments.EChannel.AliPay+"_"+Payments.EPayType.PC,
                                 Account = "",
                                 Memo = "电脑端调用",
                                 Rate = Config.SysPaymentRate,
@@ -913,7 +913,7 @@ namespace TinyStore.Site
                             {
                                 BankType = EBankType.微信,
                                 Subject = "微信H5",
-                                Name = typeof(LPayments.Plartform.WeChat.Pay_H5).FullName ,
+                                Name = Payments.EPlatform.WeChat +"_"+Payments.EChannel.WeChat+"_"+Payments.EPayType.H5,
                                 Account = "",
                                 Memo = "手机端调用",
                                 Rate = Config.SysPaymentRate,
@@ -924,7 +924,7 @@ namespace TinyStore.Site
                             {
                                 BankType = EBankType.微信,
                                 Subject = "微信扫码",
-                                Name = typeof(LPayments.Plartform.WeChat.Pay_QR).FullName ,
+                                Name = Payments.EPlatform.WeChat +"_"+Payments.EChannel.WeChat+"_"+Payments.EPayType.QRcode,
                                 Account = "",
                                 Memo = "电脑端调用",
                                 Rate = Config.SysPaymentRate,
@@ -951,10 +951,10 @@ namespace TinyStore.Site
 
 
           
-            public static LPayments.IPay GetPayment(string name)
+            public static Payments.IPay GetPayment(string name)
             {
                 //PayName2Enum(name, out EPlatform platform, out EChannel channel, out EPayType payType);
-                LPayments.IPayChannel pay = LPayments.Context.Get(name);
+                Payments.IPayChannel pay = Payments.Context.Get(name);
 
                 if (pay.Platform.ToString().StartsWith("alipay", StringComparison.OrdinalIgnoreCase))
                 {
@@ -962,7 +962,7 @@ namespace TinyStore.Site
                     {
                         foreach (var set in Config.AliPaySettings) pay[set.Key] = set.Value;
 
-                        return pay as LPayments.IPay;
+                        return pay as Payments.IPay;
                     }
                 }
                 else if (pay.Platform.ToString().StartsWith("wechat", StringComparison.OrdinalIgnoreCase))
@@ -971,7 +971,7 @@ namespace TinyStore.Site
                     {
                         foreach (var set in Config.WechatPaySettings) pay[set.Key] = set.Value;
 
-                        return pay as LPayments.IPay;
+                        return pay as Payments.IPay;
                     }
                 }
 
@@ -984,14 +984,14 @@ namespace TinyStore.Site
                 var msg = "";
                 try
                 {
-                    LPayments.IPay payment = GetPayment(payname);
+                    Payments.IPay payment = GetPayment(payname);
 
                     if (payment != null)
                     {
-                        LPayments.PayResult res = payment.Notify(form, query, header,
+                        Payments.PayResult res = payment.Notify(form, query, header,
                             body, notifyIp);
 
-                        if (res.Status == LPayments.PayResult.EStatus.Completed)
+                        if (res.Status == Payments.PayResult.EStatus.Completed)
                         {
                             //发起请求payOrderId会生成 _xx 后缀，防止同一支付平台不允许订单重复
                             var payOrderId = res.OrderID.Split("_")[0];
@@ -1057,83 +1057,7 @@ namespace TinyStore.Site
         }
 
         public static class OrderHelper
-        {
-            // public static PayTicket GetPayTicket(string PaymentType, string OrderId, double Amount, IPAddress clientIP)
-            // {
-            //     EPaymentType ePaymentType =
-            //         Enum.GetValues<EPaymentType>().FirstOrDefault(p => p.ToString() == PaymentType);
-            //     IPayChannel payment = GetPayment(ePaymentType);
-            //     if (payment == null) return null;
-            //
-            //     var notifyurl = "http://pay.gamemakesmoney.com/paynotify/tinystorecore/" + payment.Name;
-            //     var returnurl = "http://store.gamemakesmoney.com/order_" + OrderId;
-            //
-            //     ServicePointManager.SecurityProtocol = (SecurityProtocolType) 3072;
-            //
-            //     PayTicket payticket = (payment as IPay).Pay(OrderId, Amount, ECurrency.CNY, "订单付款", clientIP,
-            //         //order.Url, Config.config.SiteDomain.TrimEnd('/') + "/api/" + order.PaymentType, Config.config.SiteDomain, "");
-            //         returnurl, notifyurl, Config.SiteDomain, "");
-            //     return payticket;
-            // }
-            //
-            // public static PayTicket GetPayTicket(EPaymentType ePaymentType, string OrderId, double Amount,
-            //     IPAddress clientIP)
-            // {
-            //     IPayChannel payment = GetPayment(ePaymentType);
-            //     if (payment == null) return null;
-            //
-            //     var notifyurl = "https://" + Config.SiteDomain + "/PayNotify/" + payment.Name;
-            //     var returnurl = "http://store.gamemakesmoney.com/order_" + OrderId;
-            //
-            //     ServicePointManager.SecurityProtocol = (SecurityProtocolType) 3072;
-            //
-            //     PayTicket payticket = (payment as IPay).Pay(OrderId, Amount, ECurrency.CNY, "订单付款", clientIP,
-            //         //order.Url, Config.config.SiteDomain.TrimEnd('/') + "/api/" + order.PaymentType, Config.config.SiteDomain, "");
-            //         returnurl, notifyurl, Config.SiteDomain, "");
-            //     return payticket;
-            // }
-            //
-            //
-            //
-            // private static IPay GetPayment(string name)
-            // {
-            //     var strs = name.Split('|');
-            //     if (strs.Length == 3)
-            //     {
-            //         try
-            //         {
-            //             var platform = Enum.GetValues<EPlatform>().First(p => p.ToString() == strs[0]);
-            //             var channel = Enum.GetValues<EChannel>().First(p => p.ToString() == strs[1]);
-            //             var paytype = Enum.GetValues<EPayType>().First(p => p.ToString() == strs[2]);
-            //             IPayChannel pay = Context.Get(platform, channel, paytype);
-            //             
-            //             if (pay.Name.StartsWith("alipay", StringComparison.OrdinalIgnoreCase))
-            //             {
-            //                 if (Config.AliPaySettings != null)
-            //                 {
-            //                     foreach (var set in Config.AliPaySettings) pay[set.Key] = set.Value;
-            //
-            //                     return pay as IPay;
-            //                 }
-            //             }
-            //             else if (pay.Name.StartsWith("wechat", StringComparison.OrdinalIgnoreCase))
-            //             {
-            //                 if (Config.WechatPaySettings != null)
-            //                 {
-            //                     foreach (var set in Config.WechatPaySettings) pay[set.Key] = set.Value;
-            //
-            //                     return pay as IPay;
-            //                 }
-            //             }
-            //         }
-            //         catch (Exception e)
-            //         {
-            //         }
-            //     }
-            //     return null;
-            // }
-
-
+        {            
             internal static void Pay(string orderid, double incomme, string txnId)
             {
                 if (Utils.MemoryCacher.Get(orderid) == null)

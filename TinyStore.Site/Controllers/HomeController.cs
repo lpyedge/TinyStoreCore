@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using LPayments;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TinyStore.Site.Controllers
@@ -47,16 +46,16 @@ namespace TinyStore.Site.Controllers
                             order.PayOrderId = payOrderId;
                             BLL.OrderBLL.Update(order);
                             
-                            var payTickets = new List<LPayments.PayTicket>();
+                            var payTickets = new List<Payments.PayTicket>();
                             var index = 0;
                             foreach (var payment in store.PaymentList.Where(p=>p.IsEnable))
                             {
-                                LPayments.PayTicket payticket;
+                                Payments.PayTicket payticket;
                                 if (payment.IsSystem)
                                 {
                                     var pay = SiteContext.Payment.GetPayment(payment.Name);
                                     //发起请求payOrderId会生成 _xx 后缀，防止同一支付平台不允许订单重复
-                                    payticket = pay.Pay(payOrderId+"_"+index.ToString("00"), order.PayAmount, ECurrency.CNY, order.Name,
+                                    payticket = pay.Pay(payOrderId+"_"+index.ToString("00"), order.PayAmount, Payments.ECurrency.CNY, order.Name,
                                         Utils.RequestInfo._ClientIP(Request),
                                         "https://" + SiteContext.Config.SiteDomain + Url.ActionLink("Order","Home",new {orderid=order.OrderId}),
                                         "https://" + SiteContext.Config.SiteDomain + Url.ActionLink("PayNotify","ApiHome",new {payname=payment.Name}));
@@ -71,23 +70,23 @@ namespace TinyStore.Site.Controllers
                                     // payticket.Token = (pay as IPayChannel).Platform.ToString().ToLowerInvariant();
                                     switch (payment.Name)
                                     {
-                                        case "LPayments.Plartform.AliPay.Pay_Wap":
+                                        case "AliPay_AliPay_H5":
                                             payticket.Name = payticket.Name.ToLowerInvariant();
                                             payticket.Message = "支付宝支付" ;
                                             break;
-                                        case "LPayments.Plartform.AliPay.Pay_QR":
+                                        case "AliPay_AliPay_QR":
                                             payticket.Name = payticket.Name.ToLowerInvariant();
                                             payticket.Message = "支付宝二维码" ;
                                             break;
-                                        case "LPayments.Plartform.AliPay.Pay_PC":
+                                        case "AliPay_AliPay_PC":
                                             payticket.Name = payticket.Name.ToLowerInvariant();
                                             payticket.Message = "支付宝支付" ;
                                             break;
-                                        case "LPayments.Plartform.WeChat.Pay_H5":
+                                        case "WeChat_WeChat_H5":
                                             payticket.Name = payticket.Name.ToLowerInvariant();
                                             payticket.Message = "微信支付" ;
                                             break;
-                                        case "LPayments.Plartform.WeChat.Pay_QR":
+                                        case "WeChat_WeChat_QR":
                                             payticket.Name = payticket.Name.ToLowerInvariant();
                                             payticket.Message = "微信二维码" ;
                                             break;
@@ -102,10 +101,10 @@ namespace TinyStore.Site.Controllers
                                     {
                                         case EBankType.支付宝:
                                         {
-                                            payticket = new LPayments.PayTicket()
+                                            payticket = new Payments.PayTicket()
                                             {
                                                 Name = "alipay",
-                                                DataFormat = EPayDataFormat.QrCode,
+                                                DataFormat = Payments.EPayDataFormat.QrCode,
                                                 DataContent = payment.QRCode,
                                                 Message = "支付宝扫码转账",
                                             };
@@ -115,10 +114,10 @@ namespace TinyStore.Site.Controllers
                                             break;
                                         case EBankType.微信:
                                         { 
-                                            payticket = new LPayments.PayTicket()
+                                            payticket = new Payments.PayTicket()
                                             {
                                                 Name = "wechat",
-                                                DataFormat = EPayDataFormat.QrCode,
+                                                DataFormat = Payments.EPayDataFormat.QrCode,
                                                 DataContent = payment.QRCode,
                                                 Message = "微信扫码转账",
                                             };
@@ -133,10 +132,10 @@ namespace TinyStore.Site.Controllers
                                             //https://qr.95516.com/00010000/01116734936470044423094034227630
                                             //https://qr.95516.com/00010000/01126270004886947443855476629280
                                             //https://qr.95516.com/00010002/01012166439217005044479417630044
-                                            payticket = new LPayments.PayTicket()
+                                            payticket = new Payments.PayTicket()
                                             {
                                                 Name = "unionpay",
-                                                DataFormat = EPayDataFormat.QrCode,
+                                                DataFormat = Payments.EPayDataFormat.QrCode,
                                                 DataContent = payment.QRCode,
                                                 Message = "银联扫码转账(云闪付,银行App)",
                                             };
@@ -151,10 +150,10 @@ namespace TinyStore.Site.Controllers
                                         case EBankType.交通银行:
                                         case EBankType.邮储银行:
                                         {
-                                            payticket = new LPayments.PayTicket()
+                                            payticket = new Payments.PayTicket()
                                             {
                                                 Name = "alipay",
-                                                DataFormat = EPayDataFormat.QrCode,
+                                                DataFormat = Payments.EPayDataFormat.QrCode,
                                                 DataContent = SiteContext.Payment.TransferToBank(payment, order.PayAmount),
                                                 Message = "支付宝扫码转账",
                                             };
@@ -164,10 +163,10 @@ namespace TinyStore.Site.Controllers
                                             break;
                                         default:
                                         { 
-                                            payticket = new LPayments.PayTicket()
+                                            payticket = new Payments.PayTicket()
                                             {
                                                 Name = payment.Name.ToLowerInvariant(),
-                                                DataFormat = EPayDataFormat.QrCode,
+                                                DataFormat = Payments.EPayDataFormat.QrCode,
                                                 DataContent = payment.QRCode,
                                                 Message = payment.Memo,
                                             };

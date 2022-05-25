@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyStore.Core", "TinyStore
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TinyStore.Model", "TinyStore.Model\TinyStore.Model.csproj", "{704C8599-CBAB-4D52-B17F-3F400C65E2C1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LPayments", "LPayments\LPayments.csproj", "{BB58BE8B-4D65-49A3-BE8D-D9368562C0E2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Payments", "Payments\Payments.csproj", "{BB58BE8B-4D65-49A3-BE8D-D9368562C0E2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
