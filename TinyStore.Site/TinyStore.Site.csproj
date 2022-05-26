@@ -5,6 +5,7 @@
     <RazorCompileOnPublish>false</RazorCompileOnPublish>
     <UserSecretsId>8a29c354-bdd2-40ea-9091-85b8345443b3</UserSecretsId>
     <LangVersion>default</LangVersion>
+    <Nullable>warnings</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

@@ -18,30 +18,7 @@ public sealed class UserHeaderToken : HeaderToken
     /// <param name="ignoreactions"></param>
     public UserHeaderToken(params string[] ignoreactions) : base(TokenKey, ItemKey, ignoreactions)
     {
-    }
-
-
-    internal override void OnTokenGet(ActionExecutingContext context, TokenData tokendata)
-    {
-        Model.UserModel model = null;
-        if (tokendata != null)
-        {
-            model = TokenModel(tokendata);
-        }
-
-        if (tokendata != null && model != null)
-        {
-            context.HttpContext.Items[ItemKey] = model;
-        }
-        else
-        {
-            context.Result = ApiResult.RCode(ApiResult.ECode.OffLine);
-            context.HttpContext.Response.StatusCode = 200;
-        }
-    }
-
-    public static Func<TokenData, Model.UserModel> TokenModel =
-        (tokendata) => {
+        TokenToModel = (tokendata) => {
             try
             {
                 var model = BLL.UserBLL.QueryModelById(tokendata.Id);
@@ -63,4 +40,8 @@ public sealed class UserHeaderToken : HeaderToken
 
             return null;
         };
+    }
+
+
+
 }

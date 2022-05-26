@@ -19,49 +19,29 @@ public sealed class AdminHeaderToken : HeaderToken
     /// <param name="ignoreactions"></param>
     public AdminHeaderToken(params string[] ignoreactions) : base(TokenKey, ItemKey, ignoreactions)
     {
-    }
-
-
-    internal override void OnTokenGet(ActionExecutingContext context, TokenData tokendata)
-    {
-        Model.AdminModel model = null;
-        if (tokendata != null)
-        {
-            model = TokenModel(tokendata);
-        }
-
-        if (tokendata != null && model != null)
-        {
-            context.HttpContext.Items[ItemKey] = model;
-        }
-        else
-        {
-            context.Result = ApiResult.RCode(ApiResult.ECode.OffLine);
-            context.HttpContext.Response.StatusCode = 200;
-        }
-    }
-
-    public static Func<TokenData, Model.AdminModel> TokenModel =
-        (tokendata) => {
-            try
-            {
-                var model = BLL.AdminBLL.QueryModelById(tokendata.Id);
-                if (model != null)
+        TokenToModel = (tokendata) => {
+                try
                 {
-                    if (model.ClientKey == tokendata.Key
-#if DEBUG
-                        || true
-#endif
-                       )
+                    var model = BLL.AdminBLL.QueryModelById(tokendata.Id);
+                    if (model != null)
                     {
-                        return model;
+                        if (model.ClientKey == tokendata.Key
+#if DEBUG
+                            || true
+#endif
+                           )
+                        {
+                            return model;
+                        }
                     }
                 }
-            }
-            catch
-            {
-            }
+                catch
+                {
+                }
 
-            return null;
-        };
+                return null;
+            };
+    }
+
+
 }
