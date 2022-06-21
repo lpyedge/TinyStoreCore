@@ -183,13 +183,15 @@ namespace TinyStore.Site;
             if (!_ignoreActions.Contains(actionname))
             {
                 //从header中取token字符串
-                var headerTokenStr = context.HttpContext.Request.Headers[TokenKey];
+                var headerTokenStr = (string)context.HttpContext.Request.Headers[TokenKey];
                 //从cookies中取token字符串
-                var cookiesTokenStr = context.HttpContext.Request.Cookies[TokenKey];
+                var cookiesTokenStr = (string)context.HttpContext.Request.Cookies[TokenKey];
                 TokenData tokendata = null;
-                if (!string.IsNullOrWhiteSpace(headerTokenStr))
+                if (!string.IsNullOrWhiteSpace(headerTokenStr) 
+                    && !headerTokenStr.Equals("null",StringComparison.OrdinalIgnoreCase))
                     tokendata = FromHeaderToken(headerTokenStr);
-                else if (!string.IsNullOrWhiteSpace(cookiesTokenStr))
+                else if (!string.IsNullOrWhiteSpace(cookiesTokenStr) 
+                         && !cookiesTokenStr.Equals("null",StringComparison.OrdinalIgnoreCase))
                     tokendata = FromHeaderToken(cookiesTokenStr);
                 OnTokenGet(context, tokendata);
             }
