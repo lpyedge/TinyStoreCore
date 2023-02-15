@@ -107,14 +107,14 @@ namespace TinyStore.Site.Controllers.Api
                 
                 var body = Encoding.UTF8.GetString(buffer);
                 
-                var msg = SiteContext.Payment.Notify(payname,
+                SiteContext.Payment.Notify(payname,
                     Request.Form.ToDictionary(p => p.Key
                         , p => p.Value.ToString()),
                     Request.Query.ToDictionary(p => p.Key
                         , p => p.Value.ToString()),
                     Request.Headers.ToDictionary(p => p.Key
                         , p => p.Value.ToString()),
-                    body,Utils.RequestInfo._ClientIP(Request).ToString());
+                    body,Utils.RequestInfo._ClientIP(Request).ToString(),out string msg);
                 
                 return Content(msg);
             }

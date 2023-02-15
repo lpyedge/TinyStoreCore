@@ -64,7 +64,7 @@ namespace TinyStore.Site.Controllers
                 user.ClientKey = Global.Generator.Guid();
                 BLL.UserBLL.Update(user);
 
-                Response.Headers[UserHeaderToken.TokenKey] = HeaderToken.ToHeaderToken( new HeaderToken.TokenData()
+                Response.Headers[UserHeaderToken.TokenKey] = HeaderToken.ToToken( new HeaderToken.TokenData()
                 {
                     Id = user.UserId.ToString(),
                     Key = user.ClientKey

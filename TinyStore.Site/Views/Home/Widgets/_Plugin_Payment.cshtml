@@ -58,7 +58,7 @@
      <div class="payment">
         <label class="subject">{{=prop.name}}</label>
         <div> 
-            <a href="{{=prop.link}}" target="_blank">
+            <a href="{{=prop.link}}">
                 <img src="{{=prop.img}}" alt="{{=prop.name}}"/>
             </a>
         </div>        
@@ -126,7 +126,7 @@
                 }
             }
             $("#payments").html(doT.template($("#tmpl_payments").text())({ payments }));
-            $("#payments").find(".payment").click(function (){
+            $("#payments").find(".payment > .subject").click(function (){
                 $("#payments").find(".payment > div").hide("normal");
                 var $payment = $(arguments[0].target).parent(".payment");
                 $payment.find("div").show("slow");

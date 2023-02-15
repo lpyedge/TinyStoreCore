@@ -12,7 +12,7 @@ namespace TinyStore.Site
     public class SiteContext
     {
         public static ConfigModel Config { get; set; }
-
+        
         public static void ConfigSave()
         {
             var configJson = Utils.JsonUtility.SerializePretty(new {Config});
@@ -856,9 +856,15 @@ namespace TinyStore.Site
 
             public static void Send(System.Net.Mail.MailMessage p_MailMessage)
             {
-                Utils.EmailContext.EmailServer emailserver = Utils.EmailContext.EmailServer.Instances["default"];
-
-                Utils.EmailContext.SendMailAsync(emailserver, p_MailMessage);
+                if(!string.IsNullOrWhiteSpace(Utils.EmailContext.EmailServer.Instances["default"].Host ) &&
+                   !string.IsNullOrWhiteSpace(Utils.EmailContext.EmailServer.Instances["default"].Username ) &&
+                   !string.IsNullOrWhiteSpace(Utils.EmailContext.EmailServer.Instances["default"].Password ) &&
+                   Utils.EmailContext.EmailServer.Instances["default"].Port > 0)
+                {
+                    Utils.EmailContext.SendMailAsync(
+                        Utils.EmailContext.EmailServer.Instances["default"], 
+                        p_MailMessage);
+                }
             }
         }
 
@@ -880,7 +886,7 @@ namespace TinyStore.Site
                             {
                                 BankType = EBankType.支付宝,
                                 Subject = "支付宝H5",
-                                Name = Payments.EPlatform.Alipay +"_"+Payments.EChannel.AliPay+"_"+Payments.EPayType.H5,
+                                Name = Payments.EPlatform.AliPay +"_"+Payments.EChannel.AliPay+"_"+Payments.EPayType.H5,
                                 Account = "",
                                 Memo = "手机端调用",
                                 Rate = Config.SysPaymentRate,
@@ -891,7 +897,7 @@ namespace TinyStore.Site
                             {
                                 BankType = EBankType.支付宝,
                                 Subject = "支付宝扫码",
-                                Name = Payments.EPlatform.Alipay +"_"+Payments.EChannel.AliPay+"_"+Payments.EPayType.QRcode,
+                                Name = Payments.EPlatform.AliPay +"_"+Payments.EChannel.AliPay+"_"+Payments.EPayType.QRcode,
                                 Account = "",
                                 Memo = "电脑端调用",
                                 Rate = Config.SysPaymentRate,
@@ -902,7 +908,7 @@ namespace TinyStore.Site
                             {
                                 BankType = EBankType.支付宝,
                                 Subject = "支付宝网关",
-                                Name = Payments.EPlatform.Alipay +"_"+Payments.EChannel.AliPay+"_"+Payments.EPayType.PC,
+                                Name = Payments.EPlatform.AliPay +"_"+Payments.EChannel.AliPay+"_"+Payments.EPayType.PC,
                                 Account = "",
                                 Memo = "电脑端调用",
                                 Rate = Config.SysPaymentRate,
@@ -978,10 +984,10 @@ namespace TinyStore.Site
                 return null;
             }
 
-            public static string Notify(string payname, IDictionary<string, string> form,
-                IDictionary<string, string> query, IDictionary<string, string> header, string body, string notifyIp)
+            public static bool Notify(string payname, IDictionary<string, string> form,
+                IDictionary<string, string> query, IDictionary<string, string> header, string body, string notifyIp,out string msg)
             {
-                var msg = "";
+                msg = "";
                 try
                 {
                     Payments.IPay payment = GetPayment(payname);
@@ -1032,6 +1038,8 @@ namespace TinyStore.Site
                                     }
                                 }
                             }
+                            
+                            return true;
                         }
                         else
                             Global.FileSave(Config.AppData + "Error/Sign/" +
@@ -1050,9 +1058,10 @@ namespace TinyStore.Site
                 {
                     Global.FileSave(Config.AppData + "Error/Notify/" +
                                     DateTime.Now.ToString("yyMMddHHmmssfff") + ".log", ex.Message, false);
+                    
                 }
 
-                return msg;
+                return false;
             }
         }
 
@@ -1227,32 +1236,40 @@ namespace TinyStore.Site
 
             public static void Email_OrderStoreNotify(OrderModel order)
             {
-                StoreModel store = BLL.StoreBLL.QueryModelByStoreId(order.StoreId);
-                if (store != null)
+                try
                 {
-                    var model = new
+                    StoreModel store = BLL.StoreBLL.QueryModelByStoreId(order.StoreId);
+                    if (store != null )
                     {
-                        StoreName = store.Name,
-                        StoreUrl = "http://" + Config.SiteDomain + "/s/" + store.UniqueId,
-                        StoreLogo = "http://" + Config.SiteDomain + store.Logo,
-                        QQ = store.QQ,
+                        var model = new
+                        {
+                            StoreName = store.Name,
+                            StoreUrl = "http://" + Config.SiteDomain + "/s/" + store.UniqueId,
+                            StoreLogo = "http://" + Config.SiteDomain + store.Logo,
+                            QQ = store.QQ,
                         
-                        UserUrl = "http://" + Config.SiteDomain + "/user/",
+                            UserUrl = "http://" + Config.SiteDomain + "/user/",
 
-                        OrderId = order.OrderId,
-                        ProductName = order.Name,
-                        OrderUrl = "http://" + Config.SiteDomain + "/o/" + order.OrderId,
-                        CreateDate = order.CreateDate.ToString("yyyy年MM月dd日 HH时mm分"),
+                            OrderId = order.OrderId,
+                            ProductName = order.Name,
+                            OrderUrl = "http://" + Config.SiteDomain + "/o/" + order.OrderId,
+                            CreateDate = order.CreateDate.ToString("yyyy年MM月dd日 HH时mm分"),
 
-                        Quantity = order.Quantity,
-                        Amount = order.Amount,
-                        Reduction = order.Reduction, //.ToString("f2"),
+                            Quantity = order.Quantity,
+                            Amount = order.Amount,
+                            Reduction = order.Reduction, //.ToString("f2"),
 
-                        StockList = new List<StockOrderView>(),
-                    };
+                            StockList = new List<StockOrderView>(),
+                        };
 
-                    var mailContent = Email.TemplateRender("OrderStoreNotify", model);
-                    Email.Send(store.Email, $"您售出了商品[{order.Name}] - {store.Name}", mailContent);
+                        var mailContent = Email.TemplateRender("OrderStoreNotify", model);
+                        Email.Send(store.Email, $"您售出了商品[{order.Name}] - {store.Name}", mailContent);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
                 }
             }
             

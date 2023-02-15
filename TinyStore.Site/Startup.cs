@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -78,7 +79,7 @@ namespace TinyStore.Site
 
             services.AddRouting(options =>
             {
-                options.LowercaseUrls = true; //网址小写 
+                options.LowercaseUrls = false; //网址小写 
                 options.AppendTrailingSlash = false; //添加反斜杠
             });
 
