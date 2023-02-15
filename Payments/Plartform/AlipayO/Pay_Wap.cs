@@ -16,7 +16,7 @@ namespace Payments.Plartform.AliPayO
 
         public AliPayO_Wap(): base()
         {
-            Platform = EPlatform.AlipayO;
+            Platform = EPlatform.AliPayO;
         }
 
         public AliPayO_Wap(string p_SettingsJson) : this()

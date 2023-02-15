@@ -16,7 +16,7 @@ namespace Payments.Plartform.AliPayO
 
         public AliPayO_CreditCard() : base()
         {
-            Platform = EPlatform.AlipayO;
+            Platform = EPlatform.AliPayO;
         }
 
         public AliPayO_CreditCard(string p_SettingsJson) : this()

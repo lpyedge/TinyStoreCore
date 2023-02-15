@@ -15,7 +15,7 @@ namespace Payments.Plartform.AliPayO
 
         public Pay_Batch() : base()
         {
-            Platform = EPlatform.AlipayO;
+            Platform = EPlatform.AliPayO;
         }
 
         public Pay_Batch(string p_SettingsJson) : this()

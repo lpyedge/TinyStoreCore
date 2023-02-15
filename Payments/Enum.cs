@@ -18,12 +18,12 @@ namespace Payments
         /// 蚂蚁金服
         /// </summary>
         [PlatformAttribute("蚂蚁金服", "支付宝开放平台", SiteUrl = "https://openhome.alipay.com/docCenter/docCenter.htm", NotifyProxy = true)]
-        Alipay=5,
+        AliPay=5,
         /// <summary>
         /// 支付宝旧版
         /// </summary>
         [PlatformAttribute("支付宝旧版", "", SiteUrl = "https://www.alipay.com",NotifyProxy = true)]
-        AlipayO =6,
+        AliPayO =6,
         /// <summary>
         /// 微信支付
         /// </summary>

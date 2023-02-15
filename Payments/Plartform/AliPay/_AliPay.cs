@@ -20,11 +20,13 @@ namespace Payments.Plartform.AliPay
             ? Utils.RSACrypto.FromXmlKey(this[APPPRIVATEKEY])
             : Utils.RSACrypto.FromPEM(this[APPPRIVATEKEY]);
 
-        protected RSACryptoServiceProvider m_AlipayPublicProvider => Utils.RSACrypto.FromXmlKey(this[AliPayPublicKey]);
+        protected RSACryptoServiceProvider m_AlipayPublicProvider => this[AliPayPublicKey].StartsWith("<RSAKeyValue>")
+            ? Utils.RSACrypto.FromXmlKey(this[AliPayPublicKey])
+            : Utils.RSACrypto.FromPEM(this[AliPayPublicKey]);
 
         public _AliPay() : base()
         {
-            Platform = EPlatform.Alipay;
+            Platform = EPlatform.AliPay;
         }
 
         public _AliPay(string p_SettingsJson) : this()

@@ -51,7 +51,7 @@ namespace Payments.Plartform.AliPay
             };
             
             var IsVlidate = false;
-            if (form["app_id"] == this[APPID] &&
+            if (form?.Count>0 && form.ContainsKey("app_id") &&form.ContainsKey("trade_status") && form["app_id"] == this[APPID] &&
                 (form["trade_status"] == "TRADE_SUCCESS" || form["trade_status"] == "TRADE_FINISHED"))
             {
                 var signstr =
@@ -64,11 +64,25 @@ namespace Payments.Plartform.AliPay
                     Convert.FromBase64String(form["sign"]), encoding.GetBytes(signstr));
             }
 
+            //同步返回returnurl的query参数判断支付状态
+            if (!IsVlidate && query?.Count>0 && query.ContainsKey("app_id") &&query.ContainsKey("sign") && query["app_id"] == this[APPID])
+            {
+                var signstr =
+                    query.Where(p => p.Key != "sign" && p.Key != "sign_type").OrderBy(p => p.Key)
+                        .Aggregate("", (x, y) => x + y.Key + "=" + y.Value + "&").TrimEnd('&');
+                var encoding = Encoding.GetEncoding(query["charset"]);
+                
+                IsVlidate = Utils.RSACrypto.VerifyData(m_AlipayPublicProvider, Utils.HASHCrypto.CryptoEnum.SHA256,
+                    Convert.FromBase64String(query["sign"]), encoding.GetBytes(signstr));
+
+                form = query;
+            }
+
             if (IsVlidate)
             {
                 result = new PayResult
                 {
-                    OrderName = form["subject"],
+                    OrderName = form.ContainsKey("subject") ? form["subject"] : "",
                     OrderID = form["out_trade_no"],
                     Amount = double.Parse(form["total_amount"]),
                     Tax = -1,

@@ -16,7 +16,7 @@ namespace Payments.Plartform.AliPayO
 
         public PayBase() : base()
         {
-            Platform = EPlatform.AlipayO;
+            Platform = EPlatform.AliPayO;
         }
 
         public PayBase(string p_SettingsJson) : this()

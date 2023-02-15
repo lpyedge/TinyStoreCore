@@ -149,7 +149,7 @@ namespace TinyStore.Site;
             }
         }
 
-        public static TokenData FromHeaderToken(string token)
+        public static TokenData FromToken(string token)
         {
             if (!string.IsNullOrWhiteSpace(token))
             {
@@ -161,7 +161,7 @@ namespace TinyStore.Site;
             return null;
         }
 
-        public static string ToHeaderToken(TokenData tokendata)
+        public static string ToToken(TokenData tokendata)
         {
             if (tokendata != null)
             {
@@ -189,10 +189,10 @@ namespace TinyStore.Site;
                 TokenData tokendata = null;
                 if (!string.IsNullOrWhiteSpace(headerTokenStr) 
                     && !headerTokenStr.Equals("null",StringComparison.OrdinalIgnoreCase))
-                    tokendata = FromHeaderToken(headerTokenStr);
+                    tokendata = FromToken(headerTokenStr);
                 else if (!string.IsNullOrWhiteSpace(cookiesTokenStr) 
                          && !cookiesTokenStr.Equals("null",StringComparison.OrdinalIgnoreCase))
-                    tokendata = FromHeaderToken(cookiesTokenStr);
+                    tokendata = FromToken(cookiesTokenStr);
                 OnTokenGet(context, tokendata);
             }
         }
