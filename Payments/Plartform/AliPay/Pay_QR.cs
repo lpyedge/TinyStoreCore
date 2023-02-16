@@ -1,7 +1,7 @@
 ﻿
 namespace Payments.Plartform.AliPay
 {
-    [PayChannel(EChannel.AliPay, PayType = EPayType.QRcode)]
+    [PayChannel(EChannel.AliPay, PayType = EPayType.QRCode)]
     public class Pay_QR : _PayBase
     {
         public Pay_QR()

@@ -3,7 +3,7 @@
     /// <summary>
     /// 平安银行
     /// </summary>
-    [PayChannel(EChannel.AliPay, PayType = EPayType.QRcode)]
+    [PayChannel(EChannel.AliPay, PayType = EPayType.QRCode)]
     public class AliPayQR : _OrangeBank
     {
         public AliPayQR() : base()

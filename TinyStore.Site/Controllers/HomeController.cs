@@ -89,17 +89,17 @@ namespace TinyStore.Site.Controllers
                                 
                                 var payTickets = new List<Payments.PayTicket>();
                                 var index = 0;
-                                foreach (var payment in store.PaymentList.Where(p=>p.IsEnable))
+                                foreach (var paydata in store.PaymentList.Where(p=>p.IsEnable))
                                 {
                                     Payments.PayTicket payticket;
-                                    if (payment.IsSystem)
+                                    if (paydata.IsSystem)
                                     {
-                                        var pay = SiteContext.Payment.GetPayment(payment.Name);
+                                        var payment = SiteContext.Payment.GetPayment(paydata.Name);
                                         //发起请求payOrderId会生成 _xx 后缀，防止同一支付平台不允许订单重复
-                                        payticket = pay.Pay(payOrderId+"_"+index.ToString("00"), order.PayAmount, Payments.ECurrency.CNY, order.Name,
+                                        payticket = (payment as Payments.IPay).Pay(payOrderId+"_"+index.ToString("00"), order.PayAmount, Payments.ECurrency.CNY, order.Name,
                                             Utils.RequestInfo._ClientIP(Request),
                                             string.IsNullOrWhiteSpace(SiteContext.Config.SiteDomain )? Url.ActionLink("Order","Home",new {orderid=order.OrderId}):"https://" + SiteContext.Config.SiteDomain + Url.Action("Order","Home",new {orderid=order.OrderId}),
-                                            string.IsNullOrWhiteSpace(SiteContext.Config.SiteDomain )? Url.ActionLink("PayNotify","ApiHome",new {payname=payment.Name}):"https://" + SiteContext.Config.SiteDomain + Url.Action("PayNotify","ApiHome",new {payname=payment.Name})
+                                            string.IsNullOrWhiteSpace(SiteContext.Config.SiteDomain )? Url.ActionLink("PayNotify","ApiHome",new {payname=paydata.Name}):"https://" + SiteContext.Config.SiteDomain + Url.Action("PayNotify","ApiHome",new {payname=paydata.Name})
                                             );
 
                                        //todo 支付test
@@ -141,39 +141,32 @@ namespace TinyStore.Site.Controllers
 
                                         if (payticket.DataFormat != EPayDataFormat.Error)
                                         {
-                                            if (payment.Name.Contains(Payments.EChannel.AliPay.ToString(),
-                                                    StringComparison.OrdinalIgnoreCase))
+                                            if (payment.PayChannnelAttr.Channel == Payments.EChannel.AliPay)
                                             {
-                                                if (payment.Name.Contains(Payments.EPayType.QRcode.ToString(),
-                                                        StringComparison.OrdinalIgnoreCase))
+                                                if (payment.PayChannnelAttr.PayType == Payments.EPayType.QRCode)
                                                 {
                                                     payticket.Name = payticket.Name.ToLowerInvariant();
                                                     payticket.Message = "支付宝二维码" ;
                                                 }
-                                                else if (payment.Name.Contains(Payments.EPayType.PC.ToString(),
-                                                             StringComparison.OrdinalIgnoreCase))
+                                                else if (payment.PayChannnelAttr.PayType == Payments.EPayType.PC)
                                                 {
                                                     payticket.Name = payticket.Name.ToLowerInvariant();
                                                     payticket.Message = "支付宝网关支付" ;
                                                 }
-                                                else if (payment.Name.Contains(Payments.EPayType.H5.ToString(),
-                                                             StringComparison.OrdinalIgnoreCase))
+                                                else if (payment.PayChannnelAttr.PayType == Payments.EPayType.H5)
                                                 {
                                                     payticket.Name = payticket.Name.ToLowerInvariant();
                                                     payticket.Message = "支付宝手机支付" ;
                                                 }
                                             }
-                                            else if (payment.Name.Contains(Payments.EChannel.WeChat.ToString(),
-                                                    StringComparison.OrdinalIgnoreCase))
+                                            else if (payment.PayChannnelAttr.Channel == Payments.EChannel.WeChat)
                                             {
-                                                if (payment.Name.Contains(Payments.EPayType.QRcode.ToString(),
-                                                        StringComparison.OrdinalIgnoreCase))
+                                                if (payment.PayChannnelAttr.PayType == Payments.EPayType.QRCode)
                                                 {
                                                     payticket.Name = payticket.Name.ToLowerInvariant();
                                                     payticket.Message = "微信二维码" ;
                                                 }
-                                                else if (payment.Name.Contains(Payments.EPayType.H5.ToString(),
-                                                             StringComparison.OrdinalIgnoreCase))
+                                                else if (payment.PayChannnelAttr.PayType == Payments.EPayType.H5)
                                                 {
                                                     payticket.Name = payticket.Name.ToLowerInvariant();
                                                     payticket.Message = "微信手机支付" ;
@@ -184,7 +177,7 @@ namespace TinyStore.Site.Controllers
                                     }
                                     else
                                     {
-                                        switch (payment.BankType)
+                                        switch (paydata.BankType)
                                         {
                                             case EBankType.支付宝:
                                             {
@@ -192,7 +185,7 @@ namespace TinyStore.Site.Controllers
                                                 {
                                                     Name = "alipay",
                                                     DataFormat = Payments.EPayDataFormat.QrCode,
-                                                    DataContent = payment.QRCode,
+                                                    DataContent = paydata.QRCode,
                                                     Message = "支付宝扫码转账",
                                                 };
                                         
@@ -205,7 +198,7 @@ namespace TinyStore.Site.Controllers
                                                 {
                                                     Name = "wechat",
                                                     DataFormat = Payments.EPayDataFormat.QrCode,
-                                                    DataContent = payment.QRCode,
+                                                    DataContent = paydata.QRCode,
                                                     Message = "微信扫码转账",
                                                 };
                                         
@@ -223,7 +216,7 @@ namespace TinyStore.Site.Controllers
                                                 {
                                                     Name = "unionpay",
                                                     DataFormat = Payments.EPayDataFormat.QrCode,
-                                                    DataContent = payment.QRCode,
+                                                    DataContent = paydata.QRCode,
                                                     Message = "银联扫码转账(云闪付,银行App)",
                                                 };
                                         
@@ -241,7 +234,7 @@ namespace TinyStore.Site.Controllers
                                                 {
                                                     Name = "alipay",
                                                     DataFormat = Payments.EPayDataFormat.QrCode,
-                                                    DataContent = SiteContext.Payment.TransferToBank(payment, order.PayAmount),
+                                                    DataContent = SiteContext.Payment.TransferToBank(paydata, order.PayAmount),
                                                     Message = "支付宝扫码转账",
                                                 };
                                         
@@ -252,10 +245,10 @@ namespace TinyStore.Site.Controllers
                                             { 
                                                 payticket = new Payments.PayTicket()
                                                 {
-                                                    Name = payment.Name.ToLowerInvariant(),
+                                                    Name = paydata.Name.ToLowerInvariant(),
                                                     DataFormat = Payments.EPayDataFormat.QrCode,
-                                                    DataContent = payment.QRCode,
-                                                    Message = payment.Memo,
+                                                    DataContent = paydata.QRCode,
+                                                    Message = paydata.Memo,
                                                 };
                                         
                                                 payTickets.Add(payticket);

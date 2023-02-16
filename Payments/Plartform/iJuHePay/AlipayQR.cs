@@ -1,6 +1,6 @@
 ﻿namespace Payments.Plartform.iJuHePay
 {
-    [PayChannel( EChannel.AliPay, PayType = EPayType.QRcode)]
+    [PayChannel( EChannel.AliPay, PayType = EPayType.QRCode)]
     public class AliPayQR : _PayBase
     {
         public AliPayQR() : base()

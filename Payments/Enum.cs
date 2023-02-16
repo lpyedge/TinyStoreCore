@@ -193,7 +193,7 @@ namespace Payments
     /// </summary>
     public enum EPayType
     {
-        [Description("二维码")] QRcode = 1,
+        [Description("二维码")] QRCode = 1,
         [Description("电脑网关")] PC = 2,
         [Description("手机网关")] H5 = 3, 
         [Description("App")] App = 4,

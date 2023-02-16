@@ -897,7 +897,7 @@ namespace TinyStore.Site
                             {
                                 BankType = EBankType.支付宝,
                                 Subject = "支付宝扫码",
-                                Name = Payments.EPlatform.AliPay +"_"+Payments.EChannel.AliPay+"_"+Payments.EPayType.QRcode,
+                                Name = Payments.EPlatform.AliPay +"_"+Payments.EChannel.AliPay+"_"+Payments.EPayType.QRCode,
                                 Account = "",
                                 Memo = "电脑端调用",
                                 Rate = Config.SysPaymentRate,
@@ -930,7 +930,7 @@ namespace TinyStore.Site
                             {
                                 BankType = EBankType.微信,
                                 Subject = "微信扫码",
-                                Name = Payments.EPlatform.WeChat +"_"+Payments.EChannel.WeChat+"_"+Payments.EPayType.QRcode,
+                                Name = Payments.EPlatform.WeChat +"_"+Payments.EChannel.WeChat+"_"+Payments.EPayType.QRCode,
                                 Account = "",
                                 Memo = "电脑端调用",
                                 Rate = Config.SysPaymentRate,
@@ -957,27 +957,27 @@ namespace TinyStore.Site
 
 
           
-            public static Payments.IPay GetPayment(string name)
+            public static Payments.IPayChannel GetPayment(string name)
             {
                 //PayName2Enum(name, out EPlatform platform, out EChannel channel, out EPayType payType);
-                Payments.IPayChannel pay = Payments.Context.Get(name);
+                Payments.IPayChannel payment = Payments.Context.Get(name);
 
-                if (pay.Platform.ToString().StartsWith("alipay", StringComparison.OrdinalIgnoreCase))
+                if (payment.Platform == Payments.EPlatform.AliPay)
                 {
                     if (Config.AliPaySettings != null)
                     {
-                        foreach (var set in Config.AliPaySettings) pay[set.Key] = set.Value;
+                        foreach (var set in Config.AliPaySettings) payment[set.Key] = set.Value;
 
-                        return pay as Payments.IPay;
+                        return payment;
                     }
                 }
-                else if (pay.Platform.ToString().StartsWith("wechat", StringComparison.OrdinalIgnoreCase))
+                else if (payment.Platform == Payments.EPlatform.WeChat)
                 {
                     if (Config.WechatPaySettings != null)
                     {
-                        foreach (var set in Config.WechatPaySettings) pay[set.Key] = set.Value;
+                        foreach (var set in Config.WechatPaySettings) payment[set.Key] = set.Value;
 
-                        return pay as Payments.IPay;
+                        return payment;
                     }
                 }
 
@@ -990,11 +990,11 @@ namespace TinyStore.Site
                 msg = "";
                 try
                 {
-                    Payments.IPay payment = GetPayment(payname);
+                    var payment = GetPayment(payname);
 
                     if (payment != null)
                     {
-                        Payments.PayResult res = payment.Notify(form, query, header,
+                        Payments.PayResult res = (payment as Payments.IPay).Notify(form, query, header,
                             body, notifyIp);
 
                         if (res.Status == Payments.PayResult.EStatus.Completed)

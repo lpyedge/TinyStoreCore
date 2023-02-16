@@ -3,7 +3,7 @@
     /// <summary>
     /// 平安银行
     /// </summary>
-    [PayChannel(EChannel.WeChat, PayType = EPayType.QRcode)]
+    [PayChannel(EChannel.WeChat, PayType = EPayType.QRCode)]
     public class WeixinQR : _OrangeBank
     {
         public WeixinQR() : base()
