@@ -110,34 +110,75 @@ namespace TinyStore.Site.Controllers
                                         //      payticket.Uri = uri;
                                         //  }
                                         // payticket.Token = (pay as IPayChannel).Platform.ToString().ToLowerInvariant();
-                                        switch (payment.Name)
-                                        {
-                                            case "AliPay_AliPay_H5":
-                                                payticket.Name = payticket.Name.ToLowerInvariant();
-                                                payticket.Message = "支付宝支付" ;
-                                                break;
-                                            case "AliPay_AliPay_QRcode":
-                                                payticket.Name = payticket.Name.ToLowerInvariant();
-                                                payticket.Message = "支付宝二维码" ;
-                                                break;
-                                            case "AliPay_AliPay_PC":
-                                                payticket.Name = payticket.Name.ToLowerInvariant();
-                                                payticket.Message = "支付宝支付" ;
-                                                break;
-                                            case "WeChat_WeChat_H5":
-                                                payticket.Name = payticket.Name.ToLowerInvariant();
-                                                payticket.Message = "微信支付" ;
-                                                break;
-                                            case "WeChat_WeChat_QRcode":
-                                                payticket.Name = payticket.Name.ToLowerInvariant();
-                                                payticket.Message = "微信二维码" ;
-                                                break;
-                                            default:
-                                                break;
-                                        }
+                                        
+                                        
+                                        
+                                        // switch (payment.Name)
+                                        // {
+                                        //     case "AliPay_AliPay_H5":
+                                        //         payticket.Name = payticket.Name.ToLowerInvariant();
+                                        //         payticket.Message = "支付宝支付" ;
+                                        //         break;
+                                        //     case "AliPay_AliPay_QRcode":
+                                        //         payticket.Name = payticket.Name.ToLowerInvariant();
+                                        //         payticket.Message = "支付宝二维码" ;
+                                        //         break;
+                                        //     case "AliPay_AliPay_PC":
+                                        //         payticket.Name = payticket.Name.ToLowerInvariant();
+                                        //         payticket.Message = "支付宝支付" ;
+                                        //         break;
+                                        //     case "WeChat_WeChat_H5":
+                                        //         payticket.Name = payticket.Name.ToLowerInvariant();
+                                        //         payticket.Message = "微信支付" ;
+                                        //         break;
+                                        //     case "WeChat_WeChat_QRcode":
+                                        //         payticket.Name = payticket.Name.ToLowerInvariant();
+                                        //         payticket.Message = "微信二维码" ;
+                                        //         break;
+                                        //     default:
+                                        //         break;
+                                        // }
 
                                         if (payticket.DataFormat != EPayDataFormat.Error)
                                         {
+                                            if (payment.Name.Contains(Payments.EChannel.AliPay.ToString(),
+                                                    StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                if (payment.Name.Contains(Payments.EPayType.QRcode.ToString(),
+                                                        StringComparison.OrdinalIgnoreCase))
+                                                {
+                                                    payticket.Name = payticket.Name.ToLowerInvariant();
+                                                    payticket.Message = "支付宝二维码" ;
+                                                }
+                                                else if (payment.Name.Contains(Payments.EPayType.PC.ToString(),
+                                                             StringComparison.OrdinalIgnoreCase))
+                                                {
+                                                    payticket.Name = payticket.Name.ToLowerInvariant();
+                                                    payticket.Message = "支付宝网关支付" ;
+                                                }
+                                                else if (payment.Name.Contains(Payments.EPayType.H5.ToString(),
+                                                             StringComparison.OrdinalIgnoreCase))
+                                                {
+                                                    payticket.Name = payticket.Name.ToLowerInvariant();
+                                                    payticket.Message = "支付宝手机支付" ;
+                                                }
+                                            }
+                                            else if (payment.Name.Contains(Payments.EChannel.WeChat.ToString(),
+                                                    StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                if (payment.Name.Contains(Payments.EPayType.QRcode.ToString(),
+                                                        StringComparison.OrdinalIgnoreCase))
+                                                {
+                                                    payticket.Name = payticket.Name.ToLowerInvariant();
+                                                    payticket.Message = "微信二维码" ;
+                                                }
+                                                else if (payment.Name.Contains(Payments.EPayType.H5.ToString(),
+                                                             StringComparison.OrdinalIgnoreCase))
+                                                {
+                                                    payticket.Name = payticket.Name.ToLowerInvariant();
+                                                    payticket.Message = "微信手机支付" ;
+                                                }
+                                            }
                                             payTickets.Add(payticket);
                                         }
                                     }
